@@ -1,0 +1,22 @@
+# Environment & Secrets
+.Renviron
+
+# Data & Evidence
+data/
+biorxiv_local_db/
+*.csv
+*.json
+
+# Execution Cache & Targets
+.cache/
+_targets/
+*.rds
+.RData
+.Rhistory
+
+# Logging
+logs/
+*.log
+
+# IDE & Infrastructure
+.Rproj.user/
