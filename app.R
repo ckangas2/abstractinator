@@ -598,13 +598,11 @@ server <- function(input, output, session) {
   # so environment variables would leak one visitor's key to everyone.
   session_keys <- reactiveValues(elsevier = "", core = "", uspto = "")
 
+  # Strict bring-your-own-key: only this visitor's own key is ever used.
+  # Server keys in .Renviron are deliberately ignored here, so they can never be
+  # spent on (or exposed to) website visitors. (env_name is kept for readability.)
   resolve_api_key <- function(user_key, env_name) {
-    # 1. This visitor's own key (Priority)
-    if (!is.null(user_key) && nchar(trimws(user_key)) > 0) {
-      return(trimws(user_key))
-    }
-    # 2. Fallback to server master key (.Renviron). Used silently, never shown in the UI.
-    return(Sys.getenv(env_name))
+    if (!is.null(user_key) && nchar(trimws(user_key)) > 0) trimws(user_key) else ""
   }
   
   rv <- reactiveValues(

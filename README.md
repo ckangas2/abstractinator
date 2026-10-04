@@ -133,8 +133,9 @@ ENABLE_SCOPUS=0          # set to 1 only on a subscribing institution's network
 DATA_WEBHOOK_URL=        # optional Discord webhook for updater notifications
 ```
 
-No API keys are needed on the server; visitors bring their own. If you do put `CORE_API_KEY`
-or `USPTO_API_KEY` here, they're used silently as a fallback for *every* website visitor.
+No API keys are needed on the server: the website is strictly bring-your-own-key and never
+uses keys from `.Renviron`, and the AI connector uses open-access sources only. (Keys in
+`.Renviron` are only read by command-line scripts you run yourself.)
 
 ### 2. Build the preprint store (once, takes several hours)
 
