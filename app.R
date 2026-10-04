@@ -433,6 +433,20 @@ ui <- fluidPage(
                )
              )
       )
+    ),
+    
+    # --- Icon credits (required by the Flaticon free license) ---
+    div(
+      style = "margin-top: 30px; font-size: 0.75em; color: #777;",
+      "Icons: ",
+      tags$a("narwhal", href = "https://www.flaticon.com/free-icon/narwhal_2569882", target = "_blank", style = "color: #999;"),
+      " by Smashicons, ",
+      tags$a("dinosaur", href = "https://www.flaticon.com/free-icon/dinosaur_4574325", target = "_blank", style = "color: #999;"),
+      " by imaginationlol, ",
+      tags$a("frog prince", href = "https://www.flaticon.com/free-icon/frog-prince_1587055", target = "_blank", style = "color: #999;"),
+      " by Magnific, from ",
+      tags$a("Flaticon", href = "https://www.flaticon.com", target = "_blank", style = "color: #999;"),
+      ". Line-art loading animations from the Noun Project (creators credited in each image)."
     )
   ),
   

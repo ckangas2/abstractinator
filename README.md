@@ -1,123 +1,256 @@
-# 🧬 The Abstractinator
+<p align="center">
+  <img src="www/icon-192.png" alt="The Abstractinator narwhal" width="120">
+</p>
 
-**The Abstractinator** is a high-performance, automated boolean search and aggregation pipeline designed for the rapid acquisition, classification, and triage of immunology and virology literature. It transforms the traditionally manual process of literature review into a deterministic engineering pipeline.
+<h1 align="center">The Abstractinator</h1>
 
----
-
-## 🚀 1. Executive Overview
-
-The tool aggregates metadata and abstracts from a wide array of open-access and authenticated databases, deduplicates them using distinct record identification, and applies a weighted scoring matrix to categorize papers by specific immune cell types and viruses.
-
-### The "Nator" Ecosystem:
-*   **Searchinator**: Orchestrates simultaneous queries across multiple global repositories.
-*   **Deduplicatinator**: Eliminates redundancy between sources via unique record ID mapping.
-*   **Plotinator**: An interactive analytics suite visualizing the intersection of virology and immunology trends.
-*   **Readinator**: A curation tool for building targeted reading lists for export to Zotero/EndNote.
+<p align="center">
+  <b>Immunology & virology literature, searched across databases at once.</b><br>
+  <a href="https://abstractinator.me">abstractinator.me</a> ·
+  <a href="#-use-it-with-ai">Connect your AI</a> ·
+  <a href="#-self-hosting">Self-host it</a>
+</p>
 
 ---
 
-## 🛠️ 2. Technical Architecture
+The Abstractinator turns a literature sweep into one search. It queries Europe PMC, OpenAlex,
+ClinicalTrials.gov, bioRxiv/medRxiv, NIH RePORTER and NSF Awards in parallel, removes
+duplicates across sources, and tags every record with its most prominent **immune cell type**
+and **virus** using a weighted title/abstract scoring matrix.
 
-### Data Sources & Retrieval
-The pipeline utilizes a hybrid retrieval strategy, combining open-access APIs with authenticated deep-searches:
+A new search takes about **5–10 seconds**; repeat searches within 7 days are instant.
 
-| Source | Access Level | Focus |
+## ✨ Features
+
+| | |
+| :--- | :--- |
+| **Searchinator** | Queries every source simultaneously; the slowest source sets the pace, not the sum of all of them. |
+| **Deep search** | Optional mode that pulls up to 250 results per source instead of 50 (~4× the coverage, ~15–30 s). |
+| **Deduplicatinator** | Merges records across sources by DOI (including preprint → published DOI links), then by title, preferring the best-curated source. |
+| **Plotinator** | Interactive charts of viral–immune trends over time. |
+| **Readinator** | Build a reading list and export it to Zotero or EndNote. |
+| **Agentinator** | An MCP server so AI assistants (Claude and others) can search The Abstractinator directly. |
+
+## 📚 Data sources
+
+| Source | Access | Coverage |
 | :--- | :--- | :--- |
-| **Europe PMC** | Open | Primary Biomedical Literature |
-| **OpenAlex** | Open | Global Scholarly Graph |
-| **bioRxiv / medRxiv** | Open | Pre-prints (cutting edge) |
-| **ClinicalTrials.gov** | Open | Human Clinical Study Protocols |
-| **CORE** | API Key | Full-text Open Access Aggregation |
-| **USPTO (PatentsView)** | API Key | Patent landscape & Intellectual Property |
-| **NIH Reporter** | Open | US Federal Grant Funding/Projects |
-| **NSF Awards** | Open | Fundamental Research Grants |
-| **Scopus / Embase** | API Key | Gold-standard indexed literature |
+| **Europe PMC** | Open | Biomedical literature (incl. PubMed) |
+| **OpenAlex** | Open | Global scholarly graph |
+| **ClinicalTrials.gov** | Open | Human clinical study registrations |
+| **bioRxiv / medRxiv** | Open (local copy) | Preprints, searched from a local Parquet store refreshed daily |
+| **NIH RePORTER** | Open | US federal grants |
+| **NSF Awards** | Open | Fundamental research grants |
+| **CORE** | Your API key | Open-access full-text aggregation |
+| **USPTO (PatentsView)** | Your API key | Patents |
+| **Scopus / Embase** | Your API key, off by default | Abstract retrieval only works from a subscribing institution's network, so it's disabled unless `ENABLE_SCOPUS=1` |
 
-### Dual-Write Storage Strategy
-To serve both human researchers and autonomous agents, the system implements a dual-tier storage architecture in SQLite:
+Keyed sources are **bring-your-own-key**: enter keys in Settings (☰). They're held only in your
+browser session, never logged or written to disk, and never shared with other visitors.
 
-1.  **Human Tier (UI Snapshots)**: Search results are serialized into binary blobs for near-instant loading within the Shiny interface, bypassing expensive re-processing.
-2.  **Agent Tier (Relational Knowledge Base)**: Every article is indexed as a unique row in a relational table (`articles`) with optimized indexes on titles and abstracts. This enables high-precision SQL querying for RAG (Retrieval-Augmented Generation) pipelines.
+## 🤖 Use it with AI
 
----
+The Abstractinator is available as a remote **MCP server**, the open standard AI assistants use
+to connect to tools.
 
-## 🤖 3. Agent Interface Specification
+```
+https://mcp.abstractinator.me/mcp
+```
 
-The Abstractinator is designed to be used as a "Source of Truth" for AI agents. Agents should interact via the `agent_api.R` wrapper rather than calling orchestration scripts directly.
+**In Claude:** Settings → Connectors → *Add custom connector* → paste the URL above, and choose
+**No sign-in** for authentication. Then just ask, e.g. *"Search the Abstractinator for oncolytic
+virus trials in melanoma."* Any MCP client that supports remote (streamable HTTP) servers works too.
 
-### Available API Functions:
-*   **`agent_search(term, keys)`**: Triggers a search (or hits cache) and returns a deduplicated data frame.
-*   **`agent_query_kb(sql_query)`**: Executes raw SQL against the `articles` table for high-precision filtering.
-*   **`agent_find_top_abstracts(keyword, n=5)`**: Retrieves only the most relevant abstracts to optimize LLM context windows.
-*   **`agent_analyze_gap(topic)`**: Performs a knowledge audit to determine if current local data is sufficient or if a new search is required.
-*   **`agent_format_as_md(df)`**: Converts R data frames into LLM-optimized Markdown tables.
+The server exposes one tool:
 
-### Database Schema for Agents:
-| Column | Type | Description |
-| :--- | :--- | :--- |
-| `article_id` | TEXT (PK) | Unique identifier (DOI or URL) |
-| `title` | TEXT | Title of the paper |
-| `abstract` | TEXT | Full abstract text |
-| `authors` | TEXT | Semicolon separated author list |
-| `publication_date` | TEXT | ISO Date string |
-| `url` | TEXT | Direct link to article |
-| `doi` | TEXT | Digital Object Identifier |
-| `source` | TEXT | Origin (e.g., 'NIH', 'PubMed', 'CORE') |
-| `is_bioinformatics` | INTEGER | 1 = Bioinformatics focused, 0 = otherwise |
-| `primary_cell` | TEXT | The dominant immune cell identified |
-| `primary_virus` | TEXT | The dominant virus identified |
+**`search_literature(query, max_results=25, abstract_chars=1500, deep=False)`**
+returns `total_found`, `source_counts`, and a source-balanced list of records with `title`,
+`abstract`, `authors`, `publication_date`, `doi`, `url`, `source`, `primary_cell`,
+`primary_virus` and `is_bioinformatics`.
 
----
+The AI connector uses open-access sources only (no keys needed or spent) and is rate-limited
+to keep the service available for everyone.
 
-## ⚙️ 4. Installation & Setup
+## 🏗️ How it works
 
-### Prerequisites
-*   **R** (version 4.1+)
-*   **Shiny** (for the web interface)
+```
+Browser ──► Cloudflare ──► abstractinator.me      ──► Shiny Server :3838 (app.R) ─────────┐
+                                                                                          ├─► search engine ──► shared cache
+AI      ──► Cloudflare ──► mcp.abstractinator.me ──► MCP server :8200 (agent/mcp_server.py)│     (orchestrate_extraction.R)
+                                                         └──► REST API :8100 (agent/api.R) ┘
+```
 
-### Setup Steps
-1. **Clone the Repository**:
-   ```bash
-   git clone https://github.com/your-username/abstractinator.git
-   cd abstractinator
-   ```
+- **One search engine, two front doors.** `orchestrate_extraction.R` checks the cache, starts
+  every source as a background job (`future`), then combines, deduplicates and tags the results.
+  The website calls it asynchronously through Shiny's `ExtendedTask`, so one visitor's search
+  never freezes the page for anyone else. The REST API calls the same code synchronously.
+- **Shared cache.** Results are cached for 7 days in `.cache/s3_mimic/` (one `.rds` per search,
+  keyed by term, depth and which keyed sources were used). A search by a person makes the same
+  search instant for an AI, and vice versa.
+- **Local preprints.** bioRxiv/medRxiv are searched from `biorxiv_local_db/` (one Parquet file
+  per year) via Arrow, instead of hitting their API on every search.
+- **Hit detection.** Titles and abstracts are matched against immune-cell and virus alias lists
+  (`aliases.R`); title hits weigh 20, abstract hits 3, and the top scorer becomes
+  `primary_cell` / `primary_virus`.
+- **Logging.** Website searches write a small JSON record (term, duration, result count, cache
+  hit, and *whether* keys were present, never the keys) to `.cache/s3_mimic/logs/`.
 
-2. **Configure Environment Variables**:
-   Create a `.Renviron` file in the project root and add your API keys:
-   ```text
-   ELSEVIER_API_KEY=***
-   CORE_API_KEY=***
-   USPTO_API_KEY=***
-   INTEGRATE_NIH_NSF=1
-   ```
+## 🖥️ Self-hosting
 
-3. **Initialize BioRxiv Database**:
-   The pipeline requires a local copy of the bioRxiv database for high-performance preprint searching. You must run the harvest script to download and build this local Parquet store before launching the application:
-   ```bash
-   Rscript write_parquet_bioRxiV.R
-   ```
+### Requirements
 
-4. **Launch the Application**:
-   Open `app.R` in RStudio or run:
-   ```R
-   shiny::runApp('app.R')
-   ```
+- Linux (tested on Ubuntu), R ≥ 4.1, Python ≥ 3.10 (for the MCP server)
+- System libraries:
+  ```bash
+  sudo apt install -y r-base r-base-dev libcurl4-openssl-dev libssl-dev libxml2-dev \
+    libsqlite3-dev libfontconfig1-dev libharfbuzz-dev libfribidi-dev libfreetype6-dev \
+    libpng-dev libtiff5-dev libjpeg-dev libglpk-dev libgmp3-dev libsodium-dev cmake gfortran
+  ```
+- R packages (install into the system library so Shiny Server can see them):
+  ```bash
+  sudo /usr/bin/Rscript -e 'install.packages(c("shiny","bslib","shinyjs","shinythemes","shinyWidgets",
+    "tidyverse","DT","plotly","htmltools","htmlwidgets","htmlTable","jsonlite","digest","future",
+    "promises","parallelly","arrow","httr","httr2","RSQLite","DBI","uuid","lubridate","ggbeeswarm",
+    "plumber"), repos = "https://cloud.r-project.org", Ncpus = 8)'
+  ```
 
----
+> **Using conda?** Shiny Server and the services use the system R at `/usr/bin/R`. Install
+> packages with `/usr/bin/Rscript` (or `conda deactivate` first) so they land in the right place.
+
+### 1. Get the code and configure
+
+```bash
+git clone https://github.com/ckangas2/abstractinator.git
+cd abstractinator
+```
+
+Optional `.Renviron` in the project root:
+
+```text
+INTEGRATE_NIH_NSF=1      # include NIH & NSF grants (the app also sets this)
+USER_EMAIL=you@example.org  # sent to OpenAlex for its "polite pool"
+ENABLE_SCOPUS=0          # set to 1 only on a subscribing institution's network
+DATA_WEBHOOK_URL=        # optional Discord webhook for updater notifications
+```
+
+No API keys are needed on the server; visitors bring their own. If you do put `CORE_API_KEY`
+or `USPTO_API_KEY` here, they're used silently as a fallback for *every* website visitor.
+
+### 2. Build the preprint store (once, takes several hours)
+
+```bash
+tmux new -s biorxiv
+Rscript write_parquet_bioRxiV.R      # resumable: finished years are skipped on rerun
+```
+
+Detach with `Ctrl+B, D`. Searches pick up each year as soon as it's written.
+
+### 3. Run locally
+
+```bash
+/usr/bin/Rscript -e 'shiny::runApp(port = 4000)'   # website
+/usr/bin/Rscript agent/run_api.R                   # REST API on 127.0.0.1:8100 (run from repo root)
+```
+
+### 4. Production setup (what abstractinator.me runs)
+
+**Shiny Server**, serving the app at the root and only on localhost
+(`/etc/shiny-server/shiny-server.conf`):
+
+```
+run_as shiny;
+server {
+  listen 3838 127.0.0.1;
+  location / {
+    app_dir /srv/shiny-server/abstractinator;
+    log_dir /var/log/shiny-server;
+    app_idle_timeout 0;
+  }
+}
+```
+
+**API and MCP services** (run as the `shiny` user):
+
+```bash
+sudo /usr/bin/python3 -m venv /opt/abstractinator-mcp
+sudo /opt/abstractinator-mcp/bin/pip install "mcp[cli]"   # MCP Python SDK 2.x
+sudo cp agent/abstractinator-api.service agent/abstractinator-mcp.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now abstractinator-api abstractinator-mcp
+```
+
+**Daily preprint updates** (after the initial build finishes):
+
+```bash
+sudo -u shiny mkdir -p logs
+sudo cp deploy/abstractinator.cron /etc/cron.d/abstractinator   # runs update_biorxiv_db.R at 4:15am
+```
+
+**Public access** via a [Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/)
+(no open ports): route `abstractinator.me` → `http://localhost:3838` and
+`mcp.abstractinator.me` → `http://localhost:8200`. The REST API stays private.
+
+### Updating the live site
+
+```bash
+cd /srv/shiny-server/abstractinator
+sudo -u shiny git pull
+sudo systemctl restart shiny-server            # app.R, www/, search scripts
+sudo systemctl restart abstractinator-api      # agent/api.R, search scripts
+sudo systemctl restart abstractinator-mcp      # agent/mcp_server.py
+```
+
+### REST API reference (local only)
+
+`GET /search?q=<term>&limit=25&abstract_chars=1500&deep=false`
+
+- `limit`: results returned (1–100), picked round-robin across sources
+- `abstract_chars`: truncate abstracts; `0` omits them
+- `deep`: `true` for up to 250 results per source
+- Optional headers `X-CORE-Key` and `X-USPTO-Key` enable those sources for the request
+- Server-wide limit of 20 searches/minute (HTTP 429 when exceeded)
+
+`GET /health` returns `{"status":"ok"}`.
+
+## 🗂️ Repository layout
+
+| Path | What it is |
+| :--- | :--- |
+| `app.R` | The Shiny web app |
+| `orchestrate_extraction.R` | The search engine: cache → parallel sources → dedup → hit detection |
+| `*_extraction.R` | One extractor per source (EPMC, OpenAlex, CORE, ClinicalTrials.gov, bioRxiv, NIH, NSF, PatentsView, Scopus) |
+| `deduplication.R`, `aliases.R` | Cross-source deduplication; immune cell & virus alias lists |
+| `R/db_utils_local.R`, `R/log_utils_local.R` | Search cache and search logging |
+| `agent/` | REST API (`api.R`, `run_api.R`), MCP server (`mcp_server.py`), systemd units |
+| `deploy/` | Cron schedule |
+| `write_parquet_bioRxiV.R`, `update_biorxiv_db.R` | Build and refresh the local preprint store |
+| `www/` | Styles, scripts, icons and mascot art |
+| `agent_api.R`, `cli_engine.R`, `abstractinator_bridge.py` | Older local agent interface (knowledge-base functions are being reworked) |
+
+## 🛣️ Roadmap
+
+- Relevance ranking (best match first, using hit scores and recency)
+- Skip caching searches where a source failed
+- Log AI-agent searches alongside website searches
+- Smarter agent tools backed by a relational knowledge base (gap analysis, "what's under-studied")
+
+## 🙏 Credits
+
+Mascot and icons from Flaticon (narwhal by Smashicons, dinosaur by imaginationlol, frog prince
+by Magnific); line-art animations from the Noun Project. Details in [CREDITS.md](CREDITS.md).
 
 ## 📜 Citation
 
-If you use The Abstractinator in your research, please cite it as follows:
+If you use The Abstractinator in your research, please cite:
 
-> Kangas, C. (2025). The Abstractinator: Automated Boolean Search Tool for Rapid Acquisition, Classification, and Triage of Immuno-Networks And Therapeutic Oncolytic Research [Computer software].
+> Kangas, C. (2026). The Abstractinator: Automated Boolean Search Tool for Rapid Acquisition, Classification, and Triage of Immuno-Networks And Therapeutic Oncolytic Research (Version 2.0.0) [Computer software]. https://abstractinator.me
 
-**BibTeX:**
 ```bibtex
-@software{TheAbstractinator2025,
-  author = {Kangas, Chase},
-  title = {The Abstractinator: Automated Boolean Search Tool for Rapid Acquisition, Classification, and Triage of Immuno-Networks And Therapeutic Oncolytic Research},
-  year = {2025},
-  url = {https://theabstractinator.shinyapps.io/Abstractinator/},
-  version = {1.4.0}
+@software{TheAbstractinator2026,
+  author  = {Kangas, Chase},
+  title   = {The Abstractinator: Automated Boolean Search Tool for Rapid Acquisition, Classification, and Triage of Immuno-Networks And Therapeutic Oncolytic Research},
+  year    = {2026},
+  url     = {https://abstractinator.me},
+  version = {2.0.0}
 }
 ```
