@@ -343,8 +343,11 @@ ui <- fluidPage(
     tags$meta(property = "og:image:height", content = "630"),
     tags$meta(name = "twitter:card", content = "summary_large_image"),
     
-    tags$link(rel = "stylesheet", type = "text/css", href = "styles.css"),
-    tags$script(src = "script.js")
+    # Cache-busting: the ?v= number changes whenever the file changes, so browsers
+    # and Cloudflare always fetch the current version instead of a stale copy
+    tags$link(rel = "stylesheet", type = "text/css",
+              href = paste0("styles.css?v=", as.integer(file.mtime("www/styles.css")))),
+    tags$script(src = paste0("script.js?v=", as.integer(file.mtime("www/script.js"))))
   ),
   
   # ========================================================================
