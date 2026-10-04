@@ -24,82 +24,71 @@ retrieve_scopus_abstracts <- function(deduplicated_df, search_term = "DOI_lookup
   
   if (nrow(records_to_process) == 0) return(deduplicated_df)
   
-  # 2. RETRIEVAL LOOP
-  for (i in 1:nrow(records_to_process)) {
-    doi <- records_to_process$DOI[i]
-    clean_doi <- trimws(doi)
-    
-    # URL points to the specific DOI resource
-    base_url <- paste0("https://api.elsevier.com/content/abstract/doi/", clean_doi)
-    
-    # Headers are safer than URL parameters
-    req_headers <- add_headers(
-      "X-ELS-APIKey" = valid_key,
-      "Accept" = "application/json"
-    )
-    
-    # --- RETRY LOGIC (The 429 Fix) ---
-    response <- NULL
-    attempt <- 1
-    max_attempts <- 3 # Try 3 times before giving up
-    
-    while (attempt <= max_attempts) {
-      tryCatch({
-        # We use META_ABS to get the abstract without full-text restrictions
-        response <- GET(base_url, query = list(view = "META_ABS"), req_headers)
-        
-        # A. Success
-        if (status_code(response) == 200) {
-          break 
-        } 
-        # B. Rate Limit (429) or Server Error (500)
-        else if (status_code(response) == 429 || status_code(response) >= 500) {
-          # Exponential Backoff: Wait 2s, then 4s...
-          wait_time <- 2^attempt 
-          print(paste0("    > [", status_code(response), "] Rate limit hit. Pausing ", wait_time, "s..."))
-          Sys.sleep(wait_time)
-          attempt <- attempt + 1
-        } 
-        # C. Not Found (404) or other client errors
-        else {
-          break 
-        }
-      }, error = function(e) {
-        print(paste("    > Network Error:", e$message))
-        attempt <- attempt + 1
-        Sys.sleep(1)
-      })
-    }
-    
-    # --- PARSE RESULT ---
-    if (!is.null(response) && status_code(response) == 200) {
-      print("scopus = 200")
-      # Use parsed content for safety
-      content_list <- content(response, as = "parsed", encoding = "UTF-8")
-      
-      tryCatch({
-        # Navigate Elsevier's JSON structure
-        core_data <- content_list$`abstracts-retrieval-response`$coredata
-        new_abstract <- core_data$`dc:description`
-        
-        # Match back to the dataframe row
-        match_idx <- which(deduplicated_df$DOI == doi)
-        
-        # Only update if we actually found something
-        if (!is.null(new_abstract)) {
-          deduplicated_df$Abstract[match_idx] <- new_abstract
-        }
-      }, error = function(e) {
-        # Silent fail on parsing structure changes
-      })
-    }
-    
-    # Progress Ticker (one dot every 10 requests)
-    if (i %% 10 == 0) cat(".")
-    
-    # --- PACING (The .3s Rule) ---
-    Sys.sleep(0.3) 
+  # 2. PARALLEL RETRIEVAL
+  # Requests go out in batches of BATCH_SIZE at once, with each batch taking at
+  # least 1 second, which keeps us under Elsevier's per-second throttle.
+  # (Previously: one request at a time plus a 0.3s pause each, ~0.5s per record.)
+  BATCH_SIZE <- 8
+  dois <- unique(trimws(records_to_process$DOI))
+  
+  build_req <- function(doi) {
+    httr2::request(paste0("https://api.elsevier.com/content/abstract/doi/", doi)) |>
+      httr2::req_url_query(view = "META_ABS") |>
+      httr2::req_headers(`X-ELS-APIKey` = valid_key, Accept = "application/json") |>
+      httr2::req_timeout(30) |>
+      httr2::req_error(is_error = function(resp) FALSE)  # we inspect status codes ourselves
   }
+  
+  abstracts <- list()  # doi -> abstract text
+  
+  # Fetch a set of DOIs in throttled parallel batches.
+  # Returns the DOIs that should be retried (429 rate limit, 5xx, network errors).
+  run_batches <- function(doi_vec) {
+    retry <- character(0)
+    batches <- split(doi_vec, ceiling(seq_along(doi_vec) / BATCH_SIZE))
+    for (batch in batches) {
+      t0 <- Sys.time()
+      resps <- httr2::req_perform_parallel(lapply(batch, build_req),
+                                           on_error = "continue", progress = FALSE)
+      for (j in seq_along(batch)) {
+        r <- resps[[j]]
+        if (inherits(r, "error")) { retry <- c(retry, batch[j]); next }
+        status <- httr2::resp_status(r)
+        if (status == 200) {
+          new_abstract <- tryCatch(
+            httr2::resp_body_json(r)$`abstracts-retrieval-response`$coredata$`dc:description`,
+            error = function(e) NULL  # silent fail on JSON structure changes
+          )
+          if (!is.null(new_abstract)) abstracts[[batch[j]]] <<- new_abstract
+        } else if (status == 429 || status >= 500) {
+          retry <- c(retry, batch[j])
+        }
+        # 404 / other client errors: no abstract available, skip
+      }
+      cat(".")
+      elapsed <- as.numeric(difftime(Sys.time(), t0, units = "secs"))
+      if (elapsed < 1) Sys.sleep(1 - elapsed)
+    }
+    retry
+  }
+  
+  pending <- run_batches(dois)
+  attempt <- 1
+  while (length(pending) > 0 && attempt <= 2) {
+    wait_time <- 2^attempt
+    print(paste0("    > ", length(pending), " requests rate-limited/failed. Pausing ", wait_time, "s, then retrying..."))
+    Sys.sleep(wait_time)
+    pending <- run_batches(pending)
+    attempt <- attempt + 1
+  }
+  
+  # 3. MATCH ABSTRACTS BACK TO ROWS
+  if (length(abstracts) > 0) {
+    row_dois <- trimws(deduplicated_df$DOI)
+    hit <- !is.na(row_dois) & row_dois %in% names(abstracts)
+    deduplicated_df$Abstract[hit] <- unlist(abstracts[row_dois[hit]], use.names = FALSE)
+  }
+  print(paste("    > Retrieved", length(abstracts), "of", length(dois), "abstracts."))
   
   cat("\n")
   print("    > Abstract retrieval complete.")

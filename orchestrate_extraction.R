@@ -6,6 +6,14 @@ library(jsonlite)
 library(stringr)
 
 # ==============================================================================
+# FEATURE FLAGS
+# ==============================================================================
+# Scopus/Embase abstracts only work from a university network (Elsevier grants
+# access by IP), so Scopus is OFF by default. To turn it on, add this line to
+# .Renviron and restart:   ENABLE_SCOPUS=1
+ENABLE_SCOPUS <- Sys.getenv("ENABLE_SCOPUS", "0") == "1"
+
+# ==============================================================================
 # HELPER FUNCTIONS
 # ==============================================================================
 
@@ -263,6 +271,17 @@ perform_hit_detection <- function(df, immune_regex_list, virus_regex_list, weigh
     )
 }
 
+# --- HELPER 5: PER-SOURCE TIMING ---
+# Logs how long each source took (shows up in the Shiny Server log),
+# so we can see which database is the bottleneck.
+timed <- function(label, expr) {
+  t0 <- Sys.time()
+  res <- expr
+  message(sprintf("    > [Timing] %s: %.1fs", label,
+                  as.numeric(difftime(Sys.time(), t0, units = "secs"))))
+  res
+}
+
 # ==============================================================================
 # MAIN ORCHESTRATOR (CREDENTIAL-AWARE S3)
 # ==============================================================================
@@ -272,12 +291,13 @@ orchestrate_data_extraction_cached <- function(search_term, limit = 50, elsevier
   # --- [NEW] PROGRESS HELPER WITH UI FLUSH ---
   report_status <- function(step, text) {
     if (is.function(update_progress)) {
+      # Shiny sends progress messages immediately, so no pause is needed here.
       update_progress(step_val = step, detail_text = text)
-      # CRITICAL FIX: Force a tiny pause to let the UI render the text
-      # before the main thread gets blocked by the next operation.
-      Sys.sleep(0.25) 
     }
   }
+  
+  # Scopus disabled: drop the key so it's skipped everywhere (search, cache keys, logs)
+  if (!ENABLE_SCOPUS) elsevier_key <- NULL
   
   report_status(0.05, "Checking Local Cache...")
   
@@ -308,61 +328,88 @@ orchestrate_data_extraction_cached <- function(search_term, limit = 50, elsevier
   report_status(0.1, "Dispatching Open Access Workers...")
   
   # 1. Always Run
-  future_epmc <- future({ get_epmc_data(search_term, page_size = 1000, max_results = limit) })
-  future_clinical_trials <- future({ get_clinical_trials_data(search_term, limit = limit) })
-  future_biorxiv <- future({ get_biorxiv_data(search_term, limit = limit) })
+  future_epmc <- future({ timed("EPMC", get_epmc_data(search_term, page_size = min(limit, 1000), max_results = limit)) })
+  future_clinical_trials <- future({ timed("ClinicalTrials", get_clinical_trials_data(search_term, limit = limit)) })
+  future_biorxiv <- future({ timed("bioRxiv", get_biorxiv_data(search_term, limit = limit)) })
   
   user_email <- Sys.getenv("USER_EMAIL")
   if (user_email == "") user_email <- NULL
   future_openalex <- future({ 
     print("    > Dispatching OpenAlex Worker...")
-    get_openalex_data(search_term, mailto = user_email, max_results = limit, per_page = 200) 
+    timed("OpenAlex", get_openalex_data(search_term, mailto = user_email, max_results = limit, per_page = 200))
   })
   
   # 2. Conditional Run (CORE)
   future_core <- if (!is.null(core_key) && nchar(core_key) > 0) {
     print("    > Dispatching CORE Worker...")
-    future({ get_core_data(search_term, limit = limit, api_key = core_key) })
+    future({ timed("CORE", get_core_data(search_term, limit = limit, api_key = core_key)) })
   } else { NULL }
   
   # 3. Conditional Run (PatentsView)
   future_patents <- if (!is.null(uspto_key) && nchar(uspto_key) > 0) {
     print("    > Dispatching PatentsView Worker...")
-    future({ get_patentsview_data(search_term, limit = limit, api_key = uspto_key) })
+    future({ timed("PatentsView", get_patentsview_data(search_term, limit = limit, api_key = uspto_key)) })
   } else { NULL }
   
   # --------------------------------------------------------------------------
   # 3. PART B: RESTRICTED DATA (Scopus)
   # --------------------------------------------------------------------------
-  restricted_data <- NULL
-  
-  if (!is.null(elsevier_key) && nchar(elsevier_key) > 0) {
-    
-    # This message often got skipped because Scopus logic blocked immediately.
-    # The Sys.sleep inside report_status fixes this.
-    report_status(0.05, "Indexing Scopus/Embase (Synchronous)...")
-    
+  # Previously ran on the main thread, so every other source waited on it.
+  # Now it runs in its own worker alongside the open-access sources.
+  future_scopus <- if (!is.null(elsevier_key) && nchar(elsevier_key) > 0) {
+    report_status(0.05, "Dispatching Scopus/Embase Worker...")
     scopus_cache_key <- paste0(search_term, "_scopus")
-    
-    if (check_s3_cache(scopus_cache_key, max_age_days = 7)) {
-      print("    > S3 SUB-HIT: Scopus Data")
-      restricted_data <- fetch_from_s3(scopus_cache_key)
-    } 
-    
-    if (is.null(restricted_data)) {
-      print("    > S3 SUB-MISS: Scopus Data - Scraping...")
-      scopus_meta <- get_scopus_data(search_term, max_records = limit, api_key = elsevier_key)
-      
-      if (!is.null(scopus_meta) && nrow(scopus_meta) > 0) {
-        restricted_data <- retrieve_scopus_abstracts(scopus_meta, search_term = search_term, api_key = elsevier_key)
-        if (!is.null(restricted_data) && nrow(restricted_data) > 0) {
-          save_to_s3(scopus_cache_key, restricted_data)
+    future({
+      timed("Scopus", tryCatch({
+        res <- NULL
+        if (check_s3_cache(scopus_cache_key, max_age_days = 7)) {
+          print("    > S3 SUB-HIT: Scopus Data")
+          res <- fetch_from_s3(scopus_cache_key)
         }
-      }
-    }
+        if (is.null(res)) {
+          print("    > S3 SUB-MISS: Scopus Data - Scraping...")
+          scopus_meta <- get_scopus_data(search_term, max_records = limit, api_key = elsevier_key)
+          if (!is.null(scopus_meta) && nrow(scopus_meta) > 0) {
+            res <- retrieve_scopus_abstracts(scopus_meta, search_term = search_term, api_key = elsevier_key)
+            if (!is.null(res) && nrow(res) > 0) save_to_s3(scopus_cache_key, res)
+          }
+        }
+        res
+      }, error = function(e) {
+        print(paste("    > Scopus Hard Catch:", e$message))
+        NULL
+      }))
+    })
   } else {
-    print("    > No Elsevier Key - Skipping Scopus")
+    print(if (ENABLE_SCOPUS) "    > No Elsevier Key - Skipping Scopus" else "    > Scopus disabled (ENABLE_SCOPUS != 1)")
+    NULL
   }
+  
+  # --------------------------------------------------------------------------
+  # 4. PART C: NIH & NSF (also background workers, started now)
+  # --------------------------------------------------------------------------
+  integrate_nih_nsf <- Sys.getenv("INTEGRATE_NIH_NSF") == "1"
+  future_nih <- if (integrate_nih_nsf) {
+    print("    > Dispatching NIH & NSF Workers...")
+    future({
+      timed("NIH", tryCatch(get_nih_reporter_data(search_term, desired_results = limit),
+                            error = function(e) data.frame()))
+    })
+  } else NULL
+  future_nsf <- if (integrate_nih_nsf) {
+    future({
+      timed("NSF", tryCatch(
+        get_all_nsf_awards_baseR_v2(
+          search_term,
+          max_results = limit,
+          print_fields = "id,title,abstractText,pdPIName,awardeeName,date"
+        ),
+        error = function(e) {
+          print(paste("NSF Hard Catch:", e$message))
+          data.frame()
+        }))
+    })
+  } else NULL
   
   # --- COLLECT RESULTS ---
   # Crucial: We announce this BEFORE calling value(), which freezes the app.
@@ -374,6 +421,7 @@ orchestrate_data_extraction_cached <- function(search_term, limit = 50, elsevier
   bx   <- value(future_biorxiv)
   core <- if (!is.null(future_core)) value(future_core) else NULL
   pt   <- if (!is.null(future_patents)) value(future_patents) else NULL
+  restricted_data <- if (!is.null(future_scopus)) value(future_scopus) else NULL
   
   report_status(0.1, "Binding Data Sources...")
   public_data <- bind_rows(list(
@@ -385,36 +433,12 @@ orchestrate_data_extraction_cached <- function(search_term, limit = 50, elsevier
     Patent = pt
   ), .id = "Source_Label")
   
-  # --------------------------------------------------------------------------
-  # 4. PART B: NIH & NSF INTEGRATION (if requested)
-  # --------------------------------------------------------------------------
   nih_nsf_merged <- NULL
-  
-  # --- NEW: CONDITIONAL NIH/NSF INTEGRATION ---
-  if (Sys.getenv("INTEGRATE_NIH_NSF") == "1") {
-    report_status(0.1, "Extracting NIH & NSF...")
-    print("    > Dispatching NIH & NSF Workers...")
-    
-    # Defensive execution
-    nih_raw <- tryCatch({ get_nih_reporter_data(search_term, desired_results = limit) }, error = function(e) data.frame())
-    
-    # UPDATED: NSF with strict print_fields truncation
-    # UPDATED: Removed 'url' to prevent API rejection
-    nsf_raw <- tryCatch({ 
-      get_all_nsf_awards_baseR_v2(
-        search_term, 
-        max_results = limit, 
-        print_fields = "id,title,abstractText,pdPIName,awardeeName,date"
-      ) 
-    }, error = function(e) {
-      print(paste("NSF Hard Catch:", e$message))
-      data.frame()
-    })
-    
-    # Apply the strict mapping schema
+  if (integrate_nih_nsf) {
+    report_status(0.1, "Merging NIH & NSF...")
+    nih_raw <- value(future_nih)
+    nsf_raw <- value(future_nsf)
     nih_nsf_merged <- merge_nih_nsf_to_schema(nih_raw, nsf_raw)
-    
-    # Bind to the master pipeline
   }
   
   # --------------------------------------------------------------------------

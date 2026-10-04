@@ -527,12 +527,17 @@ server <- function(input, output, session) {
   active_search_term <- reactiveVal("")
   
   # --- [INSERT HERE: HELPER FUNCTION] ---
-  resolve_api_key <- function(user_input, env_name) {
-    # 1. Check for User Input (Priority)
-    if (!is.null(user_input) && nchar(trimws(user_input)) > 0) {
-      return(trimws(user_input))
+  # Keys typed by THIS visitor live only in this session object.
+  # Never use Sys.setenv() for user keys: all visitors share one R process,
+  # so environment variables would leak one visitor's key to everyone.
+  session_keys <- reactiveValues(elsevier = "", core = "", uspto = "")
+
+  resolve_api_key <- function(user_key, env_name) {
+    # 1. This visitor's own key (Priority)
+    if (!is.null(user_key) && nchar(trimws(user_key)) > 0) {
+      return(trimws(user_key))
     }
-    # 2. Fallback to Master Key (from .Renviron)
+    # 2. Fallback to server master key (.Renviron). Used silently, never shown in the UI.
     return(Sys.getenv(env_name))
   }
   
@@ -570,41 +575,6 @@ server <- function(input, output, session) {
     }
     return(FALSE)
   }
-  
-  # ========================================================================
-  # HAMBURGER MENU (Settings & API Keys) - FIXED (Brute Force Load)
-  # ========================================================================
-  observeEvent(input$optsBtn, {
-    
-    # 1. FORCE LOAD .Renviron (The Fix)
-    # We don't trust R's startup sequence. We read it right now.
-    if (file.exists(".Renviron")) {
-      readRenviron(".Renviron")
-    }
-    
-    # 2. Capture Inputs (Priority: User Input > .Renviron > Empty)
-    
-    # Resolve Elsevier
-    # Note: Using your preferred var name ELSEVIER_API_KEY
-    env_elsevier <- Sys.getenv("ELSEVIER_API_KEY") 
-    
-    current_elsevier <- if (!is.null(input$key_elsevier) && nchar(trimws(input$key_elsevier)) > 0) {
-      input$key_elsevier 
-    } else {
-      env_elsevier
-    }
-    
-    # Resolve CORE
-    env_core <- Sys.getenv("CORE_API_KEY")
-    
-    current_core <- if (!is.null(input$key_core) && nchar(trimws(input$key_core)) > 0) {
-      input$key_core 
-    } else {
-      env_core
-    }
-    
-    
-  })
   
   # ========================================================================
   # ADJUST FONT (Server-side logic)
@@ -665,9 +635,9 @@ server <- function(input, output, session) {
     withProgress(message = 'Querying databases...', value = 0, {
       
       # 1. RESOLVE KEYS
-      active_elsevier <- resolve_api_key(input$key_elsevier, "ELSEVIER_API_KEY")
-      active_core     <- resolve_api_key(input$key_core, "CORE_API_KEY")
-      active_uspto    <- resolve_api_key(input$key_uspto, "USPTO_API_KEY") # <--- Add this
+      active_elsevier <- resolve_api_key(session_keys$elsevier, "ELSEVIER_API_KEY")
+      active_core     <- resolve_api_key(session_keys$core, "CORE_API_KEY")
+      active_uspto    <- resolve_api_key(session_keys$uspto, "USPTO_API_KEY")
       
       # 2. DEFINE CALLBACK (The "Bridge")
       # We create a function that the backend can call safely.
@@ -1010,36 +980,11 @@ server <- function(input, output, session) {
   # ========================================================================
   observeEvent(input$optsBtn, {
     
-    # 1. FORCE LOAD .Renviron
-    if (file.exists(".Renviron")) {
-      readRenviron(".Renviron")
-    }
-    
-    # 2. Capture Inputs (Priority: User Input > .Renviron > Empty)
-    
-    # Resolve Elsevier
-    env_elsevier <- Sys.getenv("ELSEVIER_API_KEY") 
-    current_elsevier <- if (!is.null(input$key_elsevier) && nchar(trimws(input$key_elsevier)) > 0) {
-      input$key_elsevier 
-    } else {
-      env_elsevier
-    }
-    
-    # Resolve CORE
-    env_core <- Sys.getenv("CORE_API_KEY")
-    current_core <- if (!is.null(input$key_core) && nchar(trimws(input$key_core)) > 0) {
-      input$key_core 
-    } else {
-      env_core
-    }
-    
-    # Resolve USPTO (Patents)
-    env_uspto <- Sys.getenv("USPTO_API_KEY")
-    current_uspto <- if (!is.null(input$key_uspto) && nchar(trimws(input$key_uspto)) > 0) {
-      input$key_uspto 
-    } else {
-      env_uspto
-    }
+    # Prefill ONLY with keys this visitor entered in this session.
+    # Server keys from .Renviron are never sent to the browser.
+    current_elsevier <- isolate(session_keys$elsevier)
+    current_core     <- isolate(session_keys$core)
+    current_uspto    <- isolate(session_keys$uspto)
     
     # 3. Open the Modal
     showModal(modalDialog(
@@ -1118,13 +1063,17 @@ server <- function(input, output, session) {
               style = "color: #ccc; font-size: 0.85em; margin: 5px 0 0 0;")
           ),
           
-          textInput("key_elsevier", "Elsevier (Scopus/Embase):", value = current_elsevier, placeholder = "Enter Elsevier API Key"),
-          p("Required for Scopus & Embase.", style = "font-size: 0.8em; color: #666; margin-top: -10px; margin-bottom: 15px;"),
+          # Scopus field only appears when ENABLE_SCOPUS=1 (see orchestrate_extraction.R)
+          if (ENABLE_SCOPUS) tagList(
+            passwordInput("key_elsevier", "Elsevier (Scopus/Embase):", value = current_elsevier, placeholder = "Enter Elsevier API Key"),
+            p("Required for Scopus & Embase.", style = "font-size: 0.8em; color: #666; margin-top: -10px; margin-bottom: 15px;")
+          ) else p(icon("circle-pause"), " Scopus/Embase is currently unavailable.",
+                   style = "font-size: 0.85em; color: #888; margin-bottom: 15px;"),
           
-          textInput("key_core", "CORE Discovery:", value = current_core, placeholder = "Enter CORE API Key"),
+          passwordInput("key_core", "CORE Discovery:", value = current_core, placeholder = "Enter CORE API Key"),
           p("Required for full Open Access aggregation.", style = "font-size: 0.8em; color: #666; margin-top: -10px; margin-bottom: 25px;"),
           
-          textInput("key_uspto", "USPTO (PatentsView):", 
+          passwordInput("key_uspto", "USPTO (PatentsView):", 
                     value = current_uspto, 
                     placeholder = "Enter PatentsView API Key"),
           p("Required for Patent search.", style = "font-size: 0.8em; color: #666; margin-top: -10px; margin-bottom: 25px;"),
@@ -1246,22 +1195,10 @@ server <- function(input, output, session) {
     
     shinyjs::show("key_save_msg") # Show the little text message too
     
-    # 2. SET ENVIRONMENT VARIABLES
-    
-    # --- ELSEVIER ---
-    if (!is.null(input$key_elsevier) && nchar(input$key_elsevier) > 0) {
-      Sys.setenv(ELSEVIER_API_KEY = trimws(input$key_elsevier))
-    }
-    
-    # --- CORE ---
-    if (!is.null(input$key_core) && nchar(input$key_core) > 0) {
-      Sys.setenv(CORE_API_KEY = trimws(input$key_core))
-    }
-    
-    # --- USPTO ---
-    if (!is.null(input$key_uspto) && nchar(input$key_uspto) > 0) {
-      Sys.setenv(USPTO_API_KEY = trimws(input$key_uspto))
-    }
+    # 2. STORE KEYS IN THIS SESSION ONLY (empty box = no key)
+    session_keys$elsevier <- trimws(input$key_elsevier %||% "")
+    session_keys$core     <- trimws(input$key_core %||% "")
+    session_keys$uspto    <- trimws(input$key_uspto %||% "")
     
     # 3. Graceful Exit
     shinyjs::delay(1500, {
@@ -1561,7 +1498,8 @@ server <- function(input, output, session) {
       }
       
       # Return a clean empty plot to prevent Plotly grid artifacts
-      return(plotly::plot_ly() %>% 
+      return(plotly::plot_ly(source = "article_plot_click") %>% 
+               plotly::event_register("plotly_click") %>%
                plotly::layout(
                  title = list(text = msg, y = 0.5), 
                  xaxis = list(visible = FALSE),
