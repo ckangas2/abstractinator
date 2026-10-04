@@ -227,6 +227,25 @@ ui <- fluidPage(
   
   tags$head(
     tags$title("The Abstractinator"),
+    
+    # --- Icons (tab, bookmarks, phone home screens) ---
+    tags$link(rel = "icon", type = "image/x-icon", href = "favicon.ico"),
+    tags$link(rel = "icon", type = "image/png", sizes = "32x32", href = "favicon-32.png"),
+    tags$link(rel = "apple-touch-icon", sizes = "180x180", href = "apple-touch-icon.png"),
+    tags$link(rel = "manifest", href = "site.webmanifest"),
+    tags$meta(name = "theme-color", content = "#222222"),
+    
+    # --- Search engines & link previews (Slack, iMessage, Discord, X, ...) ---
+    tags$meta(name = "description", content = "Immunology & virology literature, searched across Europe PMC, OpenAlex, ClinicalTrials.gov, bioRxiv, NIH and NSF at once. Deduplicated and tagged by immune cell type and virus."),
+    tags$meta(property = "og:type", content = "website"),
+    tags$meta(property = "og:url", content = "https://abstractinator.me/"),
+    tags$meta(property = "og:title", content = "The Abstractinator"),
+    tags$meta(property = "og:description", content = "Immunology & virology literature, searched across databases at once."),
+    tags$meta(property = "og:image", content = "https://abstractinator.me/og-image.png"),
+    tags$meta(property = "og:image:width", content = "1200"),
+    tags$meta(property = "og:image:height", content = "630"),
+    tags$meta(name = "twitter:card", content = "summary_large_image"),
+    
     tags$link(rel = "stylesheet", type = "text/css", href = "styles.css"),
     tags$script(src = "script.js")
   ),

@@ -7,13 +7,17 @@ library(future)
 library(dplyr)
 
 Sys.setenv(INTEGRATE_NIH_NSF = "1")
-plan(multisession, workers = 8)
 
 # plumber switches into agent/ while loading this file, so go back to the
 # repo root (passed in by run_api.R) before loading the engine. Relative paths
 # like biorxiv_local_db/ and .cache/ then resolve exactly as they do for app.R.
 ROOT <- getOption("abstractinator.root", normalizePath(".."))
 setwd(ROOT)
+
+# Start background workers AFTER moving to the repo root: each worker keeps the
+# directory it was launched in, and bioRxiv searches look for biorxiv_local_db/
+# relative to it.
+plan(multisession, workers = 8)
 
 # Same engine + cache as app.R
 for (f in c("epmc_standalone_extraction.R", "CORE_extraction.R",
