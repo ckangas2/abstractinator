@@ -32,6 +32,10 @@ jobs:
             any::future
             any::promises
             any::arrow
+            any::plotly
+            any::ggplot2
+            any::forcats
+            any::ggbeeswarm
 
       - name: Run tests
         run: Rscript -e 'testthat::test_dir("tests/testthat", stop_on_failure = TRUE)'
