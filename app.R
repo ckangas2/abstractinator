@@ -33,14 +33,48 @@ plan(multisession, workers = 8)
 # harmless formatting tags, so a malicious record can never inject scripts or links.
 SAFE_HTML_TAGS <- "i|b|em|strong|sub|sup|br"
 
-sanitize_html <- function(x) {
+sanitize_html <- function(x, decode_entities = TRUE) {
   if (!is.character(x)) return(x)
-  out <- htmltools::htmlEscape(x)  # escapes & < > (quotes untouched, so JSON stays valid)
-  # Re-allow plain formatting tags (no attributes possible)
-  out <- gsub(paste0("&lt;(/?)(", SAFE_HTML_TAGS, ")\\s*/?&gt;"), "<\\1\\2>", out, ignore.case = TRUE)
-  # Keep existing character entities like &amp; or &#8211; from being double-escaped
+  na <- is.na(x)
+  out <- x
+  
+  # Some APIs send markup pre-escaped (&lt;i&gt;); decode once so it's handled
+  # like real markup. (Skipped for JSON columns, where &quot; could break parsing.)
+  if (decode_entities) {
+    out <- gsub("&lt;", "<", out, fixed = TRUE)
+    out <- gsub("&gt;", ">", out, fixed = TRUE)
+    out <- gsub("&quot;", "\"", out, fixed = TRUE)
+    out <- gsub("&#39;", "'", out, fixed = TRUE)
+    out <- gsub("&amp;", "&", out, fixed = TRUE)
+  }
+  
+  # Remove scripts/styles entirely (including their contents) and comments
+  out <- gsub("<(script|style)\\b[^>]*>.*?</\\1\\s*>", "", out, perl = TRUE, ignore.case = TRUE)
+  out <- gsub("<!--.*?-->", "", out, perl = TRUE)
+  
+  # Publisher XML (JATS) formatting -> plain formatting tags
+  out <- gsub("<(/?)(?:jats:)?italic\\b[^<>]*>", "<\\1i>", out, perl = TRUE, ignore.case = TRUE)
+  out <- gsub("<(/?)(?:jats:)?bold\\b[^<>]*>", "<\\1b>", out, perl = TRUE, ignore.case = TRUE)
+  out <- gsub("<(/?)jats:(sub|sup)\\b[^<>]*>", "<\\1\\2>", out, perl = TRUE, ignore.case = TRUE)
+  
+  # Block-level tags become spaces, so paragraphs don't run together
+  out <- gsub("</?(p|div|li|ul|ol|section|h[1-6]|jats:p|jats:title|jats:sec|jats:list-item)\\b[^<>]*>",
+              " ", out, perl = TRUE, ignore.case = TRUE)
+  
+  # Allowed tags: strip any attributes (<i onmouseover=...> -> <i>)
+  out <- gsub(paste0("<(/?)(", SAFE_HTML_TAGS, ")(\\s[^<>]*)?/?>"), "<\\1\\2>", out,
+              perl = TRUE, ignore.case = TRUE)
+  # Every other tag is removed, keeping the text inside it
+  out <- gsub(paste0("</?(?!(?:", SAFE_HTML_TAGS, ")>)[A-Za-z][A-Za-z0-9:_.-]*(\\s[^<>]*)?/?>"), "", out,
+              perl = TRUE, ignore.case = TRUE)
+  out <- trimws(gsub("[ \t]{2,}", " ", out))
+  
+  # Escape what's left (stray < > & become text), then re-allow the safe tags
+  out <- htmltools::htmlEscape(out)
+  out <- gsub(paste0("&lt;(/?)(", SAFE_HTML_TAGS, ")&gt;"), "<\\1\\2>", out, ignore.case = TRUE)
+  # Keep character entities like &#8211; from being double-escaped
   out <- gsub("&amp;(#[0-9]+|#[xX][0-9a-fA-F]+|[a-zA-Z][a-zA-Z0-9]{1,30});", "&\\1;", out)
-  out[is.na(x)] <- NA_character_
+  out[na] <- NA_character_
   out
 }
 
@@ -60,7 +94,8 @@ sanitize_results <- function(df) {
     } else if (col == "DOI") {
       df[[col]] <- gsub("[[:space:]\"'<>`]", "", as.character(df[[col]]))
     } else if (is.character(df[[col]])) {
-      df[[col]] <- sanitize_html(df[[col]])
+      # AuthorAffiliations is JSON text: clean it, but don't decode entities inside it
+      df[[col]] <- sanitize_html(df[[col]], decode_entities = (col != "AuthorAffiliations"))
     }
   }
   df
@@ -496,6 +531,32 @@ ui <- fluidPage(
              )
       )
     ),
+    
+    # --- Share links (plain links: no tracking scripts or third-party widgets) ---
+    local({
+      site  <- "https://abstractinator.me"
+      blurb <- "The Abstractinator: search immunology & virology literature across Europe PMC, OpenAlex, ClinicalTrials.gov, bioRxiv, NIH and NSF at once"
+      enc   <- function(x) utils::URLencode(x, reserved = TRUE)
+      share_btn <- function(label, ic, href) {
+        tags$a(href = href, target = "_blank", rel = "noopener",
+               class = "btn btn-sm btn-outline-secondary",
+               style = "margin: 3px; border-radius: 20px; font-size: 0.8em;",
+               icon(ic), paste0(" ", label))
+      }
+      div(
+        style = "margin-top: 30px; color: #aaa; font-size: 0.85em;",
+        span("Share The Abstractinator: ", style = "margin-right: 6px;"),
+        share_btn("LinkedIn", "linkedin", paste0("https://www.linkedin.com/sharing/share-offsite/?url=", enc(site))),
+        share_btn("X", "x-twitter", paste0("https://x.com/intent/post?text=", enc(blurb), "&url=", enc(site))),
+        share_btn("Bluesky", "bluesky", paste0("https://bsky.app/intent/compose?text=", enc(paste(blurb, site)))),
+        share_btn("Reddit", "reddit", paste0("https://www.reddit.com/submit?url=", enc(site), "&title=", enc(blurb))),
+        share_btn("Email", "envelope", paste0("mailto:?subject=", enc("The Abstractinator"), "&body=", enc(paste0(blurb, "\n\n", site)))),
+        tags$button(class = "btn btn-sm btn-outline-secondary",
+                    style = "margin: 3px; border-radius: 20px; font-size: 0.8em;",
+                    onclick = sprintf("navigator.clipboard.writeText('%s'); this.innerHTML = 'Link copied!';", site),
+                    icon("link"), " Copy link")
+      )
+    }),
     
     # --- Icon credits (required by the Flaticon free license) ---
     div(

@@ -43,19 +43,26 @@ get_nih_reporter_data <- function(search_term, desired_results = 300) {
       sort_order = "desc"
     )
     
-    # Execute API Call (Defensive)
-    response <- tryCatch({
-      httr::POST(
-        url = api_url,
-        body = jsonlite::toJSON(request_body, auto_unbox = TRUE),
-        encode = "json",
-        timeout(10),
-        add_headers("Content-Type" = "application/json", "Accept" = "application/json")
-      )
-    }, error = function(e) {
-      warning(paste("NIH API Connection Error:", e$message))
-      return(NULL)
-    })
+    # Execute API Call (Defensive, with retries)
+    # Up to 3 attempts with a 20s timeout: brief DNS/network hiccups reaching
+    # api.reporter.nih.gov otherwise drop NIH from the whole search.
+    response <- NULL
+    for (attempt in 1:3) {
+      response <- tryCatch({
+        httr::POST(
+          url = api_url,
+          body = jsonlite::toJSON(request_body, auto_unbox = TRUE),
+          encode = "json",
+          timeout(20),
+          add_headers("Content-Type" = "application/json", "Accept" = "application/json")
+        )
+      }, error = function(e) {
+        message(sprintf("NIH API connection error (attempt %d/3): %s", attempt, e$message))
+        NULL
+      })
+      if (!is.null(response) && httr::status_code(response) < 500) break
+      if (attempt < 3) Sys.sleep(2 * attempt)
+    }
     
     # Check Status
     if (is.null(response) || httr::http_error(response)) {
@@ -104,7 +111,7 @@ get_nih_reporter_data <- function(search_term, desired_results = 300) {
   }
   
   # logical binding handling mismatched columns automatically
-  final_df <- dplyr::bind_rows(results_accumulator) 
+  final_df <- head(dplyr::bind_rows(results_accumulator), desired_results) 
   
   return(final_df)
 }
