@@ -7,7 +7,7 @@ CACHE_DIR <- ".cache/s3_mimic/"
 if (!dir.exists(CACHE_DIR)) dir.create(CACHE_DIR, recursive = TRUE)
 
 # --- KEY GENERATION ---
-get_cache_key <- function(search_term, has_elsevier = FALSE, has_uspto = FALSE, has_core = FALSE) {
+get_cache_key <- function(search_term, has_elsevier = FALSE, has_uspto = FALSE, has_core = FALSE, limit = 50) {
   clean_term <- tolower(trimws(search_term))
   
   signature <- paste0(
@@ -16,18 +16,23 @@ get_cache_key <- function(search_term, has_elsevier = FALSE, has_uspto = FALSE, 
     "|uspto:", isTRUE(has_uspto),
     "|core:", isTRUE(has_core)
   )
+  # Deep searches (limit != 50) get their own cache entries. Standard searches keep
+  # the original signature, so existing cache files stay valid.
+  if (!is.null(limit) && as.integer(limit) != 50L) {
+    signature <- paste0(signature, "|limit:", as.integer(limit))
+  }
   
   file_hash <- digest::digest(signature, algo = "md5")
   return(paste0(file_hash, ".rds"))
 }
 
 # --- CHECK ---
-check_s3_cache <- function(search_term, elsevier_key = NULL, uspto_key = NULL, core_key = NULL, max_age_days = 7) {
+check_s3_cache <- function(search_term, elsevier_key = NULL, uspto_key = NULL, core_key = NULL, max_age_days = 7, limit = 50) {
   has_elsevier <- !is.null(elsevier_key) && nchar(trimws(elsevier_key)) > 0
   has_uspto    <- !is.null(uspto_key) && nchar(trimws(uspto_key)) > 0
   has_core     <- !is.null(core_key) && nchar(trimws(core_key)) > 0
   
-  s3_file <- get_cache_key(search_term, has_elsevier, has_uspto, has_core)
+  s3_file <- get_cache_key(search_term, has_elsevier, has_uspto, has_core, limit)
   full_path <- file.path(CACHE_DIR, s3_file)
   
   if (!file.exists(full_path)) return(FALSE)
@@ -45,12 +50,12 @@ check_s3_cache <- function(search_term, elsevier_key = NULL, uspto_key = NULL, c
 }
 
 # --- FETCH ---
-fetch_from_s3 <- function(search_term, elsevier_key = NULL, uspto_key = NULL, core_key = NULL) {
+fetch_from_s3 <- function(search_term, elsevier_key = NULL, uspto_key = NULL, core_key = NULL, limit = 50) {
   has_elsevier <- !is.null(elsevier_key) && nchar(trimws(elsevier_key)) > 0
   has_uspto    <- !is.null(uspto_key) && nchar(trimws(uspto_key)) > 0
   has_core     <- !is.null(core_key) && nchar(trimws(core_key)) > 0
   
-  s3_file <- get_cache_key(search_term, has_elsevier, has_uspto, has_core)
+  s3_file <- get_cache_key(search_term, has_elsevier, has_uspto, has_core, limit)
   full_path <- file.path(CACHE_DIR, s3_file)
   
   message(sprintf("[LocalCache] Fetching partition: %s (E:%s U:%s C:%s)", search_term, has_elsevier, has_uspto, has_core))
@@ -66,12 +71,12 @@ fetch_from_s3 <- function(search_term, elsevier_key = NULL, uspto_key = NULL, co
 }
 
 # --- SAVE ---
-save_to_s3 <- function(search_term, data, elsevier_key = NULL, uspto_key = NULL, core_key = NULL) {
+save_to_s3 <- function(search_term, data, elsevier_key = NULL, uspto_key = NULL, core_key = NULL, limit = 50) {
   has_elsevier <- !is.null(elsevier_key) && nchar(trimws(elsevier_key)) > 0
   has_uspto    <- !is.null(uspto_key) && nchar(trimws(uspto_key)) > 0 # Fixed the logic error from original if needed, but keeping consistent with pattern
   has_core     <- !is.null(core_key) && nchar(trimws(core_key)) > 0
   
-  s3_file <- get_cache_key(search_term, has_elsevier, has_uspto, has_core)
+  s3_file <- get_cache_key(search_term, has_elsevier, has_uspto, has_core, limit)
   full_path <- file.path(CACHE_DIR, s3_file)
   
   message(sprintf("[LocalCache] Saving partition: %s (E:%s U:%s C:%s)", search_term, has_elsevier, has_uspto, has_core))

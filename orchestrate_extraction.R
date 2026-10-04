@@ -283,83 +283,68 @@ timed <- function(label, expr) {
 }
 
 # ==============================================================================
-# MAIN ORCHESTRATOR (CREDENTIAL-AWARE S3)
+# MAIN ORCHESTRATOR (CREDENTIAL-AWARE CACHE)
 # ==============================================================================
+# The search is split into three steps shared by both entry points:
+#   1. get_cached_extraction()     - return a fresh cached result if we have one
+#   2. dispatch_source_futures()   - start every database query as a background job
+#   3. finish_extraction()         - combine, deduplicate, tag, cache
+# orchestrate_data_extraction_cached() waits for step 2 (used by the API/scripts).
+# orchestrate_data_extraction_async() returns a promise instead (used by the
+# website via ExtendedTask, so one visitor's search never freezes the others).
 
-orchestrate_data_extraction_cached <- function(search_term, limit = 50, elsevier_key = NULL, core_key = NULL, uspto_key = NULL, update_progress = NULL) {
-  
-  # --- [NEW] PROGRESS HELPER WITH UI FLUSH ---
-  report_status <- function(step, text) {
-    if (is.function(update_progress)) {
-      # Shiny sends progress messages immediately, so no pause is needed here.
-      update_progress(step_val = step, detail_text = text)
-    }
-  }
-  
-  # Scopus disabled: drop the key so it's skipped everywhere (search, cache keys, logs)
-  if (!ENABLE_SCOPUS) elsevier_key <- NULL
-  
-  report_status(0.05, "Checking Local Cache...")
-  
-  # --------------------------------------------------------------------------
-  # 1. GLOBAL CACHE CHECK
-  # --------------------------------------------------------------------------
-  if (check_s3_cache(search_term, elsevier_key = elsevier_key, uspto_key = uspto_key, core_key = core_key, max_age_days = 7)) {
-    
-    cached_result <- fetch_from_s3(search_term, elsevier_key = elsevier_key, uspto_key = uspto_key, core_key = core_key)
-    
+DEEP_SEARCH_LIMIT <- 250L  # per-source cap for "deep search" (standard is 50)
+
+# --- STEP 1: CACHE ---
+get_cached_extraction <- function(search_term, limit, elsevier_key, core_key, uspto_key) {
+  if (check_s3_cache(search_term, elsevier_key = elsevier_key, uspto_key = uspto_key,
+                     core_key = core_key, max_age_days = 7, limit = limit)) {
+    cached_result <- fetch_from_s3(search_term, elsevier_key = elsevier_key, uspto_key = uspto_key,
+                                   core_key = core_key, limit = limit)
     if (!is.null(cached_result)) {
-      report_status(0.5, "Cache Hit! Loading local binary blob...") 
       return(list(
-        deduplicated_data = cached_result, 
+        deduplicated_data = cached_result,
         original_combined_data = cached_result,
-        metadata = list(source = "CACHE", timestamp = Sys.time()) 
+        metadata = list(source = "CACHE", timestamp = Sys.time())
       ))
     }
   }
+  NULL
+}
+
+# --- STEP 2: START ALL SOURCES IN PARALLEL ---
+# Returns a named list of futures, one per source that applies to this search.
+dispatch_source_futures <- function(search_term, limit, elsevier_key, core_key, uspto_key) {
+  f <- list()
   
-  message(sprintf("[Orchestrator] Cache MISS: Initiating multi-source extraction for '%s'...", search_term))
-  report_status(0.05, "Initializing Extraction Agents...")
-  
-  # --------------------------------------------------------------------------
-  # 2. PART A: PUBLIC & OPEN DATA
-  # --------------------------------------------------------------------------
-  
-  report_status(0.1, "Dispatching Open Access Workers...")
-  
-  # 1. Always Run
-  future_epmc <- future({ timed("EPMC", get_epmc_data(search_term, page_size = min(limit, 1000), max_results = limit)) })
-  future_clinical_trials <- future({ timed("ClinicalTrials", get_clinical_trials_data(search_term, limit = limit)) })
-  future_biorxiv <- future({ timed("bioRxiv", get_biorxiv_data(search_term, limit = limit)) })
+  # Always run
+  f$EPMC <- future({ timed("EPMC", get_epmc_data(search_term, page_size = min(limit, 1000), max_results = limit)) })
+  f$`clinicaltrials.gov` <- future({ timed("ClinicalTrials", get_clinical_trials_data(search_term, limit = limit)) })
+  f$bioRxiv <- future({ timed("bioRxiv", get_biorxiv_data(search_term, limit = limit)) })
   
   user_email <- Sys.getenv("USER_EMAIL")
   if (user_email == "") user_email <- NULL
-  future_openalex <- future({ 
+  f$OpenAlex <- future({
     print("    > Dispatching OpenAlex Worker...")
     timed("OpenAlex", get_openalex_data(search_term, mailto = user_email, max_results = limit, per_page = 200))
   })
   
-  # 2. Conditional Run (CORE)
-  future_core <- if (!is.null(core_key) && nchar(core_key) > 0) {
+  # Conditional: CORE
+  if (!is.null(core_key) && nchar(core_key) > 0) {
     print("    > Dispatching CORE Worker...")
-    future({ timed("CORE", get_core_data(search_term, limit = limit, api_key = core_key)) })
-  } else { NULL }
+    f$CORE <- future({ timed("CORE", get_core_data(search_term, limit = limit, api_key = core_key)) })
+  }
   
-  # 3. Conditional Run (PatentsView)
-  future_patents <- if (!is.null(uspto_key) && nchar(uspto_key) > 0) {
+  # Conditional: PatentsView
+  if (!is.null(uspto_key) && nchar(uspto_key) > 0) {
     print("    > Dispatching PatentsView Worker...")
-    future({ timed("PatentsView", get_patentsview_data(search_term, limit = limit, api_key = uspto_key)) })
-  } else { NULL }
+    f$Patent <- future({ timed("PatentsView", get_patentsview_data(search_term, limit = limit, api_key = uspto_key)) })
+  }
   
-  # --------------------------------------------------------------------------
-  # 3. PART B: RESTRICTED DATA (Scopus)
-  # --------------------------------------------------------------------------
-  # Previously ran on the main thread, so every other source waited on it.
-  # Now it runs in its own worker alongside the open-access sources.
-  future_scopus <- if (!is.null(elsevier_key) && nchar(elsevier_key) > 0) {
-    report_status(0.05, "Dispatching Scopus/Embase Worker...")
-    scopus_cache_key <- paste0(search_term, "_scopus")
-    future({
+  # Conditional: Scopus (only when ENABLE_SCOPUS=1 and a key is present)
+  if (!is.null(elsevier_key) && nchar(elsevier_key) > 0) {
+    scopus_cache_key <- paste0(search_term, "_scopus", if (limit != 50) paste0("_", limit) else "")
+    f$Scopus <- future({
       timed("Scopus", tryCatch({
         res <- NULL
         if (check_s3_cache(scopus_cache_key, max_age_days = 7)) {
@@ -382,22 +367,16 @@ orchestrate_data_extraction_cached <- function(search_term, limit = 50, elsevier
     })
   } else {
     print(if (ENABLE_SCOPUS) "    > No Elsevier Key - Skipping Scopus" else "    > Scopus disabled (ENABLE_SCOPUS != 1)")
-    NULL
   }
   
-  # --------------------------------------------------------------------------
-  # 4. PART C: NIH & NSF (also background workers, started now)
-  # --------------------------------------------------------------------------
-  integrate_nih_nsf <- Sys.getenv("INTEGRATE_NIH_NSF") == "1"
-  future_nih <- if (integrate_nih_nsf) {
+  # Conditional: NIH & NSF
+  if (Sys.getenv("INTEGRATE_NIH_NSF") == "1") {
     print("    > Dispatching NIH & NSF Workers...")
-    future({
+    f$NIH <- future({
       timed("NIH", tryCatch(get_nih_reporter_data(search_term, desired_results = limit),
                             error = function(e) data.frame()))
     })
-  } else NULL
-  future_nsf <- if (integrate_nih_nsf) {
-    future({
+    f$NSF <- future({
       timed("NSF", tryCatch(
         get_all_nsf_awards_baseR_v2(
           search_term,
@@ -409,44 +388,31 @@ orchestrate_data_extraction_cached <- function(search_term, limit = 50, elsevier
           data.frame()
         }))
     })
-  } else NULL
-  
-  # --- COLLECT RESULTS ---
-  # Crucial: We announce this BEFORE calling value(), which freezes the app.
-  report_status(0.1, "Waiting for Workers to Return...") 
-  
-  epmc <- value(future_epmc)
-  oa   <- value(future_openalex) 
-  ct   <- value(future_clinical_trials)
-  bx   <- value(future_biorxiv)
-  core <- if (!is.null(future_core)) value(future_core) else NULL
-  pt   <- if (!is.null(future_patents)) value(future_patents) else NULL
-  restricted_data <- if (!is.null(future_scopus)) value(future_scopus) else NULL
-  
-  report_status(0.1, "Binding Data Sources...")
-  public_data <- bind_rows(list(
-    EPMC = epmc, 
-    OpenAlex = oa, 
-    CORE = core, 
-    `clinicaltrials.gov` = ct, 
-    bioRxiv = bx,
-    Patent = pt
-  ), .id = "Source_Label")
-  
-  nih_nsf_merged <- NULL
-  if (integrate_nih_nsf) {
-    report_status(0.1, "Merging NIH & NSF...")
-    nih_raw <- value(future_nih)
-    nsf_raw <- value(future_nsf)
-    nih_nsf_merged <- merge_nih_nsf_to_schema(nih_raw, nsf_raw)
   }
   
-  # --------------------------------------------------------------------------
-  # 5. PART C: COMBINE & PROCESS
-  # --------------------------------------------------------------------------
-  print("--- Processing Combined Results ---")
-  report_status(0.1, "Deduplicating Records...")
+  f
+}
+
+# --- STEP 3: COMBINE, DEDUPLICATE, TAG, CACHE ---
+# 'vals' is the named list of source results (same names as dispatch_source_futures).
+finish_extraction <- function(search_term, vals, limit, elsevier_key, core_key, uspto_key) {
+  public_data <- bind_rows(list(
+    EPMC = vals$EPMC, 
+    OpenAlex = vals$OpenAlex, 
+    CORE = vals$CORE, 
+    `clinicaltrials.gov` = vals$`clinicaltrials.gov`, 
+    bioRxiv = vals$bioRxiv,
+    Patent = vals$Patent
+  ), .id = "Source_Label")
   
+  restricted_data <- vals$Scopus
+  
+  nih_nsf_merged <- NULL
+  if (Sys.getenv("INTEGRATE_NIH_NSF") == "1") {
+    nih_nsf_merged <- merge_nih_nsf_to_schema(vals$NIH, vals$NSF)
+  }
+  
+  print("--- Processing Combined Results ---")
   combined_data <- bind_rows(public_data, restricted_data, nih_nsf_merged, .id = "Source_Label")
   
   if (nrow(combined_data) == 0) {
@@ -458,18 +424,12 @@ orchestrate_data_extraction_cached <- function(search_term, limit = 50, elsevier
   dedup_results <- deduplicate_data(combined_data)
   final_data <- dedup_results$deduplicated
   
-  # --------------------------------------------------------------------------
-  # 5. PART D: CLEANUP & FORMATTING
-  # --------------------------------------------------------------------------
+  # Cleanup & formatting
   if (!"AuthorAffiliations" %in% names(final_data) || all(is.na(final_data$AuthorAffiliations))) {
     final_data <- process_affiliations_for_shiny(final_data)
   }
   
-  # --------------------------------------------------------------------------
-  # 6. PART E: HIT DETECTION & BIOINFORMATICS FLAG
-  # --------------------------------------------------------------------------
-  report_status(0.1, "Running Hit Detection (Viruses/Cells)...")
-  
+  # Hit detection (viruses / immune cells)
   if (exists("immune_cell_alias_list") && exists("virus_alias_expanded")) {
     immune_cell_alias_list_lower <- lapply(immune_cell_alias_list, tolower)
     virus_alias_expanded_lower <- lapply(virus_alias_expanded, tolower)
@@ -484,9 +444,8 @@ orchestrate_data_extraction_cached <- function(search_term, limit = 50, elsevier
     final_data <- perform_hit_detection(final_data, immune_regex_list, virus_regex_list)
   }
   
-  # FAST: Vectorized check
+  # Bioinformatics flag (vectorized)
   bio_regex <- paste(bioinformatics_keywords_lower, collapse = "|")
-  
   final_data <- final_data %>%
     mutate(
       combined_text = paste(tolower(Title), tolower(Abstract)),
@@ -496,17 +455,59 @@ orchestrate_data_extraction_cached <- function(search_term, limit = 50, elsevier
   
   final_output <- final_data %>% distinct(DOI, Title, .keep_all = TRUE)
   
-  # --------------------------------------------------------------------------
-  # 7. GLOBAL CACHE SAVE
-  # --------------------------------------------------------------------------
-  report_status(0.1, "Finalizing & Caching...")
+  save_to_s3(search_term, final_output, elsevier_key = elsevier_key, uspto_key = uspto_key,
+             core_key = core_key, limit = limit)
   
-  save_to_s3(search_term, final_output, elsevier_key = elsevier_key, uspto_key = uspto_key, core_key = core_key)
-  
-  return(list(
+  list(
     deduplicated_data = final_output, 
     original_combined_data = combined_data,
     metadata = list(source = "API", timestamp = Sys.time()) 
-  ))
+  )
 }
 
+# --- ENTRY POINT A: SYNCHRONOUS (API, scripts, agent_api.R) ---
+orchestrate_data_extraction_cached <- function(search_term, limit = 50, elsevier_key = NULL, core_key = NULL, uspto_key = NULL, update_progress = NULL) {
+  
+  report_status <- function(step, text) {
+    # Shiny sends progress messages immediately, so no pause is needed here.
+    if (is.function(update_progress)) update_progress(step_val = step, detail_text = text)
+  }
+  
+  # Scopus disabled: drop the key so it's skipped everywhere (search, cache keys, logs)
+  if (!ENABLE_SCOPUS) elsevier_key <- NULL
+  
+  report_status(0.05, "Checking Local Cache...")
+  cached <- get_cached_extraction(search_term, limit, elsevier_key, core_key, uspto_key)
+  if (!is.null(cached)) {
+    report_status(0.5, "Cache Hit! Loading local binary blob...")
+    return(cached)
+  }
+  
+  message(sprintf("[Orchestrator] Cache MISS: Initiating multi-source extraction for '%s' (limit %d)...", search_term, as.integer(limit)))
+  report_status(0.1, "Dispatching Workers...")
+  futures <- dispatch_source_futures(search_term, limit, elsevier_key, core_key, uspto_key)
+  
+  report_status(0.2, "Waiting for Workers to Return...")
+  vals <- lapply(futures, value)
+  
+  report_status(0.3, "Deduplicating & Running Hit Detection...")
+  finish_extraction(search_term, vals, limit, elsevier_key, core_key, uspto_key)
+}
+
+# --- ENTRY POINT B: ASYNCHRONOUS (website, via shiny::ExtendedTask) ---
+# Returns a promise. The main R process is free while the sources are queried;
+# only the quick combine/dedup step runs on it when all results are back.
+orchestrate_data_extraction_async <- function(search_term, limit = 50, elsevier_key = NULL, core_key = NULL, uspto_key = NULL) {
+  if (!ENABLE_SCOPUS) elsevier_key <- NULL
+  
+  cached <- get_cached_extraction(search_term, limit, elsevier_key, core_key, uspto_key)
+  if (!is.null(cached)) return(promises::promise_resolve(cached))
+  
+  message(sprintf("[Orchestrator] Cache MISS: Initiating multi-source extraction for '%s' (limit %d)...", search_term, as.integer(limit)))
+  futures <- dispatch_source_futures(search_term, limit, elsevier_key, core_key, uspto_key)
+  
+  promises::then(
+    promises::promise_all(.list = lapply(futures, promises::as.promise)),
+    onFulfilled = function(vals) finish_extraction(search_term, vals, limit, elsevier_key, core_key, uspto_key)
+  )
+}

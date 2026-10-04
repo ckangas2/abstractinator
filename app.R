@@ -324,6 +324,14 @@ ui <- fluidPage(
       
     ), # Closes search-container-with-icons
     
+    # Deep search toggle (standard = 50 results per source)
+    div(
+      style = "margin-top: 8px; color: #aaa; font-size: 0.9em;",
+      checkboxInput("deepSearch",
+                    label = span(icon("layer-group"), " Deep search: up to 250 results per source (slower)"),
+                    value = FALSE)
+    ),
+    
     # --- MOVED HERE: QUICK LAUNCH (Inside the Glass) ---
     div(
       style = "margin-top: 25px;", # Add spacing from the search bar
@@ -537,6 +545,20 @@ server <- function(input, output, session) {
   # This bypasses the UI delay that was causing the crash
   active_search_term <- reactiveVal("")
   
+  # Every search goes through request_search(). The nonce makes repeat searches
+  # of the same term (e.g. standard, then deep) still trigger.
+  search_request <- reactiveVal(NULL)
+  request_search <- function(term) {
+    deep <- isTRUE(input$deepSearch)
+    active_search_term(term)
+    search_request(list(
+      term  = term,
+      deep  = deep,
+      limit = if (deep) DEEP_SEARCH_LIMIT else 50L,
+      nonce = runif(1)
+    ))
+  }
+  
   # --- [INSERT HERE: HELPER FUNCTION] ---
   # Keys typed by THIS visitor live only in this session object.
   # Never use Sys.setenv() for user keys: all visitors share one R process,
@@ -648,14 +670,28 @@ server <- function(input, output, session) {
   # ========================================================================
   # SEARCH BUTTON LOGIC
   # ========================================================================
-  observeEvent(active_search_term(), {
-    
-    # --- CRITICAL SAFETY CHECK ---
-    # This stops the function if the term is empty (Prevents the crash)
-    search_term <- active_search_term()
-    req(search_term) 
+  # Background search task. Runs the search as a promise so this visitor's
+  # search never freezes the app for anyone else (all visitors share one R process).
+  search_ctx <- new.env()
+  search_task <- ExtendedTask$new(function(term, elsevier, core, uspto, limit) {
+    orchestrate_data_extraction_async(
+      search_term = term, limit = limit,
+      elsevier_key = elsevier, core_key = core, uspto_key = uspto
+    )
+  })
+  
+  # --- 1. START A SEARCH ---
+  observeEvent(search_request(), {
+    req_info <- search_request()
+    search_term <- req_info$term
+    req(search_term)
     if (nchar(trimws(search_term)) == 0) return()
-    # -----------------------------
+    
+    if (search_task$status() == "running") {
+      showNotification("A search is already running for you. Results will appear shortly.",
+                       type = "warning", duration = 4)
+      return()
+    }
     
     shinyjs::hide("landing_container")
     
@@ -687,59 +723,63 @@ server <- function(input, output, session) {
     
     session$sendCustomMessage(type = 'toggle_feedback', message = list(show = FALSE))
     
-    withProgress(message = 'Querying databases...', value = 0, {
+    # Remember what this search is, for when the results come back
+    search_ctx$term       <- search_term
+    search_ctx$start_time <- start_time
+    search_ctx$deep       <- isTRUE(req_info$deep)
+    search_ctx$elsevier   <- resolve_api_key(session_keys$elsevier, "ELSEVIER_API_KEY")
+    search_ctx$core       <- resolve_api_key(session_keys$core, "CORE_API_KEY")
+    search_ctx$uspto      <- resolve_api_key(session_keys$uspto, "USPTO_API_KEY")
+    
+    session$sendCustomMessage(type = 'update_loading_message',
+      message = if (search_ctx$deep) "Deep search: querying databases, this can take a minute" else "Querying databases")
+    
+    search_task$invoke(search_term, search_ctx$elsevier, search_ctx$core, search_ctx$uspto, req_info$limit)
+  })
+  
+  # --- 2. RESULTS ARRIVED (or the search failed) ---
+  observeEvent(search_task$status(), {
+    st <- search_task$status()
+    if (st %in% c("initial", "running")) return()
+    
+    extraction_results <- if (st == "success") {
+      search_task$result()
+    } else {
+      err <- tryCatch(search_task$result(), error = function(e) e)
+      msg <- if (inherits(err, "condition")) conditionMessage(err) else "unknown error"
+      message("[Search] Failed: ", msg)
+      showNotification(paste("Search failed:", msg), type = "error", duration = 8)
+      list(deduplicated_data = NULL, original_combined_data = NULL)
+    }
+    
+    search_term     <- search_ctx$term
+    start_time      <- search_ctx$start_time
+    active_elsevier <- search_ctx$elsevier
+    active_core     <- search_ctx$core
+    active_uspto    <- search_ctx$uspto
+    
+    rv$initial_extracted_data <- extraction_results$original_combined_data 
+    
+    
+    if (!is.null(extraction_results$deduplicated_data)) {
+      rv$article_df(extraction_results$deduplicated_data)
+    } else {
+      rv$article_df(NULL)
+    }
+    
+    if (!is.null(rv$article_df())) {
       
-      # 1. RESOLVE KEYS
-      active_elsevier <- resolve_api_key(session_keys$elsevier, "ELSEVIER_API_KEY")
-      active_core     <- resolve_api_key(session_keys$core, "CORE_API_KEY")
-      active_uspto    <- resolve_api_key(session_keys$uspto, "USPTO_API_KEY")
+      rv$deduplication_table <- verify_deduplication(rv$article_df(), rv$initial_extracted_data)
       
-      # 2. DEFINE CALLBACK (The "Bridge")
-      # We create a function that the backend can call safely.
-      # It checks if we are still active and increments the bar.
-      progress_callback <- function(step_val = NULL, detail_text = NULL) {
-        # 'step_val' is how much to ADD to the bar (e.g., 0.1)
-        # 'detail_text' is the text to display (e.g., "Scanning USPTO...")
-        if (!is.null(step_val)) incProgress(step_val)
-        if (!is.null(detail_text)) incProgress(amount = 0, detail = detail_text)
-      }
+      updateSelectInput(session, "primaryCellFilter",
+                        choices = c("All", unique(rv$article_df()$primary_cell)))
+      updateSelectInput(session, "primaryVirusFilter",
+                        choices = c("All", unique(rv$article_df()$primary_virus)))
       
-      # 3. CALL ORCHESTRATOR (With Injection)
-      # We pass the callback function as a new argument 'update_progress'
-      extraction_results <- orchestrate_data_extraction_cached(
-        search_term = search_term,
-        elsevier_key = active_elsevier,
-        core_key = active_core,
-        uspto_key = active_uspto,
-        update_progress = progress_callback # <--- INJECTION POINT
-      )
-      
-      rv$initial_extracted_data <- extraction_results$original_combined_data 
-      
-      # Finalize (Jump to 100% implicitly when done)
-      incProgress(0.1, detail = "Deduplicating & Rendering...")
-      
-      if (!is.null(extraction_results$deduplicated_data)) {
-        rv$article_df(extraction_results$deduplicated_data)
-      } else {
-        rv$article_df(NULL)
-      }
-      
-      if (!is.null(rv$article_df())) {
-        
-        rv$deduplication_table <- verify_deduplication(rv$article_df(), rv$initial_extracted_data)
-        
-        updateSelectInput(session, "primaryCellFilter",
-                          choices = c("All", unique(rv$article_df()$primary_cell)))
-        updateSelectInput(session, "primaryVirusFilter",
-                          choices = c("All", unique(rv$article_df()$primary_virus)))
-        
-        shinyjs::show("results_container") 
-        incProgress(1)
-      } else {
-        shinyjs::hide("results_container")
-      }
-    })
+      shinyjs::show("results_container") 
+    } else {
+      shinyjs::hide("results_container")
+    }
     
     if (!is.null(rv$article_df())) {
       end_time <- Sys.time()
@@ -759,7 +799,7 @@ server <- function(input, output, session) {
       
       # 4. LOG TO S3 (Synchronous)
       log_search_to_s3(
-        search_term = input$searchTerm,
+        search_term = search_term,
         duration_sec = search_duration,
         result_count = log_count,
         source_type = log_source,
@@ -928,7 +968,7 @@ server <- function(input, output, session) {
       shinyjs::hide("deduplicationSummarySection")
       session$sendCustomMessage(type = 'hide_loading', message = list())
     }
-  })
+  }, ignoreInit = TRUE)
   
   # ========================================================================
   # REMOVE FROM READING LIST LOGIC
@@ -972,7 +1012,7 @@ server <- function(input, output, session) {
   # When user types and clicks search, we feed the reactive value
   observeEvent(input$searchButton, {
     req(input$searchTerm)
-    active_search_term(input$searchTerm) 
+    request_search(input$searchTerm)
   })
   
   # B. Quick Launch Chips (Direct Feed)
@@ -980,22 +1020,22 @@ server <- function(input, output, session) {
   
   observeEvent(input$btn_oncolytic_virus, {
     updateTextInput(session, "searchTerm", value = "Oncolytic Virus")
-    active_search_term("Oncolytic Virus") # <--- Sends text immediately to logic
+    request_search("Oncolytic Virus")
   })
   
   observeEvent(input$btn_tvec, {
     updateTextInput(session, "searchTerm", value = "T-VEC")
-    active_search_term("T-VEC") 
+    request_search("T-VEC")
   })
   
   observeEvent(input$btn_melanoma, {
     updateTextInput(session, "searchTerm", value = "Melanoma")
-    active_search_term("Melanoma") 
+    request_search("Melanoma")
   })
   
   observeEvent(input$btn_scseq, {
     updateTextInput(session, "searchTerm", value = "scRNA-seq")
-    active_search_term("scRNA-seq") 
+    request_search("scRNA-seq")
   })
   
 

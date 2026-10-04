@@ -65,9 +65,10 @@ function() list(status = "ok", time = format(Sys.time(), "%Y-%m-%d %H:%M:%S %Z")
 #* @param q Search term (1-200 characters)
 #* @param limit Maximum results to return, 1-100 (default 25)
 #* @param abstract_chars Truncate each abstract to this many characters; 0 omits abstracts (default 1500)
+#* @param deep "true" for a deep search: up to 250 results per source instead of 50 (slower)
 #* @get /search
 #* @serializer unboxedJSON
-function(req, res, q = "", limit = 25, abstract_chars = 1500) {
+function(req, res, q = "", limit = 25, abstract_chars = 1500, deep = "false") {
   q <- trimws(as.character(q))
   if (!nzchar(q) || nchar(q) > MAX_QUERY_CHARS) {
     res$status <- 400
@@ -80,13 +81,16 @@ function(req, res, q = "", limit = 25, abstract_chars = 1500) {
   if (is.na(abstract_chars)) abstract_chars <- 1500L
   abstract_chars <- max(0L, min(abstract_chars, 10000L))
 
+  deep <- tolower(as.character(deep)) %in% c("true", "1", "yes")
+  per_source <- if (deep) DEEP_SEARCH_LIMIT else 50L
+
   # Optional bring-your-own keys via headers (never logged or stored)
   core_key  <- trimws(req$HTTP_X_CORE_KEY %||% "")
   uspto_key <- trimws(req$HTTP_X_USPTO_KEY %||% "")
 
   t0 <- Sys.time()
   out <- tryCatch(
-    orchestrate_data_extraction_cached(search_term = q, core_key = core_key, uspto_key = uspto_key),
+    orchestrate_data_extraction_cached(search_term = q, limit = per_source, core_key = core_key, uspto_key = uspto_key),
     error = function(e) e
   )
   if (inherits(out, "error")) {
@@ -97,6 +101,7 @@ function(req, res, q = "", limit = 25, abstract_chars = 1500) {
   df <- out$deduplicated_data
   base <- list(
     query = q,
+    deep = deep,
     from_cache = identical(out$metadata$source, "CACHE"),
     seconds = round(as.numeric(difftime(Sys.time(), t0, units = "secs")), 1)
   )

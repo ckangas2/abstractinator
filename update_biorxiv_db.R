@@ -97,6 +97,16 @@ get_content_data <- function(start_d, end_d) {
   bind_rows(all_hits)
 }
 
+# --- SAFE WRITE ---------------------------------------------------------------
+# Write to a hidden temp file, then rename over the real one. The rename is
+# atomic, so a search running at that moment sees either the old file or the
+# new one, never a half-written file. (Arrow ignores files starting with ".")
+write_parquet_atomic <- function(df, file_path) {
+  tmp_path <- file.path(dirname(file_path), paste0(".", basename(file_path), ".tmp"))
+  arrow::write_parquet(df, tmp_path)
+  if (!file.rename(tmp_path, file_path)) stop("Could not replace ", file_path)
+}
+
 # ==============================================================================
 # MAIN LOGIC
 # ==============================================================================
@@ -146,10 +156,10 @@ tryCatch({
           distinct(DOI, .keep_all = TRUE) %>%
           arrange(desc(PublicationDate))
         
-        arrow::write_parquet(combined_df, file_path)
+        write_parquet_atomic(combined_df, file_path)
       } else {
         # Create a new partition file if the year just rolled over
-        arrow::write_parquet(yr_data %>% arrange(desc(PublicationDate)), file_path)
+        write_parquet_atomic(yr_data %>% arrange(desc(PublicationDate)), file_path)
       }
     }
     

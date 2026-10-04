@@ -1,0 +1,8 @@
+# /etc/cron.d/abstractinator  -- scheduled jobs for The Abstractinator
+# Install:  sudo cp deploy/abstractinator.cron /etc/cron.d/abstractinator
+# Format:   minute hour day-of-month month day-of-week USER command
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+# Every day at 4:15am: pull new bioRxiv/medRxiv preprints into biorxiv_local_db/
+15 4 * * * shiny cd /srv/shiny-server/abstractinator && /usr/bin/Rscript update_biorxiv_db.R >> logs/biorxiv_update.log 2>&1

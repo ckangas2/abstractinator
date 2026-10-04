@@ -27,7 +27,9 @@ mcp = MCPServer(
 
 
 @mcp.tool()
-async def search_literature(query: str, max_results: int = 25, abstract_chars: int = 1500) -> dict:
+async def search_literature(
+    query: str, max_results: int = 25, abstract_chars: int = 1500, deep: bool = False
+) -> dict:
     """Search immunology/virology literature across several databases at once.
 
     Queries Europe PMC, OpenAlex, ClinicalTrials.gov, bioRxiv/medRxiv preprints,
@@ -40,12 +42,16 @@ async def search_literature(query: str, max_results: int = 25, abstract_chars: i
         query: Search term, e.g. "oncolytic virus", "T-VEC", "NK cell exhaustion".
         max_results: How many records to return (1-100). Default 25.
         abstract_chars: Truncate abstracts to this length; 0 omits them to save space.
+        deep: Search more broadly (up to 250 records per database instead of 50).
+            Slower (often 20-60 seconds); use for broad topics or when a standard
+            search seems to miss relevant work.
 
     Returns a dict with total_found, returned, source_counts and a results list of
     records (title, abstract, authors, publication_date, doi, url, source,
     primary_cell, primary_virus, is_bioinformatics).
     """
-    params = {"q": query, "limit": max_results, "abstract_chars": abstract_chars}
+    params = {"q": query, "limit": max_results, "abstract_chars": abstract_chars,
+              "deep": "true" if deep else "false"}
     try:
         async with httpx2.AsyncClient(timeout=180) as client:
             r = await client.get(f"{API_URL}/search", params=params)
