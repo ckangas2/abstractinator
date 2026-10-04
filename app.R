@@ -353,19 +353,20 @@ ui <- fluidPage(
     div(
       style = "display: inline-block; text-align: left; background: rgba(0,0,0,0.3); border: 1px solid #444; border-radius: 10px; padding: 15px 25px; margin-bottom: 30px; max-width: 600px;",
       
-      # 1. The "Slow as Hell" Warning
+      # 1. Search timing
       div(
         style = "margin-bottom: 10px; color: #ffab40; font-size: 0.95em;",
-        icon("exclamation-triangle"), strong(" EXPECT DELAYS:"), 
-        span(" Deep retrieval & deduplication can take ", style="color: #ccc;"),
-        strong("~5-10 minutes.", style="color: #fff;")
+        icon("clock"), strong(" SEARCH TIME:"), 
+        span(" New searches take ", style="color: #ccc;"),
+        strong("~5-10 seconds", style="color: #fff;"),
+        span("; repeat searches are instant.", style="color: #ccc;")
       ),
       
       # 2. The API Key Note
       div(
         style = "color: var(--accent-primary); font-size: 0.95em;",
         icon("key"), strong(" Additional Setup Option:"), 
-        span(" For ELSEVIER, CORE & USPTO access, enter your keys in ", style="color: #ccc;"),
+        span(" For CORE & USPTO access, enter your keys in ", style="color: #ccc;"),
         actionLink("link_to_settings", "Settings", style = "color: var(--accent-primary); text-decoration: underline; cursor: pointer;") 
       )
     ),
@@ -374,25 +375,35 @@ ui <- fluidPage(
     
     # 2. Feature Cards
     fluidRow(
-      column(4, 
+      column(3, 
              div(class = "landing-card",
                  icon("filter", "fa-3x", style = "color: var(--accent-primary); margin-bottom: 15px;"),
                  h4("Deduplicatinator"),
-                 p("Aggregation of Abstracts from PubMed, Embase, and ClinicalTrials.gov.", style = "color: #aaa;")
+                 p("Aggregation of Abstracts from Europe PMC, OpenAlex, ClinicalTrials.gov, NIH, NSF & more.", style = "color: #aaa;")
              )
       ),
-      column(4, 
+      column(3, 
              div(class = "landing-card",
                  icon("chart-area", "fa-3x", style = "color: var(--accent-primary); margin-bottom: 15px;"),
                  h4("Plotinator"),
                  p("Visualize viral-immune trends over time with interactive analytics.", style = "color: #aaa;")
              )
       ),
-      column(4, 
+      column(3, 
              div(class = "landing-card",
                  icon("book-open", "fa-3x", style = "color: var(--accent-primary); margin-bottom: 15px;"),
                  h4("Readinator"),
                  p("Build and export a targeted reading list to Zotero or EndNote.", style = "color: #aaa;")
+             )
+      ),
+      column(3, 
+             # Clickable card: opens the "Use with AI" modal (observer: input$agent_info)
+             actionLink("agent_info", style = "text-decoration: none; color: inherit;",
+               div(class = "landing-card", style = "cursor: pointer;",
+                   icon("robot", "fa-3x", style = "color: var(--accent-primary); margin-bottom: 15px;"),
+                   h4("Agentinator"),
+                   p("Let your AI assistant search The Abstractinator directly via MCP. Click to connect.", style = "color: #aaa;")
+               )
              )
       )
     )
@@ -575,6 +586,50 @@ server <- function(input, output, session) {
     }
     return(FALSE)
   }
+  
+  # ========================================================================
+  # "USE WITH AI" MODAL (Agentinator card)
+  # ========================================================================
+  observeEvent(input$agent_info, {
+    mcp_url <- "https://mcp.abstractinator.me/mcp"
+    showModal(modalDialog(
+      title = tagList(icon("robot"), " Use The Abstractinator with AI"),
+      size = "m",
+      easyClose = TRUE,
+      footer = modalButton("Close"),
+      
+      p("The Abstractinator is available as an ", strong("MCP server"),
+        ", the open standard AI assistants use to connect to tools. Once connected, ",
+        "your assistant can search the literature for you, read the results, and build on them in conversation."),
+      
+      h5("Connector URL", style = "margin-top: 20px;"),
+      div(style = "display: flex; gap: 8px; align-items: center;",
+          tags$code(mcp_url, style = "flex-grow: 1; padding: 8px 10px; background: rgba(0,0,0,0.4); border-radius: 5px; color: var(--accent-primary);"),
+          tags$button(class = "btn btn-sm btn-outline-light", icon("copy"), " Copy",
+                      onclick = sprintf("navigator.clipboard.writeText('%s'); this.innerHTML = 'Copied!';", mcp_url))
+      ),
+      
+      h5("Add it to Claude", style = "margin-top: 20px;"),
+      tags$ol(style = "color: #ccc;",
+        tags$li("Open ", strong("Settings → Connectors"), "."),
+        tags$li("Choose ", strong("Add custom connector"), " and paste the URL above."),
+        tags$li("In a chat, ask something like: ", em("\"Search the Abstractinator for oncolytic virus trials in melanoma.\""))
+      ),
+      p("Other MCP-compatible assistants work too: add the same URL as a remote (streamable HTTP) MCP server.",
+        style = "color: #aaa; font-size: 0.9em;"),
+      
+      h5("What your assistant gets", style = "margin-top: 20px;"),
+      tags$ul(style = "color: #ccc;",
+        tags$li("A ", code("search_literature"), " tool covering Europe PMC, OpenAlex, ClinicalTrials.gov, bioRxiv/medRxiv, NIH RePORTER and NSF awards."),
+        tags$li("Deduplicated records with title, abstract, authors, date, DOI and link."),
+        tags$li("Each record tagged with its most prominent immune cell type and virus."),
+        tags$li("Results balanced across sources; repeat searches return instantly.")
+      ),
+      p(icon("circle-info"), " The AI connector uses open-access sources only, so no API keys are needed or shared. ",
+        "Searches are rate-limited to keep the service available for everyone.",
+        style = "color: #888; font-size: 0.85em; margin-top: 15px;")
+    ))
+  })
   
   # ========================================================================
   # ADJUST FONT (Server-side logic)
