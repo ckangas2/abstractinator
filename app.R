@@ -23,7 +23,7 @@ library(future)
 library(parallelly)
 library(future)
 
-plan(multisession)
+plan(multisession, workers = 8)
 
 # --- SOURCE EXTRACTORS ---
 source("epmc_standalone_extraction.R")
