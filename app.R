@@ -25,6 +25,67 @@ library(future)
 
 plan(multisession, workers = 8)
 
+# ==========================================================================
+# DISPLAY SAFETY
+# ==========================================================================
+# Results tables render text as HTML (so titles can keep their italics), and that
+# text comes from external databases. Escape everything, then re-allow only a few
+# harmless formatting tags, so a malicious record can never inject scripts or links.
+SAFE_HTML_TAGS <- "i|b|em|strong|sub|sup|br"
+
+sanitize_html <- function(x) {
+  if (!is.character(x)) return(x)
+  out <- htmltools::htmlEscape(x)  # escapes & < > (quotes untouched, so JSON stays valid)
+  # Re-allow plain formatting tags (no attributes possible)
+  out <- gsub(paste0("&lt;(/?)(", SAFE_HTML_TAGS, ")\\s*/?&gt;"), "<\\1\\2>", out, ignore.case = TRUE)
+  # Keep existing character entities like &amp; or &#8211; from being double-escaped
+  out <- gsub("&amp;(#[0-9]+|#[xX][0-9a-fA-F]+|[a-zA-Z][a-zA-Z0-9]{1,30});", "&\\1;", out)
+  out[is.na(x)] <- NA_character_
+  out
+}
+
+# Only plain http(s) links survive (blocks javascript: and other schemes)
+sanitize_url <- function(x) {
+  x <- as.character(x)
+  ok <- !is.na(x) & grepl("^https?://", x, ignore.case = TRUE) & !grepl("[[:space:]\"'<>`]", x)
+  x[!ok] <- NA_character_
+  x
+}
+
+sanitize_results <- function(df) {
+  if (is.null(df) || !is.data.frame(df) || nrow(df) == 0) return(df)
+  for (col in names(df)) {
+    if (col == "URL") {
+      df[[col]] <- sanitize_url(df[[col]])
+    } else if (col == "DOI") {
+      df[[col]] <- gsub("[[:space:]\"'<>`]", "", as.character(df[[col]]))
+    } else if (is.character(df[[col]])) {
+      df[[col]] <- sanitize_html(df[[col]])
+    }
+  }
+  df
+}
+
+# Exports (CSV, Zotero, EndNote) want plain text, not display HTML
+html_to_text <- function(x) {
+  if (!is.character(x)) return(x)
+  x <- gsub("<br\\s*/?>", "; ", x, ignore.case = TRUE)
+  x <- gsub("<[^>]+>", "", x)
+  x <- gsub("&lt;", "<", x, fixed = TRUE)
+  x <- gsub("&gt;", ">", x, fixed = TRUE)
+  x <- gsub("&quot;", "\"", x, fixed = TRUE)
+  x <- gsub("&#39;", "'", x, fixed = TRUE)
+  gsub("&amp;", "&", x, fixed = TRUE)
+}
+plain_text_item <- function(item) lapply(item, html_to_text)
+
+# One stable ID per result (DOI, URL and title combined), used by the reading list.
+# Grants and trials often have no DOI or URL, so neither works as an ID on its own.
+make_item_key <- function(doi, url, title) {
+  vapply(paste(doi, url, title, sep = "|"), digest::digest, character(1),
+         algo = "md5", serialize = FALSE, USE.NAMES = FALSE)
+}
+
 # --- SOURCE EXTRACTORS ---
 source("epmc_standalone_extraction.R")
 source("CORE_extraction.R")
@@ -113,7 +174,7 @@ dt_options <- list(
             var btnHtml = '<button class=\"btn btn-xs btn-outline-light add-to-reading-list-inline\" ' +
                           'style=\"margin-top: 5px; font-size: 0.8em; padding: 2px 6px;\" ' +
                           'data-index=\"' + meta.row + '\" ' +
-                          'data-doi=\"' + doi + '\">' +
+                          'data-key=\"' + row[20] + '\">' +
                           'Add to Reading List</button>';
             
             return titleHtml + btnHtml;
@@ -172,7 +233,8 @@ dt_options <- list(
     list(targets = 16, visible = FALSE), 
     list(targets = 17, visible = FALSE), 
     list(targets = 18, visible = FALSE),
-    list(targets = 19, visible = FALSE)
+    list(targets = 19, visible = FALSE),
+    list(targets = 20, visible = FALSE)  # ItemKey (stable ID for the reading list)
   ),
   callback = JS(
     "if (!window.readingList) {",
@@ -186,23 +248,23 @@ dt_options <- list(
     "",
     "$(document).on('click', '.add-to-reading-list-inline', function() {",
     "  var index = $(this).data('index');",
-    "  var doi = $(this).data('doi');",
+    "  var doi = $(this).attr('data-key');",
     "  var button = $(this);",
     "  var title = $(this).closest('.title-container').find('a').text() || $(this).closest('.title-container').text();",
     "",
     "  var itemIndex = -1;",
     "  for (var i = 0; i < window.readingList.length; i++) {",
-    "    if (window.readingList[i].DOI === doi) {",
+    "    if (window.readingList[i].key === doi) {",
     "      itemIndex = i;",
     "      break;",
     "    }",
     "  }",
     "",
     "  if (itemIndex === -1) {",
-    "    window.readingList.push({ DOI: doi, Title: title });",
+    "    window.readingList.push({ key: doi, Title: title });",
     "    button.text('Remove from Reading List');",
     "    button.addClass('added-to-reading-list');",
-    "    Shiny.setInputValue('add_to_reading_list', index, { priority: 'event' });", 
+    "    Shiny.setInputValue('add_to_reading_list', doi, { priority: 'event' });", 
     "  } else {",
     "    window.readingList.splice(itemIndex, 1);",
     "    button.text('Add to Reading List');",
@@ -779,9 +841,13 @@ server <- function(input, output, session) {
       err <- tryCatch(search_task$result(), error = function(e) e)
       msg <- if (inherits(err, "condition")) conditionMessage(err) else "unknown error"
       message("[Search] Failed: ", msg)
-      showNotification(paste("Search failed:", msg), type = "error", duration = 8)
+      showNotification("Something went wrong with that search. Please try again in a moment.",
+                       type = "error", duration = 8)
       list(deduplicated_data = NULL, original_combined_data = NULL)
     }
+    
+    # (1) Make all text from external databases safe to display
+    extraction_results$deduplicated_data <- sanitize_results(extraction_results$deduplicated_data)
     
     search_term     <- search_ctx$term
     start_time      <- search_ctx$start_time
@@ -890,7 +956,8 @@ server <- function(input, output, session) {
               grepl("Start:", PublicationDate) ~ as.Date(str_extract(PublicationDate, "(?<=Start: )[^\\|]+")),
               # Otherwise, try to read it as a standard date
               TRUE ~ as.Date(PublicationDate)
-            )
+            ),
+            ItemKey = make_item_key(DOI, URL, Title)
           ) %>% # <--- CLOSE MUTATE AND PIPE
           
           # --- UPDATE SELECT ---
@@ -898,7 +965,7 @@ server <- function(input, output, session) {
                  EPMC_ID, CORE_ID, NCTId, Source, Affiliations, AdverseEvents, 
                  SeriousAdverseEvents, is_bioinformatics, primary_cell, 
                  primary_virus, immune_cell_hits_combined, virus_hits_combined, 
-                 SortDate) 
+                 SortDate, ItemKey) 
       )
       
       output$resultsDisplay <- DT::renderDataTable({
@@ -909,7 +976,7 @@ server <- function(input, output, session) {
       colnames = c("Title", "Abstract", "Authors", "AuthorAffiliations", "Publication Date", 
                    "URL", "DOI", "EPMC_ID", "CORE_ID", "NCTId", "Source", "Affiliations", 
                    "AdverseEvents", "SeriousAdverseEvents", "Bioinformatics", 
-                   "Primary Immune Cell", "Primary Virus", "Immune Cell Hits", "Virus Hits", "SortDate"),
+                   "Primary Immune Cell", "Primary Virus", "Immune Cell Hits", "Virus Hits", "SortDate", "ItemKey"),
       rownames = FALSE,
       escape = FALSE,
       selection = 'none',
@@ -935,22 +1002,22 @@ server <- function(input, output, session) {
         # 4. Handle "Add to Reading List" Click
         "$(document).off('click', '.add-to-reading-list-inline').on('click', '.add-to-reading-list-inline', function() {",
         "  var index = $(this).data('index');",
-        "  var doi = $(this).data('doi');",
+        "  var doi = $(this).attr('data-key');",
         "  var button = $(this);",
         "  var title = $(this).closest('.title-container').find('a').text() || $(this).closest('.title-container').text();",
         
         # Check if already in list
         "  var itemIndex = -1;",
         "  for (var i = 0; i < window.readingList.length; i++) {",
-        "    if (window.readingList[i].DOI === doi) { itemIndex = i; break; }",
+        "    if (window.readingList[i].key === doi) { itemIndex = i; break; }",
         "  }",
         
         "  if (itemIndex === -1) {",
         "    // Add it",
-        "    window.readingList.push({ DOI: doi, Title: title });",
+        "    window.readingList.push({ key: doi, Title: title });",
         "    button.text('Remove from Reading List');",
         "    button.removeClass('btn-outline-light').addClass('btn-success');", # Visual feedback
-        "    Shiny.setInputValue('add_to_reading_list', index, { priority: 'event' });",
+        "    Shiny.setInputValue('add_to_reading_list', doi, { priority: 'event' });",
         "  } else {",
         "    // Remove it",
         "    window.readingList.splice(itemIndex, 1);",
@@ -1018,7 +1085,7 @@ server <- function(input, output, session) {
     # This is the "Low Time Preference" way to ensure precise removal
     updated_list <- Filter(function(x) {
       # Check if DOI exists and does NOT match target
-      !identical(as.character(x$DOI), as.character(target_doi))
+      !identical(as.character(x$ItemKey), as.character(target_doi))
     }, current_list)
     
     # 4. Update the reactive value
@@ -1185,7 +1252,8 @@ server <- function(input, output, session) {
           div(
             style = "background-color: rgba(var(--accent-rgb), 0.1); border-left: 3px solid var(--accent-primary); padding: 10px; margin-bottom: 20px; border-radius: 0 5px 5px 0;",
             p(icon("user-shield"), strong(" API keys are only held in your current session."), style = "color: var(--accent-primary); margin: 0;"),
-            p("They are never logged, saved or written to disk. Input keys prior to search for full results.", 
+            p("They are never logged, saved or written to disk. Input keys prior to search for full results. ",
+              "(Search terms themselves are logged anonymously, without any account or IP address, to help improve the tool.)", 
               style = "color: #ccc; font-size: 0.85em; margin: 5px 0 0 0;")
           ),
           
@@ -1210,7 +1278,7 @@ server <- function(input, output, session) {
           actionButton("saveKeys", "Save Configuration", class = "btn-success", width = "100%"),
           
           div(id = "key_save_msg", style = "margin-top: 15px; color: var(--accent-primary); font-weight: bold; text-align: center; display: none;", 
-              icon("check"), " Settings Saved! (Reloading app...)")
+              icon("check"), " Keys saved for this session.")
           
         ),
         
@@ -1473,61 +1541,82 @@ server <- function(input, output, session) {
   })
   
   # ========================================================================
-  # SUBMIT FEEDBACK HANDLER (NO DISK BACKUP)
+  # SUBMIT FEEDBACK HANDLER
   # ========================================================================
+  # Feedback is always saved locally (.cache/s3_mimic/feedback/), so nothing is
+  # lost if Discord is down or no webhook is configured. If DATA_WEBHOOK_URL is
+  # set, it's also forwarded to Discord with @mentions disabled.
+  last_feedback_time <- NULL
+  
   observeEvent(input$submit_feedback_btn, {
-    
-    req(input$feedback_msg)
-    
-    # 1. Latency Masking
-    id <- showNotification("Transmitting report...", type = "message", duration = NULL)
-    on.exit(removeNotification(id), add = TRUE)
-    
-    # 2. Prepare Data
-    webhook_url <- Sys.getenv("DATA_WEBHOOK_URL")
-    
-    if (webhook_url == "") {
-      showNotification("Config Error: Webhook URL missing.", type = "error")
+    msg_text <- trimws(input$feedback_msg %||% "")
+    if (nchar(msg_text) == 0) {
+      showNotification("Please write a short description first.", type = "warning")
       return()
     }
     
-    # 3. Construct Payload (Discord)
-    payload <- list(
-      content = paste0("🚨 **Abstractinator Report:** ", input$feedback_category),
-      embeds = list(list(
-        title = "User Feedback",
-        description = input$feedback_msg,
-        color = 5763719,
-        fields = list(
-          list(name = "Session Token", value = session$token, inline = FALSE),
-          list(name = "Time", value = as.character(Sys.time()), inline = TRUE)
-        ),
-        footer = list(text = "Sent via RShiny Pipeline")
-      ))
-    )
+    # Light spam protection: one report per minute per visitor
+    if (!is.null(last_feedback_time) &&
+        difftime(Sys.time(), last_feedback_time, units = "secs") < 60) {
+      showNotification("Thanks! Please wait a minute before sending another report.", type = "warning")
+      return()
+    }
     
-    # 4. Execute Pipeline (Webhook Only)
-    tryCatch({
-      
-      response <- httr::POST(
-        url = webhook_url,
-        body = payload,
-        encode = "json",
-        httr::add_headers(`User-Agent` = "R-Abstractinator-Bot")
+    msg_text <- substr(msg_text, 1, 2000)
+    category <- substr(as.character(input$feedback_category %||% "General"), 1, 100)
+    
+    # 1. Always keep a local copy
+    saved_ok <- tryCatch({
+      day_dir <- file.path(".cache", "s3_mimic", "feedback", format(Sys.Date(), "%Y-%m-%d"))
+      dir.create(day_dir, recursive = TRUE, showWarnings = FALSE)
+      jsonlite::write_json(
+        list(time = format(Sys.time(), "%Y-%m-%d %H:%M:%S %Z"), category = category, message = msg_text),
+        file.path(day_dir, sprintf("feedback_%s_%s.json", as.numeric(Sys.time()), uuid::UUIDgenerate())),
+        auto_unbox = TRUE, pretty = TRUE
       )
-      
-      if (httr::status_code(response) >= 200 && httr::status_code(response) < 300) {
-        showNotification("Helpinators notified!", type = "message")
-        updateTextAreaInput(session, "feedback_msg", value = "")
-        removeModal()
-      } else {
-        stop(paste("API Error:", httr::status_code(response)))
-      }
-      
+      TRUE
     }, error = function(e) {
-      message(paste("Webhook Transmission Failed:", e$message))
-      showNotification("Transmission failed. Please check your internet connection.", type = "error")
+      message("[Feedback] Local save failed: ", e$message)
+      FALSE
     })
+    
+    # 2. Forward to Discord if configured (never blocks the local copy)
+    webhook_url <- Sys.getenv("DATA_WEBHOOK_URL")
+    sent_ok <- FALSE
+    if (nzchar(webhook_url)) {
+      sent_ok <- tryCatch({
+        response <- httr::POST(
+          url = webhook_url,
+          body = list(
+            content = paste0("**Abstractinator Report:** ", category),
+            allowed_mentions = list(parse = list()),  # visitors can't ping @everyone
+            embeds = list(list(
+              title = "User Feedback",
+              description = msg_text,
+              color = 5763719,
+              fields = list(list(name = "Time", value = as.character(Sys.time()), inline = TRUE)),
+              footer = list(text = "Sent via The Abstractinator")
+            ))
+          ),
+          encode = "json",
+          httr::add_headers(`User-Agent` = "R-Abstractinator-Bot"),
+          httr::timeout(10)
+        )
+        httr::status_code(response) >= 200 && httr::status_code(response) < 300
+      }, error = function(e) {
+        message("[Feedback] Webhook failed: ", e$message)
+        FALSE
+      })
+    }
+    
+    if (saved_ok || sent_ok) {
+      last_feedback_time <<- Sys.time()
+      showNotification("Thanks! Your feedback was received.", type = "message")
+      updateTextAreaInput(session, "feedback_msg", value = "")
+      removeModal()
+    } else {
+      showNotification("Sorry, your feedback couldn't be sent right now. Please try again later.", type = "error")
+    }
   })
   
   # ========================================================================
@@ -1804,7 +1893,8 @@ server <- function(input, output, session) {
           PublicationDate = article_row$PublicationDate,
           URL = article_row$URL,
           DOI = article_row$DOI,
-          Source = article_row$Source 
+          Source = article_row$Source,
+          ItemKey = article_row$ItemKey
         )
         
         rv$reading_list(append(current_list, list(article_item)))
@@ -1822,11 +1912,14 @@ server <- function(input, output, session) {
   # READING LIST LOGIC
   # ========================================================================
   observeEvent(input$add_to_reading_list, {
-    selected_index <- as.integer(input$add_to_reading_list)
-    req(rv$article_df()) 
+    # The button sends the result's stable ID (not its position on screen, which
+    # changes with filtering, sorting and paging)
+    selected_key <- as.character(input$add_to_reading_list)
+    req(rv$article_df(), selected_key)
     
-    if (!is.na(selected_index) && selected_index >= 0 && selected_index < nrow(rv$article_df())) {
-      article_to_add <- rv$article_df()[selected_index + 1, ]
+    matches <- which(rv$article_df()$ItemKey == selected_key)
+    if (length(matches) > 0) {
+      article_to_add <- rv$article_df()[matches[1], ]
       
       article_to_add_detailed <- list(
         Title = article_to_add$Title,
@@ -1836,10 +1929,11 @@ server <- function(input, output, session) {
         PublicationDate = article_to_add$PublicationDate,
         URL = article_to_add$URL,
         DOI = article_to_add$DOI,
-        Source = article_to_add$Source # <--- NEW: SAVE SOURCE
+        Source = article_to_add$Source,
+        ItemKey = article_to_add$ItemKey
       )
       
-      is_duplicate <- any(sapply(rv$reading_list(), function(x) identical(x$DOI, article_to_add_detailed$DOI)))
+      is_duplicate <- any(vapply(rv$reading_list(), function(x) identical(x$ItemKey, article_to_add_detailed$ItemKey), logical(1)))
       
       if (!is_duplicate) {
         current_list <- rv$reading_list()
@@ -1865,6 +1959,7 @@ server <- function(input, output, session) {
       Title = character(0), Abstract = character(0), Authors = character(0), 
       AuthorAffiliations = character(0), PublicationDate = character(0), 
       URL = character(0), DOI = character(0), Source = character(0), 
+      ItemKey = character(0),
       stringsAsFactors = FALSE
     )
     
@@ -1876,6 +1971,7 @@ server <- function(input, output, session) {
           AuthorAffiliations = item$AuthorAffiliations, 
           PublicationDate = item$PublicationDate, URL = item$URL, DOI = item$DOI,
           Source = if(!is.null(item$Source)) item$Source else NA_character_, 
+          ItemKey = if(!is.null(item$ItemKey)) item$ItemKey else NA_character_,
           stringsAsFactors = FALSE
         )
       }))
@@ -1923,7 +2019,7 @@ server <- function(input, output, session) {
                 // We use 'btn-outline-danger' for visual feedback
                 var btnHtml = '<button class=\"btn btn-xs btn-outline-danger remove-from-list-btn\" ' +
                               'style=\"margin-top: 5px; font-size: 0.8em; padding: 2px 6px;\" ' +
-                              'data-url=\"' + url + '\">' +
+                              'data-key=\"' + row[8] + '\">' +
                               'Remove from Reading List</button>';
                 
                 return titleHtml + btnHtml;
@@ -1967,10 +2063,11 @@ server <- function(input, output, session) {
           list(targets = 4, visible = TRUE),  
           list(targets = 5, visible = FALSE), # URL (Used for ID)
           list(targets = 6, visible = FALSE), 
-          list(targets = 7, visible = FALSE)  
+          list(targets = 7, visible = FALSE),
+          list(targets = 8, visible = FALSE)  # ItemKey
         )
       ),
-      colnames = c("Title", "Abstract", "Authors", "Affiliations", "Publication Date", "URL", "DOI", "Source"),
+      colnames = c("Title", "Abstract", "Authors", "Affiliations", "Publication Date", "URL", "DOI", "Source", "ItemKey"),
       rownames = FALSE,
       escape = FALSE,
       selection = "none",
@@ -1978,7 +2075,7 @@ server <- function(input, output, session) {
       # --- DEDICATED CALLBACK FOR READING LIST ---
       callback = JS(
         "$(document).off('click', '.remove-from-list-btn').on('click', '.remove-from-list-btn', function() {",
-        "  var url = $(this).data('url');",
+        "  var url = $(this).attr('data-key');",
         "  // Send the URL to the server input 'remove_from_reading_list_btn'",
         "  Shiny.setInputValue('remove_from_reading_list_btn', url, { priority: 'event' });",
         "});",
@@ -2005,7 +2102,7 @@ server <- function(input, output, session) {
       
       # 2. Find the match using URL (Robust)
       matches <- vapply(current_list, function(x) {
-        isTRUE(as.character(x$URL) == as.character(target_url))
+        isTRUE(as.character(x$ItemKey) == as.character(target_url))
       }, FUN.VALUE = logical(1))
       
       match_index <- which(matches)
@@ -2076,7 +2173,7 @@ server <- function(input, output, session) {
       paste0("Abstractinator_List_", Sys.Date(), ".csv")
     },
     content = function(file) {
-      reading_list_data <- rv$reading_list()
+      reading_list_data <- lapply(rv$reading_list(), plain_text_item)
       
       if (length(reading_list_data) > 0) {
         # robust data frame creation
@@ -2106,7 +2203,7 @@ server <- function(input, output, session) {
       paste0("Abstractinator_Zotero_", Sys.Date(), ".ris")
     },
     content = function(file) {
-      reading_list_data <- rv$reading_list()
+      reading_list_data <- lapply(rv$reading_list(), plain_text_item)
       
       if (length(reading_list_data) > 0) {
         ris_entries <- lapply(reading_list_data, function(item) {
@@ -2143,7 +2240,7 @@ server <- function(input, output, session) {
       paste0("Abstractinator_EndNote_", Sys.Date(), ".enw")
     },
     content = function(file) {
-      reading_list_data <- rv$reading_list()
+      reading_list_data <- lapply(rv$reading_list(), plain_text_item)
       
       if (length(reading_list_data) > 0) {
         enw_entries <- lapply(reading_list_data, function(item) {

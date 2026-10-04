@@ -16,7 +16,7 @@ get_all_nsf_awards_baseR_v2 <- function(search_term, rows_per_page = 25, max_res
     # 1. Build URL
     api_url <- paste0(
       "https://www.research.gov/awardapi-service/v1/awards.json?",
-      "keyword=", URLencode(search_term),
+      "keyword=", URLencode(search_term, reserved = TRUE),
       "&rpp=", as.character(rows_per_page),
       "&offset=", as.character(offset)
     )

@@ -93,7 +93,12 @@ AI      ──► Cloudflare ──► mcp.abstractinator.me ──► MCP serve
   (`aliases.R`); title hits weigh 20, abstract hits 3, and the top scorer becomes
   `primary_cell` / `primary_virus`.
 - **Logging.** Website searches write a small JSON record (term, duration, result count, cache
-  hit, and *whether* keys were present, never the keys) to `.cache/s3_mimic/logs/`.
+  hit, and *whether* keys were present, never the keys) to `.cache/s3_mimic/logs/`. Feedback
+  submitted through the app is saved to `.cache/s3_mimic/feedback/` and, if
+  `DATA_WEBHOOK_URL` is set, forwarded to Discord.
+- **Display safety.** Text from external databases is HTML-escaped before display, with only
+  basic formatting tags (italics, bold, sub/superscript, line breaks) allowed through, and links
+  restricted to plain `http(s)` URLs.
 
 ## 🖥️ Self-hosting
 

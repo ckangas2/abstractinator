@@ -8,6 +8,22 @@ library(stringr)
 # Target: 'biorxiv_local_db' directory
 # ==============================================================================
 
+# Split a search into the pieces that must all match:
+#   'IL-2 (CD25)'                -> "IL-2", "CD25"
+#   '"oncolytic virus" melanoma' -> "oncolytic virus", "melanoma"
+biorxiv_query_terms <- function(search_term) {
+  phrases <- regmatches(search_term, gregexpr('"[^"]+"', search_term))[[1]]
+  rest <- search_term
+  for (ph in phrases) rest <- sub(ph, " ", rest, fixed = TRUE)
+  phrases <- gsub('"', "", phrases)
+  words <- strsplit(trimws(rest), "[[:space:]]+")[[1]]
+  # strip surrounding brackets/quotes/punctuation from each word
+  words <- gsub("^[][(){}\"',;:]+|[][(){}\"',;:]+$", "", words)
+  words <- words[nzchar(words) & !toupper(words) %in% c("AND", "OR", "NOT")]
+  terms <- unique(trimws(c(phrases, words)))
+  head(terms[nzchar(terms)], 8)
+}
+
 get_biorxiv_data <- function(search_term, limit = 500) {
   
   # Defensive Input Validation
@@ -37,14 +53,23 @@ get_biorxiv_data <- function(search_term, limit = 500) {
   if (is.null(ds)) return(NULL)
   
   # 2. EXECUTE LAZY QUERY
+  # Behave like the other databases: every word must appear (in the title or the
+  # abstract), "quoted phrases" stay together, and AND/OR/NOT and brackets are
+  # ignored. Matching is literal (fixed = TRUE), so ( ) + ? never act as syntax.
+  # Arrow runs these filters natively in C++, so the data stays out of RAM.
+  terms <- biorxiv_query_terms(search_term)
+  if (length(terms) == 0) return(NULL)
+  
   tryCatch({
-    hits_df <- ds %>%
-      select(DOI, Title, Abstract, Authors, Affiliations, PublicationDate, Source, URL, Published_DOI) %>%
-      # Arrow maps grepl natively to C++, ensuring execution stays out of RAM
-      filter(
-        grepl(search_term, Title, ignore.case = TRUE) |
-          grepl(search_term, Abstract, ignore.case = TRUE)
-      ) %>%
+    q <- ds %>%
+      select(DOI, Title, Abstract, Authors, Affiliations, PublicationDate, Source, URL, Published_DOI)
+    for (term in terms) {
+      q <- q %>% filter(
+        grepl(term, Title, ignore.case = TRUE, fixed = TRUE) |
+          grepl(term, Abstract, ignore.case = TRUE, fixed = TRUE)
+      )
+    }
+    hits_df <- q %>%
       head(limit) %>% 
       collect() # <--- Data enters active RAM only here
     

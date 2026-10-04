@@ -68,7 +68,14 @@ transform_nih_to_schema <- function(nih_df) {
     Authors = safe_extract(nih_df, "contact_pi_name"), 
     AuthorAffiliations = safe_extract(nih_df, "organization"), 
     PublicationDate = safe_extract(nih_df, "project_start_date"),
-    URL = NA_character_, 
+    # Link to the grant's RePORTER page (API field if present, else built from appl_id)
+    URL = {
+      detail <- safe_extract(nih_df, "project_detail_url")
+      appl   <- safe_extract(nih_df, "appl_id")
+      ifelse(!is.na(detail) & nzchar(detail), detail,
+             ifelse(!is.na(appl) & nzchar(appl),
+                    paste0("https://reporter.nih.gov/project-details/", appl), NA_character_))
+    },
     DOI = NA_character_, 
     Source = "NIH"
   )
@@ -87,7 +94,11 @@ transform_nsf_to_schema <- function(nsf_df) {
     AuthorAffiliations = safe_extract(nsf_df, "awardeeName"),
     PublicationDate = safe_extract(nsf_df, "date"),
     # Manually construct the hyperlink using the grant ID
-    URL = paste0("https://www.nsf.gov/awardsearch/showAward?AWD_ID=", safe_extract(nsf_df, "id")),
+    URL = {
+      award_id <- safe_extract(nsf_df, "id")
+      ifelse(!is.na(award_id) & nzchar(award_id),
+             paste0("https://www.nsf.gov/awardsearch/showAward?AWD_ID=", award_id), NA_character_)
+    },
     DOI = NA_character_, 
     Source = "NSF"
   )

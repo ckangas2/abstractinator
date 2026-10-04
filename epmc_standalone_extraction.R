@@ -28,10 +28,10 @@ get_epmc_data <- function(search_term, page_size = 1000, result_type = "core", m
   while (total_fetched < max_results) {
     # 1. Construct API URL
     api_url <- paste0(
-      "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=", URLencode(search_term),
+      "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=", URLencode(search_term, reserved = TRUE),
       "&format=json&pageSize=", page_size, 
       "&resultType=", result_type, 
-      "&cursorMark=", URLencode(cursor_mark)
+      "&cursorMark=", URLencode(cursor_mark, reserved = TRUE)
     )
     
     print(paste("Fetching Page", page, "| Cursor:", cursor_mark))
