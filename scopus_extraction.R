@@ -69,7 +69,7 @@ get_scopus_data <- function(search_term, max_records = limit, batch_size = 25, a
     )
     
     scopus_data <- tryCatch(
-      call_scopus_api(query_params),
+      call_scopus_api(query_params, api_key = valid_key),
       error = function(e) {
         warning(paste("API call failed:", e$message))
         return(NULL)

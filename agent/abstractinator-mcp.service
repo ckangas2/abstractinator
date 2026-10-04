@@ -1,0 +1,15 @@
+[Unit]
+Description=Abstractinator MCP server
+After=network.target abstractinator-api.service
+Wants=abstractinator-api.service
+
+[Service]
+User=shiny
+WorkingDirectory=/srv/shiny-server/abstractinator
+Environment=MCP_PUBLIC_HOST=mcp.abstractinator.me
+ExecStart=/opt/abstractinator-mcp/bin/python agent/mcp_server.py
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

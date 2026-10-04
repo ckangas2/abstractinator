@@ -1,0 +1,13 @@
+[Unit]
+Description=Abstractinator REST API (plumber)
+After=network.target
+
+[Service]
+User=shiny
+WorkingDirectory=/srv/shiny-server/abstractinator
+ExecStart=/usr/bin/Rscript agent/run_api.R
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

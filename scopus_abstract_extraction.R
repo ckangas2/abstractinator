@@ -40,6 +40,8 @@ retrieve_scopus_abstracts <- function(deduplicated_df, search_term = "DOI_lookup
   }
   
   abstracts <- list()  # doi -> abstract text
+  status_log <- integer(0)  # every HTTP status seen, for the summary line
+  denied <- FALSE           # TRUE if Elsevier refuses this key for abstracts
   
   # Fetch a set of DOIs in throttled parallel batches.
   # Returns the DOIs that should be retried (429 rate limit, 5xx, network errors).
@@ -47,6 +49,7 @@ retrieve_scopus_abstracts <- function(deduplicated_df, search_term = "DOI_lookup
     retry <- character(0)
     batches <- split(doi_vec, ceiling(seq_along(doi_vec) / BATCH_SIZE))
     for (batch in batches) {
+      if (denied) break
       t0 <- Sys.time()
       resps <- httr2::req_perform_parallel(lapply(batch, build_req),
                                            on_error = "continue", progress = FALSE)
@@ -54,6 +57,7 @@ retrieve_scopus_abstracts <- function(deduplicated_df, search_term = "DOI_lookup
         r <- resps[[j]]
         if (inherits(r, "error")) { retry <- c(retry, batch[j]); next }
         status <- httr2::resp_status(r)
+        status_log <<- c(status_log, status)
         if (status == 200) {
           new_abstract <- tryCatch(
             httr2::resp_body_json(r)$`abstracts-retrieval-response`$coredata$`dc:description`,
@@ -66,6 +70,13 @@ retrieve_scopus_abstracts <- function(deduplicated_df, search_term = "DOI_lookup
         # 404 / other client errors: no abstract available, skip
       }
       cat(".")
+      # If an entire batch is 401/403, the key isn't entitled to abstracts
+      # (common without an institutional subscription/IP). Stop wasting requests.
+      batch_status <- tail(status_log, length(batch))
+      if (length(abstracts) == 0 && length(batch_status) > 0 && all(batch_status %in% c(401, 403))) {
+        denied <<- TRUE
+        break
+      }
       elapsed <- as.numeric(difftime(Sys.time(), t0, units = "secs"))
       if (elapsed < 1) Sys.sleep(1 - elapsed)
     }
@@ -89,6 +100,11 @@ retrieve_scopus_abstracts <- function(deduplicated_df, search_term = "DOI_lookup
     deduplicated_df$Abstract[hit] <- unlist(abstracts[row_dois[hit]], use.names = FALSE)
   }
   print(paste("    > Retrieved", length(abstracts), "of", length(dois), "abstracts."))
+  if (length(status_log) > 0) {
+    tally <- table(status_log)
+    print(paste("    > HTTP statuses:", paste0(names(tally), " x", tally, collapse = ", ")))
+  }
+  if (denied) print("    > Elsevier denied abstract access for this key (401/403). Skipped remaining lookups.")
   
   cat("\n")
   print("    > Abstract retrieval complete.")
