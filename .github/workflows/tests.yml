@@ -36,6 +36,7 @@ jobs:
             any::ggplot2
             any::forcats
             any::ggbeeswarm
+            any::tidyverse
 
       - name: Run tests
         run: Rscript -e 'testthat::test_dir("tests/testthat", stop_on_failure = TRUE)'
