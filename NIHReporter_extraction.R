@@ -19,8 +19,11 @@ get_nih_reporter_data <- function(search_term, desired_results = 300) {
   # Initialize an empty list to store page results (more efficient than growing a DF)
   results_accumulator <- list()
   
-  # Clean search term
+  # Clean search term. NIH's text search returns server errors (500) on some
+  # punctuation, so reduce it to plain words: & " ( ) + [ ] { } < > become spaces.
   search_term <- enc2utf8(tolower(search_term))
+  search_term <- trimws(gsub("[[:space:]]+", " ", gsub("[&\"()+{}<>]|\\[|\\]", " ", search_term)))
+  if (!nzchar(search_term)) return(data.frame())
   
   message(sprintf("--- Starting NIH RePORTER extraction for: '%s' ---", search_term))
   
@@ -66,7 +69,11 @@ get_nih_reporter_data <- function(search_term, desired_results = 300) {
     
     # Check Status
     if (is.null(response) || httr::http_error(response)) {
-      warning(sprintf("Request failed at offset %d. Status: %s", offset, status_code(response)))
+      status_txt <- if (is.null(response)) "no response" else as.character(httr::status_code(response))
+      # Failing on the first page means NIH was unreachable: report it as a failure
+      # (so the search isn't cached as if there were no grants). Later pages: keep what we have.
+      if (offset == 0) stop(sprintf("NIH RePORTER request failed (%s)", status_txt))
+      warning(sprintf("NIH request failed at offset %d (%s); keeping earlier pages.", offset, status_txt))
       break
     }
     
@@ -82,10 +89,11 @@ get_nih_reporter_data <- function(search_term, desired_results = 300) {
     
     results_df <- parsed_json$results
     
-    # Store page if not empty
-    if (nrow(results_df) > 0) {
-      results_accumulator[[length(results_accumulator) + 1]] <- results_df
+    # Zero results arrive as an empty list (nrow() is NULL), so check the shape
+    if (!is.data.frame(results_df) || nrow(results_df) == 0) {
+      break  # nothing (more) to fetch
     }
+    results_accumulator[[length(results_accumulator) + 1]] <- results_df
     
     # --- Loop Control ---
     total_available <- parsed_json$meta$total

@@ -282,6 +282,21 @@ perform_hit_detection <- function(df, immune_regex_list, virus_regex_list, weigh
     )
 }
 
+# --- HELPER 4b: SOURCE SAFETY NET ---
+# Runs one database's extractor. If it crashes, log which source failed and why,
+# and return an empty result marked as failed, so the rest of the search still
+# completes and the incomplete result isn't cached.
+safe_source <- function(label, expr) {
+  tryCatch(expr, error = function(e) {
+    message(sprintf("    > [%s] FAILED: %s", label, conditionMessage(e)))
+    call_txt <- tryCatch(paste(deparse(conditionCall(e)), collapse = " "), error = function(...) "")
+    if (nzchar(call_txt)) message(sprintf("    > [%s]   in: %s", label, substr(call_txt, 1, 200)))
+    structure(data.frame(), source_failed = TRUE)
+  })
+}
+
+source_failed <- function(x) isTRUE(attr(x, "source_failed"))
+
 # --- HELPER 5: PER-SOURCE TIMING ---
 # Logs how long each source took (shows up in the Shiny Server log),
 # so we can see which database is the bottleneck.
@@ -329,27 +344,27 @@ dispatch_source_futures <- function(search_term, limit, elsevier_key, core_key, 
   f <- list()
   
   # Always run
-  f$EPMC <- future({ timed("EPMC", get_epmc_data(search_term, page_size = min(limit, 1000), max_results = limit)) })
-  f$`clinicaltrials.gov` <- future({ timed("ClinicalTrials", get_clinical_trials_data(search_term, limit = limit)) })
-  f$bioRxiv <- future({ timed("bioRxiv", get_biorxiv_data(search_term, limit = limit)) })
+  f$EPMC <- future({ timed("EPMC", safe_source("EPMC", get_epmc_data(search_term, page_size = min(limit, 1000), max_results = limit))) })
+  f$`clinicaltrials.gov` <- future({ timed("ClinicalTrials", safe_source("ClinicalTrials", get_clinical_trials_data(search_term, limit = limit))) })
+  f$bioRxiv <- future({ timed("bioRxiv", safe_source("bioRxiv", get_biorxiv_data(search_term, limit = limit))) })
   
   user_email <- Sys.getenv("USER_EMAIL")
   if (user_email == "") user_email <- NULL
   f$OpenAlex <- future({
     print("    > Dispatching OpenAlex Worker...")
-    timed("OpenAlex", get_openalex_data(search_term, mailto = user_email, max_results = limit, per_page = 200))
+    timed("OpenAlex", safe_source("OpenAlex", get_openalex_data(search_term, mailto = user_email, max_results = limit, per_page = 200)))
   })
   
   # Conditional: CORE
   if (!is.null(core_key) && nchar(core_key) > 0) {
     print("    > Dispatching CORE Worker...")
-    f$CORE <- future({ timed("CORE", get_core_data(search_term, limit = limit, api_key = core_key)) })
+    f$CORE <- future({ timed("CORE", safe_source("CORE", get_core_data(search_term, limit = limit, api_key = core_key))) })
   }
   
   # Conditional: PatentsView
   if (!is.null(uspto_key) && nchar(uspto_key) > 0) {
     print("    > Dispatching PatentsView Worker...")
-    f$Patent <- future({ timed("PatentsView", get_patentsview_data(search_term, limit = limit, api_key = uspto_key)) })
+    f$Patent <- future({ timed("PatentsView", safe_source("PatentsView", get_patentsview_data(search_term, limit = limit, api_key = uspto_key))) })
   }
   
   # Conditional: Scopus (only when ENABLE_SCOPUS=1 and a key is present)
@@ -384,20 +399,15 @@ dispatch_source_futures <- function(search_term, limit, elsevier_key, core_key, 
   if (Sys.getenv("INTEGRATE_NIH_NSF") == "1") {
     print("    > Dispatching NIH & NSF Workers...")
     f$NIH <- future({
-      timed("NIH", tryCatch(get_nih_reporter_data(search_term, desired_results = limit),
-                            error = function(e) data.frame()))
+      timed("NIH", safe_source("NIH", get_nih_reporter_data(search_term, desired_results = limit)))
     })
     f$NSF <- future({
-      timed("NSF", tryCatch(
+      timed("NSF", safe_source("NSF",
         get_all_nsf_awards_baseR_v2(
           search_term,
           max_results = limit,
           print_fields = "id,title,abstractText,pdPIName,awardeeName,date"
-        ),
-        error = function(e) {
-          print(paste("NSF Hard Catch:", e$message))
-          data.frame()
-        }))
+        )))
     })
   }
   
@@ -466,8 +476,14 @@ finish_extraction <- function(search_term, vals, limit, elsevier_key, core_key, 
   
   final_output <- final_data %>% distinct(DOI, Title, .keep_all = TRUE)
   
-  save_to_s3(search_term, final_output, elsevier_key = elsevier_key, uspto_key = uspto_key,
-             core_key = core_key, limit = limit)
+  failed <- names(vals)[vapply(vals, source_failed, logical(1))]
+  if (length(failed) > 0) {
+    message(sprintf("[Orchestrator] Not caching '%s': %s failed this time, so the next search will retry.",
+                    search_term, paste(failed, collapse = ", ")))
+  } else {
+    save_to_s3(search_term, final_output, elsevier_key = elsevier_key, uspto_key = uspto_key,
+               core_key = core_key, limit = limit)
+  }
   
   list(
     deduplicated_data = final_output, 

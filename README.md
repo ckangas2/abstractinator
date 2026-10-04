@@ -240,6 +240,21 @@ sudo systemctl restart abstractinator-mcp      # agent/mcp_server.py
 - Log AI-agent searches alongside website searches
 - Smarter agent tools backed by a relational knowledge base (gap analysis, "what's under-studied")
 
+## ⚖️ License & branding
+
+The **code** is open source under the [MIT License](LICENSE): you're welcome to use, modify
+and build on it, as long as the copyright notice comes along.
+
+The **name and branding** are not part of that license. "The Abstractinator", the *-inator*
+feature names (Searchinator, Deduplicatinator, Plotinator, Readinator, Agentinator) and the
+look of the site identify the official project at [abstractinator.me](https://abstractinator.me).
+If you run your own copy or fork, please give it **your own name and branding**, and don't
+present it as the official Abstractinator. A "based on The Abstractinator" credit with a link
+back is appreciated.
+
+Third-party icons in `www/` belong to their creators and are used under the Flaticon license
+(see [CREDITS.md](CREDITS.md)); they aren't covered by the MIT License.
+
 ## 🙏 Credits
 
 Mascot and icons from Flaticon (narwhal by Smashicons, dinosaur by imaginationlol, frog prince

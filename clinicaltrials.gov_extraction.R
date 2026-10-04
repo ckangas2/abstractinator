@@ -50,7 +50,10 @@ get_clinical_trials_data <- function(search_term, limit = 10000) {
     api_data_parsed <- fromJSON(api_data_raw)
     
     # 5. Check if studies exist in this batch
-    if (is.null(api_data_parsed$studies) || nrow(api_data_parsed$studies) == 0) {
+    # Zero results come back as an empty list, where nrow() is NULL, so check
+    # the shape explicitly instead of trusting nrow()
+    studies <- api_data_parsed$studies
+    if (is.null(studies) || length(studies) == 0 || !is.data.frame(studies) || nrow(studies) == 0) {
       break # No more data
     }
     

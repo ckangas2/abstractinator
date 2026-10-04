@@ -440,23 +440,27 @@ ui <- fluidPage(
       
     ), # Closes search-container-with-icons
     
-    # Deep search toggle (standard = 50 results per source)
+    # --- Options row: deep search toggle + quick launch chips (one compact line) ---
     div(
-      style = "margin-top: 8px; color: #aaa; font-size: 0.9em;",
-      checkboxInput("deepSearch",
-                    label = span(icon("layer-group"), " Deep search: up to 250 results per source (slower)"),
-                    value = FALSE)
+      class = "search-options-row",
+      # Deep search: a real checkbox (keyboard + screen reader friendly), styled as a pill switch
+      div(
+        class = "deep-toggle",
+        title = "Up to 250 results per source instead of 50 (slower)",
+        checkboxInput("deepSearch",
+                      label = span(class = "deep-toggle-pill", span(class = "deep-knob"), "Deep search"),
+                      value = FALSE)
+      ),
+      span(class = "search-options-divider"),
+      span("Try:", class = "ql-label"),
+      actionButton("btn_oncolytic_virus", "Oncolytic Virus", class = "btn-sm ql-chip"),
+      actionButton("btn_tvec", "T-VEC", class = "btn-sm ql-chip"),
+      actionButton("btn_melanoma", "Melanoma", class = "btn-sm ql-chip"),
+      actionButton("btn_scseq", "scRNA-seq", class = "btn-sm ql-chip")
     ),
     
-    # --- MOVED HERE: QUICK LAUNCH (Inside the Glass) ---
-    div(
-      style = "margin-top: 25px;", # Add spacing from the search bar
-      span("Quick Launch: ", style = "color: #aaa; font-size: 0.9em; margin-right: 10px; font-weight: 300;"),
-      actionButton("btn_oncolytic_virus", "Oncolytic Virus", class = "btn-outline-secondary btn-sm", style = "margin: 2px; border-radius: 20px; border-color: #555; color: #ccc;"),
-      actionButton("btn_tvec", "T-VEC", class = "btn-outline-secondary btn-sm", style = "margin: 2px; border-radius: 20px; border-color: #555; color: #ccc;"),
-      actionButton("btn_melanoma", "Melanoma", class = "btn-outline-secondary btn-sm", style = "margin: 2px; border-radius: 20px; border-color: #555; color: #ccc;"),
-      actionButton("btn_scseq", "scRNA-seq", class = "btn-outline-secondary btn-sm", style = "margin: 2px; border-radius: 20px; border-color: #555; color: #ccc;")
-    ),
+    # Shown only when a search comes back empty (or fails)
+    uiOutput("emptyState"),
     
     div(
       class = "search-feedback hidden",
@@ -497,40 +501,30 @@ ui <- fluidPage(
     
     
     
-    # 2. Feature Cards
-    fluidRow(
-      column(3, 
-             div(class = "landing-card",
-                 icon("filter", "fa-3x", style = "color: var(--accent-primary); margin-bottom: 15px;"),
-                 h4("Deduplicatinator"),
-                 p("Aggregation of Abstracts from Europe PMC, OpenAlex, ClinicalTrials.gov, NIH, NSF & more.", style = "color: #aaa;")
-             )
-      ),
-      column(3, 
-             div(class = "landing-card",
-                 icon("chart-area", "fa-3x", style = "color: var(--accent-primary); margin-bottom: 15px;"),
-                 h4("Plotinator"),
-                 p("Visualize viral-immune trends over time with interactive analytics.", style = "color: #aaa;")
-             )
-      ),
-      column(3, 
-             div(class = "landing-card",
-                 icon("book-open", "fa-3x", style = "color: var(--accent-primary); margin-bottom: 15px;"),
-                 h4("Readinator"),
-                 p("Build and export a targeted reading list to Zotero or EndNote.", style = "color: #aaa;")
-             )
-      ),
-      column(3, 
-             # Clickable card: opens the "Use with AI" modal (observer: input$agent_info)
-             actionLink("agent_info", style = "text-decoration: none; color: inherit;",
-               div(class = "landing-card", style = "cursor: pointer;",
-                   icon("robot", "fa-3x", style = "color: var(--accent-primary); margin-bottom: 15px;"),
-                   h4("Agentinator"),
-                   p("Let your AI assistant search The Abstractinator directly via MCP. Click to connect.", style = "color: #aaa;")
-               )
-             )
+    # 2. Feature Cards (each one opens a short explainer with a way to try it)
+    local({
+      feature_card <- function(id, ic, title, blurb) {
+        column(3,
+          actionLink(id, class = "landing-card-link",
+            div(class = "landing-card",
+                icon(ic, "fa-3x", style = "color: var(--accent-primary); margin-bottom: 15px;"),
+                h4(title),
+                p(blurb, style = "color: #aaa;")
+            )
+          )
+        )
+      }
+      fluidRow(
+        feature_card("card_dedup", "filter", "Deduplicatinator",
+                     "Searches Europe PMC, OpenAlex, ClinicalTrials.gov, bioRxiv, NIH, NSF & more at once."),
+        feature_card("card_plot", "chart-area", "Plotinator",
+                     "Visualize viral-immune trends over time with interactive analytics."),
+        feature_card("card_read", "book-open", "Readinator",
+                     "Build and export a targeted reading list to Zotero or EndNote."),
+        feature_card("agent_info", "robot", "Agentinator",
+                     "Let your AI assistant search The Abstractinator directly via MCP.")
       )
-    ),
+    }),
     
     # --- Share links (plain links: no tracking scripts or third-party widgets) ---
     local({
@@ -589,6 +583,7 @@ ui <- fluidPage(
       # Tab 1: Search Results
       bslib::nav_panel(
         title = "Search Results",
+        uiOutput("sourceChips"),
         DT::dataTableOutput("resultsDisplay")
       ),
       
@@ -764,6 +759,101 @@ server <- function(input, output, session) {
   }
   
   # ========================================================================
+  # SOURCE CHIPS (filter the results table by database)
+  # ========================================================================
+  source_filter <- reactiveVal("All")
+  
+  # --- Empty state: what to show when a search finds nothing ---
+  empty_state <- reactiveVal(NULL)
+  output$emptyState <- renderUI({
+    es <- empty_state()
+    req(es)
+    if (isTRUE(es$error)) {
+      div(class = "empty-state",
+          h5("That search didn't go through"),
+          p("The databases couldn't be reached just now. Try again in a moment."))
+    } else {
+      div(class = "empty-state",
+          h5(paste0("No results for \u201c", es$term, "\u201d")),
+          p("Try fewer or broader words, check the spelling, or turn on Deep search for a wider net."))
+    }
+  })
+  
+  source_display_name <- function(x) {
+    lookup <- c("EPMC" = "Europe PMC", "clinicaltrials.gov" = "Trials",
+                "Preprint (biorxiv)" = "bioRxiv", "Preprint (medrxiv)" = "medRxiv",
+                "NIH" = "NIH grants", "NSF" = "NSF awards")
+    ifelse(x %in% names(lookup), lookup[x], x)
+  }
+  
+  output$sourceChips <- renderUI({
+    df <- rv$article_df()
+    req(df, nrow(df) > 0, "Source" %in% names(df))
+    counts <- sort(table(df$Source), decreasing = TRUE)
+    active <- source_filter()
+    
+    chip <- function(value, label, n) {
+      tags$button(
+        type = "button",
+        class = paste("source-chip", if (identical(active, value)) "is-active"),
+        `aria-pressed` = tolower(as.character(identical(active, value))),
+        onclick = sprintf("Shiny.setInputValue('source_chip', %s, {priority: 'event'})",
+                          jsonlite::toJSON(value, auto_unbox = TRUE)),
+        span(label), span(class = "source-chip-count", n)
+      )
+    }
+    div(
+      class = "source-chip-row",
+      chip("All", "All", nrow(df)),
+      lapply(names(counts), function(src) chip(src, source_display_name(src), counts[[src]]))
+    )
+  })
+  
+  # Click a chip to filter; click the active chip again to show everything
+  observeEvent(input$source_chip, {
+    picked <- as.character(input$source_chip)
+    source_filter(if (identical(picked, source_filter()) || picked == "All") "All" else picked)
+  })
+  
+  # ========================================================================
+  # FEATURE CARD EXPLAINERS (short, with one way to try each)
+  # ========================================================================
+  card_modal <- function(ic, title, ..., action_id = NULL, action_label = NULL) {
+    showModal(modalDialog(
+      title = tagList(icon(ic), " ", title),
+      size = "m",
+      easyClose = TRUE,
+      div(style = "color: #ccc; line-height: 1.6;", ...),
+      footer = tagList(
+        if (!is.null(action_id)) actionButton(action_id, action_label, class = "btn-sm ql-chip"),
+        modalButton("Close")
+      )
+    ))
+  }
+  
+  observeEvent(input$card_dedup, {
+    card_modal("filter", "Deduplicatinator",
+      p("One search covers Europe PMC, OpenAlex, ClinicalTrials.gov, bioRxiv/medRxiv, NIH grants and NSF awards, plus CORE and patents if you add your own keys in Settings."),
+      p("The same paper often shows up in several databases. These copies are merged so each one appears once, keeping the best-curated version. The Deduplication Summary tab shows what was merged."),
+      action_id = "try_dedup", action_label = "Try it: search Oncolytic Virus")
+  })
+  observeEvent(input$try_dedup, { removeModal(); request_search("Oncolytic Virus") })
+  
+  observeEvent(input$card_plot, {
+    card_modal("chart-area", "Plotinator",
+      p("After a search, the Plotinator tab charts your results over time, grouped by the immune cells and viruses they mention, so you can see where a field is heading."),
+      p("Click any point to add that paper to your reading list."),
+      action_id = "try_plot", action_label = "Try it: search T-VEC")
+  })
+  observeEvent(input$try_plot, { removeModal(); request_search("T-VEC") })
+  
+  observeEvent(input$card_read, {
+    card_modal("book-open", "Readinator",
+      p("Click Add to Reading List on any result, or click a point in the Plotinator. Your picks collect in the Reading List tab."),
+      p("Export the list to Zotero, EndNote or CSV. The list lasts for this visit only, so export it before you leave."))
+  })
+  
+  # ========================================================================
   # "USE WITH AI" MODAL (Agentinator card)
   # ========================================================================
   observeEvent(input$agent_info, {
@@ -885,9 +975,14 @@ server <- function(input, output, session) {
     search_ctx$core       <- resolve_api_key(session_keys$core, "CORE_API_KEY")
     search_ctx$uspto      <- resolve_api_key(session_keys$uspto, "USPTO_API_KEY")
     
-    session$sendCustomMessage(type = 'update_loading_message',
-      message = if (search_ctx$deep) "Deep search: querying databases, this can take a minute" else "Querying databases")
+    # Standard searches keep the original loading messages from script.js
+    # ("Diving deep...", "...Deeper", ...). Deep searches go one further.
+    if (search_ctx$deep) {
+      session$sendCustomMessage(type = 'update_loading_message', message = "Diving extra deep...")
+    }
     
+    empty_state(NULL)
+    shinyjs::addClass("searchButton", "is-searching")
     search_task$invoke(search_term, search_ctx$elsevier, search_ctx$core, search_ctx$uspto, req_info$limit)
   })
   
@@ -906,6 +1001,9 @@ server <- function(input, output, session) {
                        type = "error", duration = 8)
       list(deduplicated_data = NULL, original_combined_data = NULL)
     }
+    
+    shinyjs::removeClass("searchButton", "is-searching")
+    source_filter("All")
     
     # (1) Make all text from external databases safe to display
     extraction_results$deduplicated_data <- sanitize_results(extraction_results$deduplicated_data)
@@ -1001,23 +1099,36 @@ server <- function(input, output, session) {
             NCTId   = if ("NCTId" %in% names(.)) NCTId else NA_character_,
             DOI     = if ("DOI" %in% names(.)) DOI else NA_character_,
             URL     = if ("URL" %in% names(.)) URL else NA_character_,
+            # Columns only some sources provide (e.g. Affiliations/AdverseEvents come
+            # from ClinicalTrials.gov), so a search with no trials still has them
+            Abstract             = if ("Abstract" %in% names(.)) Abstract else NA_character_,
+            Authors              = if ("Authors" %in% names(.)) Authors else NA_character_,
+            AuthorAffiliations   = if ("AuthorAffiliations" %in% names(.)) AuthorAffiliations else NA_character_,
+            Affiliations         = if ("Affiliations" %in% names(.)) Affiliations else NA_character_,
+            AdverseEvents        = if ("AdverseEvents" %in% names(.)) AdverseEvents else NA_character_,
+            SeriousAdverseEvents = if ("SeriousAdverseEvents" %in% names(.)) SeriousAdverseEvents else NA_character_,
+            primary_cell         = if ("primary_cell" %in% names(.)) primary_cell else NA_character_,
+            primary_virus        = if ("primary_virus" %in% names(.)) primary_virus else NA_character_,
             
             # Ensure Boolean Flags exist
             is_bioinformatics = if ("is_bioinformatics" %in% names(.)) as.logical(is_bioinformatics) else FALSE,
             
             # Ensure Hit Counters exist
-            immune_cell_hits_combined = if ("immune_cell_hits_combined" %in% names(.)) immune_cell_hits_combined else list(),
-            virus_hits_combined = if ("virus_hits_combined" %in% names(.)) virus_hits_combined else list()
+            immune_cell_hits_combined = if ("immune_cell_hits_combined" %in% names(.)) immune_cell_hits_combined else vector("list", n()),
+            virus_hits_combined = if ("virus_hits_combined" %in% names(.)) virus_hits_combined else vector("list", n())
           ) %>%
           
           # --- FIX: WRAP THIS IN MUTATE() ---
           mutate( 
-            SortDate = case_when(
-              # If it's a Clinical Trial string ("Start: YYYY..."), extract the date
-              grepl("Start:", PublicationDate) ~ as.Date(str_extract(PublicationDate, "(?<=Start: )[^\\|]+")),
-              # Otherwise, try to read it as a standard date
-              TRUE ~ as.Date(PublicationDate)
-            ),
+            # Parse each date on its own: sources use different formats
+            # (2023-07-15, NSF's 07/15/2023, trials' "Start: 2016-05-20 | ...", bare years).
+            # Unparseable dates become NA instead of crashing the table.
+            SortDate = as.Date(lubridate::parse_date_time(
+              ifelse(grepl("Start:", PublicationDate),
+                     trimws(str_extract(PublicationDate, "(?<=Start: )[^|]+")),
+                     PublicationDate),
+              orders = c("Ymd", "mdY", "Ym", "Y"), quiet = TRUE
+            )),
             ItemKey = make_item_key(DOI, URL, Title)
           ) %>% # <--- CLOSE MUTATE AND PIPE
           
@@ -1030,7 +1141,10 @@ server <- function(input, output, session) {
       )
       
       output$resultsDisplay <- DT::renderDataTable({
-        rv$article_df()
+        df <- rv$article_df()
+        f <- source_filter()
+        if (!is.null(df) && f != "All") df <- df[df$Source == f, , drop = FALSE]
+        df
       },
       options = dt_options, 
       fillContainer = FALSE,
@@ -1116,6 +1230,9 @@ server <- function(input, output, session) {
       
     } else {
       output$searchResults <- renderText("No results found or an error occurred during the search.")
+      empty_state(list(term = search_term, error = (st != "success")))
+      shinyjs::hide("results_container")
+      shinyjs::show("landing_container")
       output$completionIconLeft <- renderImage({ return(NULL) }, deleteFile = FALSE)
       output$completionIconRight <- renderImage({ return(NULL) }, deleteFile = FALSE)
       output$resultsDisplay <- renderDataTable(NULL)
