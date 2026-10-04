@@ -23,7 +23,7 @@ plan(multisession, workers = 8)
 for (f in c("epmc_standalone_extraction.R", "CORE_extraction.R",
             "clinicaltrials.gov_extraction.R", "scopus_extraction.R",
             "biorxiv_extraction.R", "patentsview_extraction.R", "deduplication.R",
-            "scopus_abstract_extraction.R", "R/db_utils_local.R",
+            "scopus_abstract_extraction.R", "R/db_utils_local.R", "R/log_utils_local.R",
             "openalex_standalone_extraction.R", "aliases.R",
             "orchestrate_extraction.R", "NIHReporter_extraction.R",
             "NSFAwards_extraction.R")) {
@@ -103,6 +103,20 @@ function(req, res, q = "", limit = 25, abstract_chars = 1500, deep = "false") {
   }
 
   df <- out$deduplicated_data
+  
+  # Log every agent search (same log as the website, tagged channel = "agent")
+  tryCatch(
+    log_search_to_s3(
+      search_term = q,
+      duration_sec = as.numeric(difftime(Sys.time(), t0, units = "secs")),
+      result_count = if (is.null(df)) 0L else nrow(df),
+      source_type = if (identical(out$metadata$source, "CACHE")) "CACHE" else "API",
+      core_key = core_key, uspto_key = uspto_key,
+      channel = "agent"
+    ),
+    error = function(e) message("[Logger] Agent log failed: ", e$message)
+  )
+  
   base <- list(
     query = q,
     deep = deep,

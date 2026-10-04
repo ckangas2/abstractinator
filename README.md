@@ -206,6 +206,26 @@ sudo systemctl restart abstractinator-api      # agent/api.R, search scripts
 sudo systemctl restart abstractinator-mcp      # agent/mcp_server.py
 ```
 
+### Running tests
+
+```bash
+# Fast offline tests (these also run on GitHub with every push)
+Rscript -e 'testthat::test_dir("tests/testthat")'
+
+# Plus live end-to-end searches against the real databases (needs internet, ~1-2 min)
+ABSTRACTINATOR_LIVE_TESTS=1 Rscript -e 'testthat::test_dir("tests/testthat")'
+```
+
+### Usage logs
+
+Every search, from the website or an AI agent, is logged without personal data.
+Searches per day, split by channel:
+
+```bash
+cd /srv/shiny-server/abstractinator
+sudo -u shiny /usr/bin/Rscript -e 'source("R/log_utils_local.R"); print(summarize_search_logs())'
+```
+
 ### REST API reference (local only)
 
 `GET /search?q=<term>&limit=25&abstract_chars=1500&deep=false`
@@ -226,7 +246,9 @@ sudo systemctl restart abstractinator-mcp      # agent/mcp_server.py
 | `orchestrate_extraction.R` | The search engine: cache → parallel sources → dedup → hit detection |
 | `*_extraction.R` | One extractor per source (EPMC, OpenAlex, CORE, ClinicalTrials.gov, bioRxiv, NIH, NSF, PatentsView, Scopus) |
 | `deduplication.R`, `aliases.R` | Cross-source deduplication; immune cell & virus alias lists |
-| `R/db_utils_local.R`, `R/log_utils_local.R` | Search cache and search logging |
+| `R/db_utils_local.R`, `R/log_utils_local.R` | Search cache and search logging (website and agent searches) |
+| `R/display_utils.R` | HTML sanitizing, export text cleanup and stable result IDs for the app |
+| `tests/` | Offline unit tests and opt-in live search tests (testthat); run on GitHub Actions |
 | `agent/` | REST API (`api.R`, `run_api.R`), MCP server (`mcp_server.py`), systemd units |
 | `deploy/` | Cron schedule |
 | `write_parquet_bioRxiV.R`, `update_biorxiv_db.R` | Build and refresh the local preprint store |

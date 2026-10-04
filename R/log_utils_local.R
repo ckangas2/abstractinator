@@ -10,7 +10,8 @@ LOG_DIR <- ".cache/s3_mimic/logs/"
 if (!dir.exists(LOG_DIR)) dir.create(LOG_DIR, recursive = TRUE)
 
 #' Log search event locally
-log_search_to_s3 <- function(search_term, duration_sec, result_count, source_type, elsevier_key = NULL, uspto_key = NULL, core_key = NULL) {
+#' channel: "website" (Shiny app) or "agent" (REST API / MCP connector)
+log_search_to_s3 <- function(search_term, duration_sec, result_count, source_type, elsevier_key = NULL, uspto_key = NULL, core_key = NULL, channel = "website") {
   
   message("[Logger] Writing log to local cache mimic...")
   
@@ -26,6 +27,7 @@ log_search_to_s3 <- function(search_term, duration_sec, result_count, source_typ
     duration = round(duration_sec, 2),
     n_results = result_count,
     source = source_type,
+    channel = channel,
     has_elsevier = has_elsevier,
     has_uspto = has_uspto,
     has_core = has_core,
@@ -77,7 +79,22 @@ fetch_search_logs <- function() {
         n_results = as.integer(n_results)
       ) %>%
       arrange(desc(timestamp))
+    # Logs written before the channel field existed all came from the website
+    if (!"channel" %in% names(logs_df)) logs_df$channel <- "website"
+    logs_df$channel[is.na(logs_df$channel)] <- "website"
   }
   
   return(logs_df)
+}
+
+#' Admin tool: searches per day, split by website vs AI agent
+#' Example: Rscript -e 'source("R/log_utils_local.R"); print(summarize_search_logs())'
+summarize_search_logs <- function() {
+  logs <- fetch_search_logs()
+  if (is.null(logs) || nrow(logs) == 0) return(NULL)
+  logs %>%
+    mutate(day = as.Date(timestamp)) %>%
+    count(day, channel, name = "searches") %>%
+    tidyr::pivot_wider(names_from = channel, values_from = searches, values_fill = 0) %>%
+    arrange(desc(day))
 }
