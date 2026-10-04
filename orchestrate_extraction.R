@@ -173,6 +173,44 @@ score_hits_combined <- function(hit_location_pairs, weight_title, weight_abstrac
 
 # --- HELPER 4: UNIFIED HIT DETECTION ---
 
+# Turn a named list of aliases into whole-word, case-insensitive patterns
+# ("T cell" matches "T  cell" too, but never inside another word).
+aliases_to_regex <- function(alias_list) {
+  lapply(lapply(alias_list, tolower), function(aliases) {
+    paste0("\\b", gsub("\\s+", "\\\\s+", aliases), "\\b", collapse = "|")
+  })
+}
+
+# Tag records with any category list (bacteria, drug classes, a lab's own
+# vocabulary...). Adds <prefix>_hits_combined and primary_<prefix>, scoring
+# title matches above abstract matches exactly as perform_hit_detection does.
+tag_with_alias_list <- function(df, alias_list, prefix, weight_title = 20, weight_abstract = 3) {
+  if (is.null(df) || nrow(df) == 0 || length(alias_list) == 0) return(df)
+  regex_list <- aliases_to_regex(alias_list)
+  
+  title <- tolower(ifelse(is.na(df$Title), "", df$Title))
+  abstract <- tolower(ifelse(is.na(df$Abstract), "", df$Abstract))
+  
+  score <- vapply(regex_list, function(rx) {
+    grepl(rx, title, perl = TRUE) * weight_title +
+      grepl(rx, abstract, perl = TRUE) * weight_abstract
+  }, numeric(nrow(df)))
+  if (is.null(dim(score))) score <- matrix(score, nrow = nrow(df), dimnames = list(NULL, names(regex_list)))
+  
+  # lapply over rows (not apply), so the result is always one entry per record:
+  # apply() returns an empty list when nothing matches anywhere, and a matrix
+  # when every row matches the same number of categories.
+  cats <- names(regex_list)
+  hits <- lapply(seq_len(nrow(df)), function(i) cats[score[i, ] > 0])
+  top <- vapply(seq_len(nrow(df)), function(i) {
+    if (max(score[i, ]) > 0) cats[which.max(score[i, ])] else "Non-descript"
+  }, character(1))
+  
+  df[[paste0(prefix, "_hits_combined")]] <- hits
+  df[[paste0("primary_", prefix)]] <- top
+  df
+}
+
 perform_hit_detection <- function(df, immune_regex_list, virus_regex_list, weight_title = 20, weight_abstract = 3) {
   print("    > Running Vectorized Detection & Matrix Scoring...")
   
@@ -452,17 +490,16 @@ finish_extraction <- function(search_term, vals, limit, elsevier_key, core_key, 
   
   # Hit detection (viruses / immune cells)
   if (exists("immune_cell_alias_list") && exists("virus_alias_expanded")) {
-    immune_cell_alias_list_lower <- lapply(immune_cell_alias_list, tolower)
-    virus_alias_expanded_lower <- lapply(virus_alias_expanded, tolower)
-    
-    immune_regex_list <- lapply(immune_cell_alias_list_lower, function(aliases) {
-      paste0("\\b", gsub("\\s+", "\\\\s+", aliases), "\\b", collapse = "|")
-    })
-    virus_regex_list <- lapply(virus_alias_expanded_lower, function(aliases) {
-      paste0("\\b", gsub("\\s+", "\\\\s+", aliases), "\\b", collapse = "|")
-    })
-    
-    final_data <- perform_hit_detection(final_data, immune_regex_list, virus_regex_list)
+    final_data <- perform_hit_detection(
+      final_data,
+      aliases_to_regex(immune_cell_alias_list),
+      aliases_to_regex(virus_alias_expanded)
+    )
+  }
+  
+  # Bacteria tagging (primary_bacteria), from the same alias machinery
+  if (exists("bacteria_alias_expanded")) {
+    final_data <- tag_with_alias_list(final_data, bacteria_alias_expanded, "bacteria")
   }
   
   # Bioinformatics flag (vectorized)

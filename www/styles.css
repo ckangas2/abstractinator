@@ -1901,3 +1901,31 @@ a.landing-card-link:focus-visible .landing-card {
   font-weight: 500;
 }
 .empty-state p { margin: 0; }
+
+/* ==========================================================================
+   PLOTINATOR POOL SWITCH (Viruses / Bacteria / ...)
+   ========================================================================== */
+.pool-switch .btn-group { gap: 6px; }
+
+.pool-switch .btn {
+  background-color: #222 !important;
+  border: 1px solid #555 !important;
+  color: #bbb !important;
+  border-radius: 50px !important;
+  padding: 3px 14px !important;
+  font-size: 0.8em !important;
+  font-weight: 600;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);
+  transition: all 0.2s ease-in-out;
+  margin: 0 !important;
+}
+.pool-switch .btn:hover {
+  border-color: #777 !important;
+  color: #fff !important;
+}
+.pool-switch .btn.active {
+  border-color: var(--accent-primary) !important;
+  color: var(--accent-primary) !important;
+  box-shadow: 0 0 10px var(--glow-subtle);
+}
+.pool-switch .btn i { margin-right: 5px; }

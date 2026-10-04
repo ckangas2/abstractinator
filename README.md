@@ -27,6 +27,8 @@ A new search takes about **5–10 seconds**; repeat searches within 7 days are i
 | **Searchinator** | Queries every source simultaneously; the slowest source sets the pace, not the sum of all of them. |
 | **Deep search** | Optional mode that pulls up to 250 results per source instead of 50 (~4× the coverage, ~15–30 s). |
 | **Deduplicatinator** | Merges records across sources by DOI (including preprint → published DOI links), then by title, preferring the best-curated source. |
+| **Tagging** | Labels each record with the immune cell type, virus and bacterium it is most strongly about, from curated alias lists. |
+| **Plotinator pools** | Switch the plot's pathogen axis between viruses and bacteria (or any pool you add) without re-running the search. |
 | **Plotinator** | Interactive charts of viral–immune trends over time. |
 | **Readinator** | Build a reading list and export it to Zotero or EndNote. |
 | **Agentinator** | An MCP server so AI assistants (Claude and others) can search The Abstractinator directly. |
@@ -89,9 +91,15 @@ AI      ──► Cloudflare ──► mcp.abstractinator.me ──► MCP serve
   search instant for an AI, and vice versa.
 - **Local preprints.** bioRxiv/medRxiv are searched from `biorxiv_local_db/` (one Parquet file
   per year) via Arrow, instead of hitting their API on every search.
-- **Hit detection.** Titles and abstracts are matched against immune-cell and virus alias lists
-  (`aliases.R`); title hits weigh 20, abstract hits 3, and the top scorer becomes
-  `primary_cell` / `primary_virus`.
+- **Hit detection.** Titles and abstracts are matched against immune-cell, virus and bacteria
+  alias lists (`aliases.R`); title hits weigh 20, abstract hits 3, and the top scorer becomes
+  `primary_cell` / `primary_virus` / `primary_bacteria`. Aliases are matched as whole words, so
+  "salmonella" doesn't match "salmonellosis".
+- **Swappable pools.** The Plotinator's pathogen axis is not hard-wired to viruses: a pool switch
+  selects which tagged category it plots, and the same search can be viewed through either lens.
+  Adding a pool (fungi, parasites, drug classes, a lab's own vocabulary) means defining an alias
+  list in `aliases.R`, tagging it with `tag_with_alias_list()` in `orchestrate_extraction.R`, and
+  adding one entry to `PATHOGEN_POOLS` in `app.R` — contributions welcome.
 - **Logging.** Website searches write a small JSON record (term, duration, result count, cache
   hit, and *whether* keys were present, never the keys) to `.cache/s3_mimic/logs/`. Feedback
   submitted through the app is saved to `.cache/s3_mimic/feedback/` and, if

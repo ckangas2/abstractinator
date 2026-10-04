@@ -62,3 +62,52 @@ virus_alias_expanded <- list(
   "Polyomavirus" = c("polyomavirus"),
   "Rhabdovirus" = c("rhabdovirus")
 )
+
+# --- Define Bacteria Aliases for Extraction ---
+# Genera and species used in bacterial cancer therapy, plus common pathogens
+# that appear in immunology and virology literature. Same format as the lists
+# above: "Display name" = c(alias, alias, ...). Aliases are matched as whole
+# words, case-insensitively, so short ones (e.g. "BCG") are safe but should be
+# distinctive. Contributions welcome: add a genus or species and open a PR.
+bacteria_alias_expanded <- list(
+  # --- Bacterial cancer therapy ---
+  "Salmonella" = c("salmonella", "salmonella typhimurium", "s. typhimurium", "VNP20009", "Salmonella enterica"),
+  "Clostridium" = c("clostridium", "clostridium novyi", "c. novyi", "clostridium butyricum", "clostridia"),
+  "Listeria" = c("listeria", "listeria monocytogenes", "l. monocytogenes", "ADXS11-001", "Lm-LLO"),
+  "Bifidobacterium" = c("bifidobacterium", "bifidobacterium longum", "b. longum", "bifidobacteria"),
+  "Mycobacterium bovis BCG" = c("BCG", "bacillus calmette-guerin", "bacille calmette-guerin", "mycobacterium bovis"),
+  "Escherichia coli" = c("escherichia coli", "e. coli", "E. coli Nissle", "EcN"),
+  "Lactobacillus" = c("lactobacillus", "lactobacilli", "lactobacillus rhamnosus", "lacticaseibacillus"),
+  "Lactococcus" = c("lactococcus", "lactococcus lactis", "l. lactis"),
+
+  # --- Mycobacteria ---
+  "Mycobacterium tuberculosis" = c("mycobacterium tuberculosis", "m. tuberculosis", "Mtb", "tubercle bacillus"),
+  "Mycobacterium leprae" = c("mycobacterium leprae", "m. leprae"),
+
+  # --- Common human pathogens ---
+  "Staphylococcus aureus" = c("staphylococcus aureus", "s. aureus", "MRSA", "methicillin-resistant staphylococcus aureus"),
+  "Streptococcus pneumoniae" = c("streptococcus pneumoniae", "s. pneumoniae", "pneumococcus", "pneumococcal"),
+  "Streptococcus pyogenes" = c("streptococcus pyogenes", "s. pyogenes", "group A streptococcus"),
+  "Pseudomonas aeruginosa" = c("pseudomonas aeruginosa", "p. aeruginosa"),
+  "Klebsiella pneumoniae" = c("klebsiella pneumoniae", "k. pneumoniae", "klebsiella"),
+  "Acinetobacter baumannii" = c("acinetobacter baumannii", "a. baumannii", "acinetobacter"),
+  "Helicobacter pylori" = c("helicobacter pylori", "h. pylori"),
+  "Neisseria meningitidis" = c("neisseria meningitidis", "n. meningitidis", "meningococcus", "meningococcal"),
+  "Neisseria gonorrhoeae" = c("neisseria gonorrhoeae", "n. gonorrhoeae", "gonococcus"),
+  "Chlamydia trachomatis" = c("chlamydia trachomatis", "c. trachomatis", "chlamydia"),
+  "Borrelia burgdorferi" = c("borrelia burgdorferi", "b. burgdorferi", "borrelia", "Lyme disease spirochete"),
+  "Clostridioides difficile" = c("clostridioides difficile", "clostridium difficile", "c. difficile", "C. diff"),
+  "Enterococcus" = c("enterococcus", "enterococcus faecalis", "enterococcus faecium", "VRE", "vancomycin-resistant enterococcus"),
+  "Haemophilus influenzae" = c("haemophilus influenzae", "h. influenzae"),
+  "Bacteroides" = c("bacteroides", "bacteroides fragilis", "b. fragilis"),
+  "Fusobacterium" = c("fusobacterium", "fusobacterium nucleatum", "f. nucleatum"),
+  "Akkermansia" = c("akkermansia", "akkermansia muciniphila", "a. muciniphila"),
+  "Vibrio cholerae" = c("vibrio cholerae", "v. cholerae"),
+  "Shigella" = c("shigella", "shigella flexneri", "shigella dysenteriae"),
+  "Yersinia" = c("yersinia", "yersinia pestis", "y. pestis", "yersinia enterocolitica"),
+  "Francisella tularensis" = c("francisella tularensis", "f. tularensis", "francisella"),
+  "Bacillus anthracis" = c("bacillus anthracis", "b. anthracis", "anthrax bacillus"),
+  "Legionella pneumophila" = c("legionella pneumophila", "l. pneumophila", "legionella"),
+  "Campylobacter jejuni" = c("campylobacter jejuni", "c. jejuni", "campylobacter"),
+  "Treponema pallidum" = c("treponema pallidum", "t. pallidum")
+)

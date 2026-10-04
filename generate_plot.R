@@ -83,8 +83,13 @@ contains_exact_phrase_preprocessed <- function(text_words, phrase_words) {
 # 2. DATA PREPARATION
 # ========================================================================
 
-prepare_plot_data <- function(article_df) {
-  cols_to_keep <- c("Title", "primary_cell", "primary_virus", "Authors", "URL", "SortDate", "DOI")
+# pathogen_col: which category column forms the plot's pathogen axis
+# ("primary_virus" by default, "primary_bacteria" in bacteria mode, and any
+# future pool). It is copied to primary_pathogen so the plot code is generic.
+prepare_plot_data <- function(article_df, pathogen_col = "primary_virus") {
+  if (!pathogen_col %in% names(article_df)) pathogen_col <- "primary_virus"
+  article_df$primary_pathogen <- article_df[[pathogen_col]]
+  cols_to_keep <- c("Title", "primary_cell", "primary_pathogen", "Authors", "URL", "SortDate", "DOI")
   if ("is_bioinformatics" %in% names(article_df)) {
     cols_to_keep <- c(cols_to_keep, "is_bioinformatics")
   }
@@ -105,7 +110,10 @@ prepare_plot_data <- function(article_df) {
 
 # generate_plot.R
 
-generate_interactive_plot <- function(data_filtered, selected_viruses, selected_cell_types, n_cols_max = 8) {
+# pathogen_label: what the pathogen axis is called in the title and tooltips
+# ("Virus", "Bacteria", ...).
+generate_interactive_plot <- function(data_filtered, selected_viruses, selected_cell_types,
+                                      n_cols_max = 8, pathogen_label = "Virus") {
   
   
   
@@ -121,7 +129,7 @@ generate_interactive_plot <- function(data_filtered, selected_viruses, selected_
   plot_data_step1 <- data_filtered
   
   if (!("All" %in% selected_viruses)) {
-    plot_data_step1 <- plot_data_step1 %>% filter(primary_virus %in% selected_viruses)
+    plot_data_step1 <- plot_data_step1 %>% filter(primary_pathogen %in% selected_viruses)
   }
   
   if (!("All" %in% selected_cell_types)) {
@@ -130,7 +138,7 @@ generate_interactive_plot <- function(data_filtered, selected_viruses, selected_
   
   # --- C. Factor Level Handling ---
   # Determine actual levels present in the filtered data to prevent empty legend keys
-  actual_virus_levels <- unique(plot_data_step1$primary_virus)
+  actual_virus_levels <- unique(plot_data_step1$primary_pathogen)
   actual_virus_levels <- actual_virus_levels[!is.na(actual_virus_levels) & actual_virus_levels != ""]
   
   actual_cell_levels <- unique(plot_data_step1$primary_cell)
@@ -152,13 +160,13 @@ generate_interactive_plot <- function(data_filtered, selected_viruses, selected_
     ) %>%
     filter(!is.na(PlotDate)) %>%
     mutate(
-      primary_virus = factor(primary_virus, levels = actual_virus_levels) %>% fct_infreq() %>% fct_rev(),
+      primary_pathogen = factor(primary_pathogen, levels = actual_virus_levels) %>% fct_infreq() %>% fct_rev(),
       primary_cell = factor(primary_cell, levels = actual_cell_levels),
       
       hover_text = paste0(
         "<b>Title:</b> ", str_trunc(Title, 60), "<br>",
         "<b>Date:</b> ", format(PlotDate, "%b %Y"), "<br>",
-        "<b>Virus:</b> ", primary_virus, "<br>",
+        "<b>", pathogen_label, ":</b> ", primary_pathogen, "<br>",
         "<b>Cell:</b> ", primary_cell, "<br>",
         "<b>DOI:</b> ", DOI
       )
@@ -169,7 +177,7 @@ generate_interactive_plot <- function(data_filtered, selected_viruses, selected_
   
   # --- E. Calculate Separators ---
   # This adds the horizontal grid lines between Virus groups
-  n_viruses_plotted <- length(unique(plot_data_final$primary_virus))
+  n_viruses_plotted <- length(unique(plot_data_final$primary_pathogen))
   if (n_viruses_plotted > 1) {
     separators <- seq(1.5, n_viruses_plotted - 0.5, 1)
   } else {
@@ -184,7 +192,7 @@ generate_interactive_plot <- function(data_filtered, selected_viruses, selected_
   
   # --- G. GGPLOT Construction ---
   p <- ggplot(plot_data_final, aes(
-    x = primary_virus,      
+    x = primary_pathogen,      
     y = PlotDate,           
     fill = primary_cell,
     text = hover_text
@@ -210,7 +218,7 @@ generate_interactive_plot <- function(data_filtered, selected_viruses, selected_
     scale_y_date(date_labels = "%b %Y", expand = expansion(mult = c(0.05, 0.05))) +
     
     labs(
-      title = paste0("Viral-Immune Timeline (n = ", nrow(plot_data_final), ")"), 
+      title = paste0(pathogen_label, "-Immune Timeline (n = ", nrow(plot_data_final), ")"), 
       x = NULL, 
       y = NULL, 
       fill = "Primary Cell Type"

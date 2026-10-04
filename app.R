@@ -28,6 +28,23 @@ plan(multisession, workers = 8)
 # Display safety + export helpers (sanitize_html, sanitize_results, make_item_key, ...)
 source("R/display_utils.R")
 
+# Fallback for a NULL / empty value (shiny provides one, but be explicit)
+`%||%` <- function(a, b) if (is.null(a) || length(a) == 0) b else a
+
+# --------------------------------------------------------------------------
+# PATHOGEN POOLS (Plotinator modes)
+# --------------------------------------------------------------------------
+# Each pool swaps the plot's pathogen axis for a different category list from
+# aliases.R. To add a mode (fungi, drug classes, a lab's own vocabulary):
+# define the alias list in aliases.R, tag it in orchestrate_extraction.R, and
+# add one entry here.
+PATHOGEN_POOLS <- list(
+  "Viruses"  = list(column = "primary_virus",    aliases = "virus_alias_expanded",
+                    label = "Virus",    icon = "virus",     known_label = "\U0001F9A0 Viruses Only"),
+  "Bacteria" = list(column = "primary_bacteria", aliases = "bacteria_alias_expanded",
+                    label = "Bacteria", icon = "bacterium", known_label = "\U0001F9A0 Bacteria Only")
+)
+
 # --- SOURCE EXTRACTORS ---
 source("epmc_standalone_extraction.R")
 source("CORE_extraction.R")
@@ -104,6 +121,12 @@ dt_options <- list(
                badge = ' <span style=\"color: #4caf50; font-weight: bold; font-size: 0.75em; border: 1px solid #4caf50; border-radius: 4px; padding: 1px 4px; margin-left: 6px; vertical-align: middle;\">NSF GRANT</span>';
             }
             
+            // E. Bacteria tag (purple), shown alongside any source badge
+            var bacteria = row[17];
+            if (bacteria && bacteria !== 'Non-descript') {
+               badge += ' <span style=\"color: #b388ff; font-weight: bold; font-size: 0.75em; border: 1px solid #b388ff; border-radius: 4px; padding: 1px 4px; margin-left: 6px; vertical-align: middle;\">' + bacteria.toUpperCase() + '</span>';
+            }
+            
             // --- 2. CREATE TITLE LINK ---
             var titleHtml = '';
             if (url) {
@@ -116,7 +139,7 @@ dt_options <- list(
             var btnHtml = '<button class=\"btn btn-xs btn-outline-light add-to-reading-list-inline\" ' +
                           'style=\"margin-top: 5px; font-size: 0.8em; padding: 2px 6px;\" ' +
                           'data-index=\"' + meta.row + '\" ' +
-                          'data-key=\"' + row[20] + '\">' +
+                          'data-key=\"' + row[22] + '\">' +
                           'Add to Reading List</button>';
             
             return titleHtml + btnHtml;
@@ -159,7 +182,7 @@ dt_options <- list(
     list(
       targets = 4, 
       width = "100px",
-      orderData = 19 # <--- THIS LINKS COL 4 CLICK TO COL 19 DATA
+      orderData = 21 # <--- THIS LINKS COL 4 CLICK TO COL 21 (SortDate) DATA
     ),
     list(targets = 5, visible = FALSE),
     list(targets = 6, visible = FALSE), 
@@ -176,7 +199,9 @@ dt_options <- list(
     list(targets = 17, visible = FALSE), 
     list(targets = 18, visible = FALSE),
     list(targets = 19, visible = FALSE),
-    list(targets = 20, visible = FALSE)  # ItemKey (stable ID for the reading list)
+    list(targets = 20, visible = FALSE),
+    list(targets = 21, visible = FALSE),
+    list(targets = 22, visible = FALSE)  # ItemKey (stable ID for the reading list)
   ),
   callback = JS(
     "if (!window.readingList) {",
@@ -510,7 +535,22 @@ ui <- fluidPage(
         # Keep this DIV. It provides the breathing room (margin-bottom).
         div(id = "plotFilters", style = "margin-bottom: 10px;",
             
-            h4("Oncolytic-viroimmunoinformatic Plotinator"),
+            div(style = "display: flex; align-items: center; gap: 16px; flex-wrap: wrap;",
+                h4("Oncolytic-viroimmunoinformatic Plotinator", style = "margin: 0;"),
+                # Swaps which category pool forms the plot's pathogen axis.
+                # Pools come from aliases.R, so adding one adds a mode here.
+                div(class = "pool-switch",
+                    shinyWidgets::radioGroupButtons(
+                      inputId = "pathogen_pool",
+                      label = NULL,
+                      choiceNames = lapply(names(PATHOGEN_POOLS), function(nm)
+                        tagList(icon(PATHOGEN_POOLS[[nm]]$icon), paste0(" ", nm))),
+                      choiceValues = names(PATHOGEN_POOLS),
+                      selected = names(PATHOGEN_POOLS)[1],
+                      size = "sm", status = "primary", justified = FALSE
+                    )
+                )
+            ),
             
             fluidRow( 
               column(width = 2, dateRangeInput("dateRange", "Date:", start = Sys.Date() - 365, end = Sys.Date())),
@@ -544,7 +584,7 @@ ui <- fluidPage(
               column(width = 3,
                      shinyWidgets::pickerInput(
                        inputId = "primaryVirusFilter",
-                       label = "Virus:",
+                       label = uiOutput("pathogenFilterLabel", inline = TRUE),
                        choices = c("All"),
                        selected = "All",
                        multiple = TRUE,
@@ -557,14 +597,12 @@ ui <- fluidPage(
                      ),
                      # Your Custom "Known Only" Button
                      div(style = "margin-top: -5px;", 
-                         actionButton("btn_virus_known", "🦠 Viruses Only", 
-                                      style = "width: 100%; margin-top: 5px;", 
-                                      size = "xs", class = "btn-info btn-xs")
+                         uiOutput("pathogenKnownBtn")
                      )
               ),
               
-              column(width = 2, selectInput("showBioinformatics", "Subfield:", choices = c("All", "Bioinformatics"), selected = "All")),
-              column(width = 2, numericInput("n_articles_to_plot", "Number of Articles:", value = 50, min = 1, step = 1))
+              column(width = 1, selectInput("showBioinformatics", "Subfield:", choices = c("All", "Bioinformatics"), selected = "All")),
+              column(width = 1, numericInput("n_articles_to_plot", "N:", value = 50, min = 1, step = 1))
             )
         ),
         
@@ -667,6 +705,31 @@ server <- function(input, output, session) {
     }
     return(FALSE)
   }
+  
+  # ========================================================================
+  # PLOTINATOR POOL SWITCH (Viruses <-> Bacteria <-> ...)
+  # ========================================================================
+  current_pool <- reactive({
+    nm <- input$pathogen_pool %||% names(PATHOGEN_POOLS)[1]
+    PATHOGEN_POOLS[[nm]] %||% PATHOGEN_POOLS[[1]]
+  })
+  
+  output$pathogenFilterLabel <- renderUI(paste0(current_pool()$label, ":"))
+  output$pathogenKnownBtn <- renderUI({
+    actionButton("btn_virus_known", current_pool()$known_label,
+                 style = "width: 100%; margin-top: 5px;", size = "xs", class = "btn-info btn-xs")
+  })
+  
+  # Switching pools refills the pathogen picker from that pool's alias list
+  observeEvent(current_pool(), {
+    pool <- current_pool()
+    choices <- if (exists(pool$aliases)) sort(names(get(pool$aliases))) else character(0)
+    shinyWidgets::updatePickerInput(
+      session, "primaryVirusFilter",
+      choices = c("All", "Non-descript", choices),
+      selected = "All"
+    )
+  })
   
   # ========================================================================
   # SOURCE CHIPS (filter the results table by database)
@@ -939,8 +1002,6 @@ server <- function(input, output, session) {
       
       updateSelectInput(session, "primaryCellFilter",
                         choices = c("All", unique(rv$article_df()$primary_cell)))
-      updateSelectInput(session, "primaryVirusFilter",
-                        choices = c("All", unique(rv$article_df()$primary_virus)))
       
       shinyjs::show("results_container") 
     } else {
@@ -1019,13 +1080,15 @@ server <- function(input, output, session) {
             SeriousAdverseEvents = if ("SeriousAdverseEvents" %in% names(.)) SeriousAdverseEvents else NA_character_,
             primary_cell         = if ("primary_cell" %in% names(.)) primary_cell else NA_character_,
             primary_virus        = if ("primary_virus" %in% names(.)) primary_virus else NA_character_,
+            primary_bacteria     = if ("primary_bacteria" %in% names(.)) primary_bacteria else NA_character_,
             
             # Ensure Boolean Flags exist
             is_bioinformatics = if ("is_bioinformatics" %in% names(.)) as.logical(is_bioinformatics) else FALSE,
             
             # Ensure Hit Counters exist
             immune_cell_hits_combined = if ("immune_cell_hits_combined" %in% names(.)) immune_cell_hits_combined else vector("list", n()),
-            virus_hits_combined = if ("virus_hits_combined" %in% names(.)) virus_hits_combined else vector("list", n())
+            virus_hits_combined = if ("virus_hits_combined" %in% names(.)) virus_hits_combined else vector("list", n()),
+            bacteria_hits_combined = if ("bacteria_hits_combined" %in% names(.)) bacteria_hits_combined else vector("list", n())
           ) %>%
           
           # --- FIX: WRAP THIS IN MUTATE() ---
@@ -1046,8 +1109,8 @@ server <- function(input, output, session) {
           select(Title, Abstract, Authors, AuthorAffiliations, PublicationDate, URL, DOI, 
                  EPMC_ID, CORE_ID, NCTId, Source, Affiliations, AdverseEvents, 
                  SeriousAdverseEvents, is_bioinformatics, primary_cell, 
-                 primary_virus, immune_cell_hits_combined, virus_hits_combined, 
-                 SortDate, ItemKey) 
+                 primary_virus, primary_bacteria, immune_cell_hits_combined, virus_hits_combined,
+                 bacteria_hits_combined, SortDate, ItemKey) 
       )
       
       output$resultsDisplay <- DT::renderDataTable({
@@ -1061,7 +1124,8 @@ server <- function(input, output, session) {
       colnames = c("Title", "Abstract", "Authors", "AuthorAffiliations", "Publication Date", 
                    "URL", "DOI", "EPMC_ID", "CORE_ID", "NCTId", "Source", "Affiliations", 
                    "AdverseEvents", "SeriousAdverseEvents", "Bioinformatics", 
-                   "Primary Immune Cell", "Primary Virus", "Immune Cell Hits", "Virus Hits", "SortDate", "ItemKey"),
+                   "Primary Immune Cell", "Primary Virus", "Primary Bacteria", "Immune Cell Hits", "Virus Hits",
+                   "Bacteria Hits", "SortDate", "ItemKey"),
       rownames = FALSE,
       escape = FALSE,
       selection = 'none',
@@ -1716,6 +1780,7 @@ server <- function(input, output, session) {
       input$dateRange
       input$primaryCellFilter
       input$primaryVirusFilter
+      input$pathogen_pool
       input$showBioinformatics
       input$n_articles_to_plot
       input$main_app_tabs 
@@ -1763,9 +1828,11 @@ server <- function(input, output, session) {
         df <- df %>% filter(primary_cell %in% input$primaryCellFilter)
       }
       
-      # Virus Filter
+      # Pathogen filter, applied to whichever pool is selected
+      pathogen_col <- current_pool()$column
+      if (!pathogen_col %in% names(df)) pathogen_col <- "primary_virus"
       if (!is.null(input$primaryVirusFilter) && !"All" %in% input$primaryVirusFilter) {
-        df <- df %>% filter(primary_virus %in% input$primaryVirusFilter)
+        df <- df %>% filter(.data[[pathogen_col]] %in% input$primaryVirusFilter)
       }
       
       # Bioinformatics Flag
@@ -1814,7 +1881,7 @@ server <- function(input, output, session) {
     # Ensure we have required inputs before processing
     req(input$primaryVirusFilter, input$primaryCellFilter)
     
-    prepared_data <- prepare_plot_data(plot_df)
+    prepared_data <- prepare_plot_data(plot_df, pathogen_col = current_pool()$column)
     
     # 4. Validation (THE FIX)
     # Old Code (Crashed): validate(!is.null(prepared_data), "msg")
@@ -1831,7 +1898,8 @@ server <- function(input, output, session) {
       data_filtered = prepared_data,
       selected_viruses = input$primaryVirusFilter,    
       selected_cell_types = input$primaryCellFilter,  
-      n_cols_max = input$plot_n_cols_max              
+      n_cols_max = input$plot_n_cols_max,
+      pathogen_label = current_pool()$label
     )
   })
   
@@ -1869,8 +1937,8 @@ server <- function(input, output, session) {
   
   # B. Updated Quick Filters (MACROS)
   observeEvent(input$btn_virus_known, {
-    req(exists("virus_alias_expanded"))
-    known_viruses <- names(virus_alias_expanded) 
+    req(exists(current_pool()$aliases))
+    known_viruses <- names(get(current_pool()$aliases)) 
     
     # We update ONLY the selection here
     shinyWidgets::updatePickerInput(
@@ -1898,19 +1966,6 @@ server <- function(input, output, session) {
   
   # --- C. POPULATE DROPDOWNS (WITH NON-DESCRIPT OPTION) ---
   observe({
-    # 1. Populate Virus Choices
-    if (exists("virus_alias_expanded")) {
-      # We manually add "Non-descript" to the list
-      virus_choices <- c("All", "Non-descript", sort(names(virus_alias_expanded)))
-      
-      shinyWidgets::updatePickerInput(
-        session = session,
-        inputId = "primaryVirusFilter",
-        choices = virus_choices,
-        selected = "All"
-      )
-    }
-    
     # 2. Populate Cell Choices
     if (exists("immune_cell_alias_list")) {
       # We manually add "Non-descript" to the list

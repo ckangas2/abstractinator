@@ -7,7 +7,8 @@ repo_root <- normalizePath(file.path(testthat::test_path(), "..", ".."))
 
 suppressPackageStartupMessages({
   for (f in c("R/display_utils.R", "R/db_utils_local.R",
-              "orchestrate_extraction.R", "biorxiv_extraction.R")) {
+              "orchestrate_extraction.R", "biorxiv_extraction.R", "aliases.R",
+              "generate_plot.R")) {
     source(file.path(repo_root, f))
   }
 })
