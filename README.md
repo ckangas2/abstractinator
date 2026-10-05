@@ -265,6 +265,13 @@ sudo -u shiny /usr/bin/Rscript -e 'source("R/log_utils_local.R"); print(summariz
 
 ## 🛣️ Roadmap
 
+The direction is from *retrieval* toward *curation*. The pipeline already applies
+consistent editorial rules — when two records are the same work, which version to keep,
+which vocabulary labels apply, and how to sample across sources — but it does not yet
+judge whether a study is sound or how relevant it is to the question asked. Each item
+below adds one more judgment.
+
+
 - Relevance ranking (best match first, using hit scores and recency)
 - Skip caching searches where a source failed
 - Log AI-agent searches alongside website searches
