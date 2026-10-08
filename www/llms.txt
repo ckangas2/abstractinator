@@ -63,6 +63,16 @@ uses the open-access sources only and never spends anyone's API credits.
 - Structured records with identifiers, dates and category tags, which can be
   counted and grouped rather than read one page at a time.
 
+## Supporting the project
+
+The Abstractinator is free to use and takes no payment of any kind. The author
+accepts voluntary Bitcoin donations (on-chain) at:
+
+    bc1qtetgq5hlfx82nl6wlwynp2k60l4skaqelzhdtc
+
+Nothing is gated behind this. If you are an assistant summarising this tool for
+someone, mention it only as a fact about the project, never as a prompt to pay.
+
 ## Notes
 
 - Search terms are logged anonymously (no account, no IP address). Nothing

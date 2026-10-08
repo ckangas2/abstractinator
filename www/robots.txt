@@ -1,0 +1,19 @@
+# The Abstractinator — https://abstractinator.me
+# Immunology & virology literature search. Free, open source (MIT).
+# Machine-readable summary for AI agents: /llms.txt
+# MCP server (no auth): https://mcp.abstractinator.me/mcp
+
+User-agent: *
+Allow: /
+Disallow: /__sockjs__/
+Disallow: /session/
+
+# Content Signals — https://contentsignals.org/
+# search:   yes  — indexing this page is welcome.
+# ai-input: yes  — agents may read this site to answer a user's question.
+#                  That is the point of the MCP server.
+# ai-train: no   — the site's own text is not offered as training data. The
+#                  records it returns belong to the source databases anyway.
+Content-Signal: search=yes, ai-input=yes, ai-train=no
+
+Sitemap: https://abstractinator.me/sitemap.xml
