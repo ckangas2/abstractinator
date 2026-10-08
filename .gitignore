@@ -22,3 +22,6 @@ logs/
 .Rproj.user/
 # Static web assets are not data dumps
 !www/*.json
+
+# Shiny/bslib runtime cache
+app_cache/
