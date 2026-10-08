@@ -9,7 +9,6 @@ import os
 
 import httpx2
 from mcp.server.mcpserver import MCPServer
-from mcp.types import ToolAnnotations
 from mcp.server.transport_security import TransportSecuritySettings
 
 API_URL = os.environ.get("ABSTRACTINATOR_API", "http://127.0.0.1:8100")
@@ -27,17 +26,7 @@ mcp = MCPServer(
 )
 
 
-# Annotations are behavioural hints for the client: a read-only search can be
-# auto-approved instead of prompting on every call. open_world_hint is True
-# because this queries external databases, not a fixed local set.
-# (destructive_hint / idempotent_hint are only defined for tools that write.)
-@mcp.tool(
-    annotations=ToolAnnotations(
-        title="Search immunology & virology literature",
-        read_only_hint=True,
-        open_world_hint=True,
-    )
-)
+@mcp.tool()
 async def search_literature(
     query: str, max_results: int = 25, abstract_chars: int = 1500, deep: bool = False
 ) -> dict:
