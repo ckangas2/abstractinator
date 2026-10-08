@@ -1,0 +1,71 @@
+# The Abstractinator
+
+> Immunology and virology literature search across six biomedical databases at
+> once, deduplicated and tagged by immune cell type, virus and bacterium.
+> Free, no account required, open source (MIT).
+
+Website: https://abstractinator.me
+Source:  https://github.com/ckangas2/abstractinator
+
+## For AI agents
+
+The Abstractinator is available as a remote MCP server (streamable HTTP).
+No authentication, no account, no API key.
+
+    https://mcp.abstractinator.me/mcp
+
+In Claude: Settings -> Connectors -> Add custom connector -> paste the URL
+above and choose "No sign-in". Any MCP client supporting remote streamable
+HTTP servers works the same way.
+
+### Tool: search_literature
+
+    search_literature(query, max_results=25, abstract_chars=1500, deep=false)
+
+- query: a search term, e.g. "oncolytic HSV", "NK cell exhaustion", "T-VEC".
+- max_results: records returned, 1-100. Results are balanced across sources
+  rather than taken from whichever source returned most.
+- abstract_chars: truncate each abstract; 0 omits abstracts entirely.
+- deep: widen the SEARCH to up to 250 records per source instead of 50.
+  This is independent of max_results, so an agent can search broadly and
+  still read a small sample. Slower (roughly 20-60 seconds).
+
+Returns: total_found, returned, source_counts, and a results list. Each record
+carries title, abstract, authors, publication_date, doi, url, source,
+primary_cell, primary_virus and is_bioinformatics.
+
+A fresh search takes about 5-10 seconds. Repeat searches within 7 days return
+immediately from cache. Searches are rate limited to keep the service
+available; a 429 response means waiting a minute and retrying.
+
+## Sources searched
+
+- Europe PMC - biomedical literature, including PubMed
+- OpenAlex - broad scholarly coverage
+- ClinicalTrials.gov - registered human clinical studies
+- bioRxiv / medRxiv - about 598,000 preprints (2013 to present), indexed
+  locally and refreshed daily
+- NIH RePORTER - US federal grant awards
+- NSF Awards - fundamental research grants
+
+Optional, with the user's own API key entered on the website: CORE
+(open-access aggregation) and USPTO PatentsView (patents). The AI connector
+uses the open-access sources only and never spends anyone's API credits.
+
+## What this adds over a general web search
+
+- Declarable coverage: a fixed set of sources, with per-source counts
+  reported, rather than whatever a commercial index surfaced.
+- Grants and trial registrations, which general web search indexes poorly but
+  which describe work funded or underway years before publication.
+- Deduplication across sources, so several copies of one study are not
+  mistaken for independent corroboration.
+- Structured records with identifiers, dates and category tags, which can be
+  counted and grouped rather than read one page at a time.
+
+## Notes
+
+- Search terms are logged anonymously (no account, no IP address). Nothing
+  else about a request is stored.
+- Self-hostable: the repository documents the full deployment.
+- Contact and issues: https://github.com/ckangas2/abstractinator/issues

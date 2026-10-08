@@ -275,12 +275,6 @@ ui <- fluidPage(
     tags$meta(property = "og:image:height", content = "630"),
     tags$meta(name = "twitter:card", content = "summary_large_image"),
     
-    # --- Hints for AI agents that fetch this page ---
-    # The Agentinator details live in a modal, which a plain HTTP fetch never
-    # renders, so the MCP endpoint is stated statically here and in /llms.txt.
-    tags$meta(name = "mcp-server", content = "https://mcp.abstractinator.me/mcp"),
-    tags$link(rel = "alternate", type = "text/plain", href = "llms.txt", title = "llms.txt"),
-    
     # Cache-busting: the ?v= number changes whenever the file changes, so browsers
     # and Cloudflare always fetch the current version instead of a stale copy
     tags$link(rel = "stylesheet", type = "text/css",
@@ -463,7 +457,7 @@ ui <- fluidPage(
         feature_card("card_read", "book-open", "Readinator",
                      "Build and export a targeted reading list to Zotero or EndNote."),
         feature_card("agent_info", "robot", "Agentinator",
-                     "Let your AI assistant search The Abstractinator directly via MCP. Connector URL: https://mcp.abstractinator.me/mcp")
+                     "Let your AI assistant search The Abstractinator directly via MCP.")
       )
     }),
     

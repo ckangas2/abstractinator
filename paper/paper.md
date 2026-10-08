@@ -14,9 +14,9 @@ authors:
     affiliation: 1
 affiliations:
   # JOSS accepts "Independent Researcher, Country" when there is no institution.
-  - name: Independent Researcher, United States   # TODO: replace if affiliated
+  - name: Independent Researcher, United States
     index: 1
-date: 4 October 2026   # TODO: update at submission
+date: 4 October 2026
 bibliography: paper.bib
 ---
 
