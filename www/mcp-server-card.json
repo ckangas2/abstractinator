@@ -1,0 +1,31 @@
+{
+  "serverInfo": {
+    "name": "abstractinator",
+    "title": "The Abstractinator",
+    "version": "2.0.0",
+    "description": "Immunology and virology literature search across Europe PMC, OpenAlex, ClinicalTrials.gov, bioRxiv/medRxiv, NIH RePORTER grants and NSF awards, deduplicated and tagged by immune cell type, virus and bacterium.",
+    "websiteUrl": "https://abstractinator.me"
+  },
+  "transport": {
+    "type": "streamable-http",
+    "endpoint": "https://mcp.abstractinator.me/mcp"
+  },
+  "capabilities": {
+    "tools": {}
+  },
+  "tools": [
+    {
+      "name": "search_literature",
+      "description": "Search immunology/virology literature across six biomedical databases at once. Returns deduplicated, source-balanced records tagged by immune cell type, virus and bacterium.",
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": true
+      }
+    }
+  ],
+  "authentication": {
+    "required": false
+  },
+  "documentation": "https://abstractinator.me/llms.txt",
+  "repository": "https://github.com/ckangas2/abstractinator"
+}

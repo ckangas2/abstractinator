@@ -20,3 +20,5 @@ logs/
 
 # IDE & Infrastructure
 .Rproj.user/
+# Static web assets are not data dumps
+!www/*.json
