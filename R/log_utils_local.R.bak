@@ -74,8 +74,7 @@ fetch_search_logs <- function() {
     logs_df <- logs_df %>%
       as_tibble() %>%
       mutate(
-        timestamp = as.POSIXct(sub("[[:space:]]+[A-Za-z/_+-]+$", "", timestamp),
-                               format = "%Y-%m-%d %H:%M:%S", tz = "UTC"),
+        timestamp = as.POSIXct(timestamp, format = "%Y-%m-%d %H:%M:%S %Z", tz = "UTC"),
         duration = as.numeric(duration),
         n_results = as.integer(n_results)
       ) %>%
