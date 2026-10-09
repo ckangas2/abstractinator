@@ -1,0 +1,20 @@
+# The Abstractinator — security contact
+# https://abstractinator.me
+#
+# This is a free, open-source research tool (MIT). It stores no accounts, no
+# passwords and no personal data. Visitors who supply an API key for the
+# optional sources do so per-session; those keys are never written to disk,
+# never logged, and never leave the visitor's own session.
+#
+# If you have found something anyway, please tell me. Good-faith reports are
+# welcome and will not be met with legal threats.
+
+Contact: https://github.com/ckangas2/abstractinator/issues
+Expires: 2027-10-09T00:00:00.000Z
+Preferred-Languages: en
+Canonical: https://abstractinator.me/.well-known/security.txt
+Policy: https://github.com/ckangas2/abstractinator/blob/main/SECURITY.md
+
+# Please include: the URL or endpoint, what you did, and what you observed.
+# Please do not run automated scanners at volume against the live site; it
+# runs on one machine and the traffic is indistinguishable from an attack.
