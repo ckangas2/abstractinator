@@ -208,6 +208,45 @@ _ctx_session: contextvars.ContextVar = contextvars.ContextVar(
 _ctx_client: contextvars.ContextVar = contextvars.ContextVar(
     "abstractinator_client", default=None)
 
+# Identity remembered against the ServerSession object. A client may omit the
+# Mcp-Session-Id header on some messages (and client_params is only populated
+# after initialize), so the first message that does carry a value fills in for
+# the rest of that session. Bounded so a long-lived process cannot grow without
+# limit.
+_SESSION_CACHE_MAX = 4096
+_session_cache = {}
+
+
+def _identity(ctx):
+    """(session, client) for this message, filled in from the session cache."""
+    sid = _session_from(ctx)
+    cli = _client_from(ctx)
+
+    key = None
+    try:
+        key = id(ctx.session)
+    except Exception:
+        key = None
+
+    if key is not None:
+        if len(_session_cache) > _SESSION_CACHE_MAX:
+            _session_cache.clear()
+        rec = _session_cache.setdefault(key, {"session": None, "client": None})
+        if sid:
+            rec["session"] = sid
+        if cli:
+            rec["client"] = cli
+        sid = sid or rec["session"]
+        cli = cli or rec["client"]
+        # No header anywhere in this session: derive a stable handle from the
+        # session object so distinct sessions remain countable.
+        if sid is None:
+            sid = _hash_session("obj-{}".format(key))
+            rec["session"] = sid
+
+    return sid, cli
+
+
 EVENT_NAMES = {
     "initialize": "initialize",
     "tools/list": "tools_list",
@@ -224,8 +263,7 @@ async def usage_logging_middleware(ctx, call_next):
     method = session = client = None
     try:
         method = getattr(ctx, "method", None)
-        session = _session_from(ctx)
-        client = _client_from(ctx)
+        session, client = _identity(ctx)
     except Exception:
         if CTX_DEBUG:
             traceback.print_exc()
