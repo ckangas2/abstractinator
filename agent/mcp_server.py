@@ -168,6 +168,15 @@ def _client_from(ctx):
         except Exception:
             info = None
     if info is None:
+        # No MCP-level identity on this message. The User-Agent is on every
+        # HTTP request regardless of session state, so use it rather than
+        # recording nothing.
+        try:
+            ua = ctx.request.headers.get("user-agent")
+            if ua:
+                return "ua:{}".format(ua[:80])
+        except Exception:
+            pass
         return None
     try:
         if isinstance(info, dict):
