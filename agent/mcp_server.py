@@ -25,6 +25,8 @@ Logging must never break serving. Every logging path is wrapped, and a failure
 degrades to missing analytics rather than a failed request. The middleware API
 is marked provisional in SDK 2.x, so attribute lookups are defensive.
 """
+import contextlib
+import contextvars
 import hashlib
 import json
 import os
@@ -126,85 +128,85 @@ def _write_event(**fields) -> None:
 # --------------------------------------------------------------------------- #
 # middleware
 # --------------------------------------------------------------------------- #
-def _first_attr(obj, *names):
-    """Return the first present, non-empty attribute (or mapping key)."""
-    for name in names:
-        try:
-            if obj is None:
-                return None
-            if isinstance(obj, dict):
-                if obj.get(name) not in (None, ""):
-                    return obj.get(name)
-                continue
-            val = getattr(obj, name, None)
-            if val not in (None, ""):
-                return val
-        except Exception:
-            continue
-    return None
+# The middleware context is mcp.server.context.ServerRequestContext:
+#
+#   ctx.method                     e.g. "tools/call"
+#   ctx.params                     plain dict of the request params
+#   ctx.request                    starlette Request -> .headers
+#   ctx.session.client_params      the initialize params, for the whole session
+#
+# The session id is a transport concern and lives in the Mcp-Session-Id header.
+# It is absent on the initialize request itself, because the server assigns it
+# in that response - so initialize events carry no session, and every later
+# message in the same session does.
+SESSION_HEADER = "mcp-session-id"
 
 
-def _extract(ctx) -> dict:
-    """Pull method / session / client out of the middleware context.
+def _session_from(ctx):
+    try:
+        return _hash_session(ctx.request.headers.get(SESSION_HEADER))
+    except Exception:
+        return None
 
-    The middleware signature is provisional, so every lookup is a best effort
-    across the shapes the SDK has plausibly used. Unknown values log as None
-    rather than raising.
+
+def _client_from(ctx):
+    """'name/version' of the connected client, or None.
+
+    Preferred source is ctx.session.client_params, which the SDK keeps for the
+    life of the session. On the initialize message itself that is not populated
+    yet, so fall back to the request's own params.
     """
-    global _ctx_debug_done
-    if CTX_DEBUG and not _ctx_debug_done:
-        _ctx_debug_done = True
+    info = None
+    try:
+        info = ctx.session.client_params.clientInfo
+    except Exception:
+        info = None
+    if info is None:
         try:
-            print("[mcp-log] ctx type:", type(ctx), flush=True)
-            print("[mcp-log] ctx attrs:",
-                  sorted(a for a in dir(ctx) if not a.startswith("_")), flush=True)
-            for probe in ("message", "request", "params", "session", "scope"):
-                sub = getattr(ctx, probe, None)
-                if sub is not None:
-                    print("[mcp-log]  .{}: {} -> {}".format(
-                        probe, type(sub),
-                        sorted(a for a in dir(sub) if not a.startswith("_"))[:40]),
-                        flush=True)
+            params = ctx.params or {}
+            info = params.get("clientInfo") or params.get("client_info")
         except Exception:
-            traceback.print_exc()
-
-    method = _first_attr(ctx, "method")
-    if method is None:
-        msg = _first_attr(ctx, "message", "request", "req")
-        method = _first_attr(msg, "method")
-        if method is None:
-            root = _first_attr(msg, "root")
-            method = _first_attr(root, "method")
-
-    session_raw = _first_attr(ctx, "session_id", "sessionId")
-    if session_raw is None:
-        sess = _first_attr(ctx, "session")
-        session_raw = _first_attr(sess, "session_id", "sessionId", "id")
-
-    # clientInfo only arrives on initialize; remember it for the session.
-    client = None
-    params = _first_attr(ctx, "params")
-    if params is None:
-        msg = _first_attr(ctx, "message", "request", "req")
-        params = _first_attr(msg, "params")
-        if params is None:
-            params = _first_attr(_first_attr(msg, "root"), "params")
-    ci = _first_attr(params, "clientInfo", "client_info")
-    if ci is not None:
-        cname = _first_attr(ci, "name") or "unknown"
-        cver = _first_attr(ci, "version") or "?"
-        client = "{}/{}".format(cname, cver)
-
-    return {
-        "method": str(method) if method else None,
-        "session": _hash_session(session_raw),
-        "client": client,
-    }
+            info = None
+    if info is None:
+        return None
+    try:
+        if isinstance(info, dict):
+            name, version = info.get("name"), info.get("version")
+        else:
+            name, version = getattr(info, "name", None), getattr(info, "version", None)
+        return "{}/{}".format(name or "unknown", version or "?")
+    except Exception:
+        return None
 
 
-# Maps hashed session -> "name/version", so tools_call events and the forwarded
-# search can be attributed to the client that introduced itself at initialize.
-_session_clients = {}
+def _debug_dump(ctx):
+    global _ctx_debug_done
+    if not CTX_DEBUG or _ctx_debug_done:
+        return
+    _ctx_debug_done = True
+    try:
+        print("[mcp-log] ctx type:", type(ctx), flush=True)
+        print("[mcp-log] ctx attrs:",
+              sorted(a for a in dir(ctx) if not a.startswith("_")), flush=True)
+        for probe in ("message", "request", "params", "session", "scope"):
+            sub = getattr(ctx, probe, None)
+            if sub is not None:
+                print("[mcp-log]  .{}: {} -> {}".format(
+                    probe, type(sub),
+                    sorted(a for a in dir(sub) if not a.startswith("_"))[:40]),
+                    flush=True)
+    except Exception:
+        traceback.print_exc()
+
+
+# Per-task storage, so a concurrent request cannot read another's identity.
+# An earlier version used module-level globals set *after* the handler ran,
+# which attributed one client's search to whichever client connected last -
+# real usage was being logged as probe traffic.
+_ctx_session: contextvars.ContextVar = contextvars.ContextVar(
+    "abstractinator_session", default=None)
+_ctx_client: contextvars.ContextVar = contextvars.ContextVar(
+    "abstractinator_client", default=None)
 
 EVENT_NAMES = {
     "initialize": "initialize",
@@ -217,39 +219,45 @@ EVENT_NAMES = {
 
 async def usage_logging_middleware(ctx, call_next):
     """Log one event per inbound MCP message, then pass it through untouched."""
-    info = {}
+    _debug_dump(ctx)
+
+    method = session = client = None
     try:
-        info = _extract(ctx)
-        if info.get("session") and info.get("client"):
-            _session_clients[info["session"]] = info["client"]
+        method = getattr(ctx, "method", None)
+        session = _session_from(ctx)
+        client = _client_from(ctx)
     except Exception:
         if CTX_DEBUG:
             traceback.print_exc()
 
+    # Set BEFORE the handler runs, so search_literature sees this request's
+    # identity rather than the previous message's.
+    tok_s = _ctx_session.set(session)
+    tok_c = _ctx_client.set(client)
+
     t0 = time.perf_counter()
     try:
-        result = await call_next(ctx)
-    except Exception:
-        _safe_log_event(info, t0, status="error")
-        raise
-    _safe_log_event(info, t0, status="ok")
-    return result
+        try:
+            result = await call_next(ctx)
+        except Exception:
+            _safe_log_event(method, session, client, t0, "error")
+            raise
+        _safe_log_event(method, session, client, t0, "ok")
+        return result
+    finally:
+        with contextlib.suppress(Exception):
+            _ctx_session.reset(tok_s)
+            _ctx_client.reset(tok_c)
 
 
-def _safe_log_event(info, t0, status):
+def _safe_log_event(method, session, client, t0, status):
     try:
-        method = info.get("method")
-        session = info.get("session")
-        client = info.get("client") or (_session_clients.get(session) if session else None)
         event = EVENT_NAMES.get(method, method or "other")
 
         # Keep-alive chatter would otherwise swamp the funnel: ~2,000 /mcp
         # requests produced 5 real searches, mostly pings and reconnects.
-        if event in ("ping",):
+        if event == "ping":
             return
-
-        # Expose the session to the request-scoped tool call below.
-        _current_session.update({"session": session, "client": client})
 
         _write_event(
             event=event,
@@ -262,12 +270,6 @@ def _safe_log_event(info, t0, status):
     except Exception:
         if CTX_DEBUG:
             traceback.print_exc()
-
-
-# Last-seen session/client, used to tag the outgoing API call. Requests are
-# handled one message at a time per connection, so this is adequate for
-# attribution; it is not relied on for correctness.
-_current_session = {"session": None, "client": None}
 
 
 # --------------------------------------------------------------------------- #
@@ -332,10 +334,11 @@ async def search_literature(
     # thing in the URL.
     headers = {}
     try:
-        if _current_session.get("session"):
-            headers["X-Session-Id"] = _current_session["session"]
-        if _current_session.get("client"):
-            headers["X-Client-Name"] = _current_session["client"]
+        sess, cli = _ctx_session.get(), _ctx_client.get()
+        if sess:
+            headers["X-Session-Id"] = sess
+        if cli:
+            headers["X-Client-Name"] = cli
     except Exception:
         pass
 
