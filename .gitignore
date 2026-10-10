@@ -25,3 +25,4 @@ logs/
 
 # Shiny/bslib runtime cache
 app_cache/
+*.bak

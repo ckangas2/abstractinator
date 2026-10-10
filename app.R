@@ -1031,14 +1031,41 @@ server <- function(input, output, session) {
       }
       
       # 4. LOG TO S3 (Synchronous)
+      # Maintainer testing is logged as "self" rather than "website", so it can
+      # be excluded from real usage counts: https://abstractinator.me/?self=1
+      log_channel <- tryCatch({
+        qs <- shiny::parseQueryString(session$clientData$url_search)
+        if (identical(qs$self, "1")) "self" else "website"
+      }, error = function(e) "website")
+
+      # Records found before deduplication, vs log_count which is after it.
+      log_total_found <- tryCatch(
+        if (!is.null(extraction_results$original_combined_data)) {
+          nrow(extraction_results$original_combined_data)
+        } else NA_integer_,
+        error = function(e) NA_integer_
+      )
+
+      log_sources <- tryCatch({
+        d <- extraction_results$deduplicated_data
+        if (!is.null(d) && "Source" %in% names(d)) as.list(table(d$Source)) else NULL
+      }, error = function(e) NULL)
+
       log_search_to_s3(
-        search_term = search_term,
-        duration_sec = search_duration,
-        result_count = log_count,
-        source_type = log_source,
-        elsevier_key = active_elsevier,
-        uspto_key = active_uspto,
-        core_key = active_core # <--- Add this!
+        search_term    = search_term,
+        duration_sec   = search_duration,
+        result_count   = log_count,
+        source_type    = log_source,
+        elsevier_key   = active_elsevier,
+        uspto_key      = active_uspto,
+        core_key       = active_core,
+        channel        = log_channel,
+        event          = "search",
+        deep           = isTRUE(search_ctx$deep),
+        total_found    = log_total_found,
+        returned       = log_count,
+        from_cache     = identical(log_source, "CACHE"),
+        source_counts  = log_sources
       )
 
     

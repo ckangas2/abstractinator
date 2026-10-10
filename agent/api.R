@@ -104,18 +104,39 @@ function(req, res, q = "", limit = 25, abstract_chars = 1500, deep = "false") {
 
   df <- out$deduplicated_data
   
-  # Log every agent search (same log as the website, tagged channel = "agent")
-  tryCatch(
-    log_search_to_s3(
-      search_term = q,
-      duration_sec = as.numeric(difftime(Sys.time(), t0, units = "secs")),
-      result_count = if (is.null(df)) 0L else nrow(df),
-      source_type = if (identical(out$metadata$source, "CACHE")) "CACHE" else "API",
-      core_key = core_key, uspto_key = uspto_key,
-      channel = "agent"
-    ),
-    error = function(e) message("[Logger] Agent log failed: ", e$message)
-  )
+  # Who is asking. The MCP server forwards a hashed session id and the client
+  # name it received at initialize; both are absent for a direct REST caller.
+  # No IP address is ever recorded (SECURITY.md).
+  agent_session <- trimws(req$HTTP_X_SESSION_ID %||% "")
+  agent_client  <- trimws(req$HTTP_X_CLIENT_NAME %||% "")
+  log_channel   <- if (grepl("uptime-probe|abstractinator-probe",
+                             tolower(agent_client))) "probe" else "agent"
+
+  # Logged on every exit path below, after the result set is known.
+  log_this_search <- function(total_found, returned, source_counts, status) {
+    tryCatch(
+      log_search_to_s3(
+        search_term    = q,
+        duration_sec   = as.numeric(difftime(Sys.time(), t0, units = "secs")),
+        result_count   = returned,
+        source_type    = if (identical(out$metadata$source, "CACHE")) "CACHE" else "API",
+        core_key = core_key, uspto_key = uspto_key,
+        channel        = log_channel,
+        event          = "search",
+        session        = if (nzchar(agent_session)) agent_session else NA_character_,
+        client         = if (nzchar(agent_client))  agent_client  else NA_character_,
+        deep           = deep,
+        max_results    = limit,
+        abstract_chars = abstract_chars,
+        total_found    = total_found,
+        returned       = returned,
+        from_cache     = identical(out$metadata$source, "CACHE"),
+        source_counts  = source_counts,
+        status         = status
+      ),
+      error = function(e) message("[Logger] Agent log failed: ", e$message)
+    )
+  }
   
   base <- list(
     query = q,
@@ -123,7 +144,10 @@ function(req, res, q = "", limit = 25, abstract_chars = 1500, deep = "false") {
     from_cache = identical(out$metadata$source, "CACHE"),
     seconds = round(as.numeric(difftime(Sys.time(), t0, units = "secs")), 1)
   )
-  if (is.null(df) || nrow(df) == 0) return(c(base, list(total_found = 0, returned = 0, results = list())))
+  if (is.null(df) || nrow(df) == 0) {
+    log_this_search(0L, 0L, NULL, "empty")
+    return(c(base, list(total_found = 0, returned = 0, results = list())))
+  }
 
   cols <- c(title = "Title", abstract = "Abstract", authors = "Authors",
             publication_date = "PublicationDate", doi = "DOI", url = "URL",
@@ -154,10 +178,13 @@ function(req, res, q = "", limit = 25, abstract_chars = 1500, deep = "false") {
     }
   }
 
+  src <- as.list(table(df$Source))
+  log_this_search(nrow(df), nrow(picked), src, "ok")
+
   c(base, list(
     total_found = nrow(df),
     returned = nrow(picked),
-    source_counts = as.list(table(df$Source)),
+    source_counts = src,
     results = picked
   ))
 }
