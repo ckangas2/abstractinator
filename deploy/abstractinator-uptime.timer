@@ -1,0 +1,11 @@
+[Unit]
+Description=Probe The Abstractinator every minute
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=5min
+AccuracySec=5s
+Unit=abstractinator-uptime.service
+
+[Install]
+WantedBy=timers.target

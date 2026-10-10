@@ -1,0 +1,7 @@
+[Unit]
+Description=Abstractinator uptime probe (one tick)
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=%h/.openclaw/workspace/workspace-code-team/working_abstractinator/10.4.26/deploy/uptime_probe.sh

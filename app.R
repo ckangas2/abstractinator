@@ -265,7 +265,7 @@ ui <- fluidPage(
     tags$meta(name = "theme-color", content = "#222222"),
     
     # --- Search engines & link previews (Slack, iMessage, Discord, X, ...) ---
-    tags$meta(name = "description", content = "Immunology & virology literature, searched across Europe PMC, OpenAlex, ClinicalTrials.gov, bioRxiv, NIH and NSF at once. Deduplicated and tagged by immune cell type and virus."),
+    tags$meta(name = "description", content = "Immunology & virology literature, searched across Europe PMC, OpenAlex, ClinicalTrials.gov, bioRxiv, NIH and NSF at once. Deduplicated and tagged by immune cell type, virus and bacterium."),
     tags$meta(property = "og:type", content = "website"),
     tags$meta(property = "og:url", content = "https://abstractinator.me/"),
     tags$meta(property = "og:title", content = "The Abstractinator"),
