@@ -2118,3 +2118,9 @@ a.landing-card-link:focus-visible .landing-card {
 .thin-footer span {
   line-height: 1;
 }
+
+/* Align the text, not the boxes. The help link carries a Font Awesome icon
+   and Donate is bare text, so their line boxes differ in height - centring
+   those boxes left the two labels 6.5px apart. Baseline is what a row of
+   text wants. */
+.thin-footer { align-items: baseline; }
