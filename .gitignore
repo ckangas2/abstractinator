@@ -32,3 +32,9 @@ app_cache/
 *.ft2bak
 *.typebak
 *.patchbak*
+*.probebak
+*.dtbak
+*.oabak
+*.quickbak
+*.subrowbak
+*.phasebak
