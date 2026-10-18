@@ -1175,17 +1175,25 @@ server <- function(input, output, session) {
         if (!is.null(df) && f != "All") df <- df[df$Source == f, , drop = FALSE]
         df
       },
-      # modifyList rather than editing dt_options, so the shared definition keeps
-      # serving the other tables untouched. Sort abstract-bearing rows first,
-      # then newest-first WITHIN each group - ordering by abstract alone would
-      # bury recent grants at the bottom of the table.
-      options = modifyList(dt_options, list(
-        order = list(list(23, "desc"), list(21, "desc")),
-        columnDefs = c(
+      # Copy dt_options and assign into it, so the shared definition keeps
+      # serving the other tables untouched.
+      #
+      # NOT modifyList(): it recurses whenever both sides are lists, and
+      # columnDefs/order are UNNAMED lists. It descended into them, found no
+      # names to match, and kept the originals - so the hidden columns showed
+      # and the sort never applied. Plain assignment replaces outright.
+      #
+      # Sort abstract-bearing rows first, then newest-first WITHIN each group:
+      # ordering by abstract alone would bury recent grants at the bottom.
+      options = local({
+        o <- dt_options
+        o$order <- list(list(23, "desc"), list(21, "desc"))
+        o$columnDefs <- c(
           if (is.null(dt_options$columnDefs)) list() else dt_options$columnDefs,
           list(list(targets = c(23, 24, 25), visible = FALSE))
         )
-      )),
+        o
+      }),
       fillContainer = FALSE,
       colnames = c("Title", "Abstract", "Authors", "AuthorAffiliations", "Publication Date", 
                    "URL", "DOI", "EPMC_ID", "CORE_ID", "NCTId", "Source", "Affiliations", 
