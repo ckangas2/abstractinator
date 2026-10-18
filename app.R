@@ -121,7 +121,15 @@ dt_options <- list(
                badge = ' <span style=\"color: #4caf50; font-weight: bold; font-size: 0.75em; border: 1px solid #4caf50; border-radius: 4px; padding: 1px 4px; margin-left: 6px; vertical-align: middle;\">NSF GRANT</span>';
             }
             
-            // E. Bacteria tag (purple), shown alongside any source badge
+            // E. Open access (teal): tells the reader they can actually read
+            // this one. Teal rather than green because #4caf50 is already NSF,
+            // and orange - the OA movement's own colour - is already PREPRINT.
+            var oa = row[25];
+            if (oa === 'Y') {
+               badge += ' <span style=\"color: #00bfa5; font-weight: bold; font-size: 0.75em; border: 1px solid #00bfa5; border-radius: 4px; padding: 1px 4px; margin-left: 6px; vertical-align: middle;\">OPEN ACCESS</span>';
+            }
+
+            // F. Bacteria tag (purple), shown alongside any source badge
             var bacteria = row[17];
             if (bacteria && bacteria !== 'Non-descript') {
                badge += ' <span style=\"color: #b388ff; font-weight: bold; font-size: 0.75em; border: 1px solid #b388ff; border-radius: 4px; padding: 1px 4px; margin-left: 6px; vertical-align: middle;\">' + bacteria.toUpperCase() + '</span>';
@@ -530,7 +538,7 @@ ui <- fluidPage(
       
       # Tab 2: Deduplication Summary
       bslib::nav_panel(
-        title = "Deduplication Summary",
+        title = "Deduplicatinator",
         uiOutput("deduplicationSummaryContent") 
       ),
       
@@ -1262,15 +1270,45 @@ server <- function(input, output, session) {
         rv$deduplication_table
       },
       options = list(searching = FALSE, paging = FALSE, info = FALSE),
+      # Row numbers carry no meaning here - the rows are sources, not a sequence.
+      rownames = FALSE,
       colnames = c("Source", "Total Search Records", "Unique Records", HTML("Duplicate Records Removed")),
       escape = FALSE,
       selection = "none"
       )
       
+      # The table above counts duplicates. This says what the trials actually
+      # ARE, which is the question someone has when they see "Trials 50" - and
+      # it is read from the pre-dedup frame, so Phase never has to enter the
+      # results-table column contract.
+      output$trialPhaseSummary <- renderUI({
+        df <- rv$initial_extracted_data
+        if (is.null(df) || !"Source" %in% names(df)) return(NULL)
+        tr <- df[!is.na(df$Source) & df$Source == "clinicaltrials.gov", , drop = FALSE]
+        if (nrow(tr) == 0) return(NULL)
+
+        ph <- if ("Phase" %in% names(tr)) as.character(tr$Phase) else rep(NA_character_, nrow(tr))
+        # Observational studies have no phase by design; say so rather than
+        # hiding them, or the counts will not add up to the trial total.
+        ph[is.na(ph) | !nzchar(trimws(ph))] <- "Not applicable"
+
+        counts <- table(ph)
+        nm <- names(counts)
+        counts <- counts[order(nm == "Not applicable", nm)]
+
+        div(
+          style = "margin-top: 12px; color: #aaa; font-size: 0.9em;",
+          strong(sprintf("Trials by phase (%d): ", nrow(tr))),
+          paste(sprintf("%s %d", names(counts), as.integer(counts)),
+                collapse = "   \u00b7   ")
+        )
+      })
+
       output$deduplicationSummaryContent <- renderUI({
         tagList(
           h4("Deduplicatinator"),
           DT::dataTableOutput("deduplicationTable"),
+          uiOutput("trialPhaseSummary"),
           uiOutput("searchTime")
         )
       })

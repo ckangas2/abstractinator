@@ -79,7 +79,31 @@ get_clinical_trials_data <- function(search_term, limit = 10000) {
     start_dates <- studies_chunk$protocolSection$statusModule$studyFirstPostDateStruct$date
     completion_dates <- studies_chunk$protocolSection$statusModule$completionDateStruct$date
     overall_statuses <- studies_chunk$protocolSection$statusModule$overallStatus
+
+    # Phase arrives in the same response - designModule sits beside the status
+    # and description modules above - so this costs no extra request. It is a
+    # list column: a trial can be registered as PHASE1/PHASE2, and observational
+    # studies legitimately carry no phase at all.
+    phases_list <- studies_chunk$protocolSection$designModule$phases
+    if (is.null(phases_list)) phases_list <- vector("list", nrow(studies_chunk))
     
+    # "PHASE2" -> "Phase 2"; "EARLY_PHASE1" -> "Early Phase 1"; a registration
+    # of c("PHASE1","PHASE2") -> "Phase 1/Phase 2". CT.gov also uses the literal
+    # string "NA" for studies with no phase, which is not the same as missing
+    # and would otherwise read as a phase called NA.
+    format_ctgov_phase <- function(x) {
+      if (is.null(x) || length(x) == 0) return(NA_character_)
+      x <- toupper(trimws(as.character(x)))
+      x <- x[nzchar(x) & x != "NA"]
+      if (!length(x)) return(NA_character_)
+      pretty <- vapply(x, function(v) {
+        if (identical(v, "EARLY_PHASE1")) "Early Phase 1"
+        else if (grepl("^PHASE[0-9]$", v)) paste("Phase", sub("^PHASE", "", v))
+        else gsub("_", " ", v)
+      }, character(1), USE.NAMES = FALSE)
+      paste(unique(pretty), collapse = "/")
+    }
+
     # Process Row-by-Row for this batch
     batch_df <- map_dfr(1:nrow(studies_chunk), function(i) {
       
@@ -124,6 +148,9 @@ get_clinical_trials_data <- function(search_term, limit = 10000) {
       s_date <- if (!is.null(start_dates[i])) start_dates[i] else NA_character_
       c_date <- if (!is.null(completion_dates[i])) completion_dates[i] else NA_character_
       stat   <- if (!is.null(overall_statuses[i])) overall_statuses[i] else NA_character_
+      phase_val <- format_ctgov_phase(
+        tryCatch(phases_list[[i]], error = function(e) NULL)
+      )
       
       # Format Status String
       is_active <- grepl("Active|Recruiting|Enrolling", stat, ignore.case = TRUE)
@@ -145,6 +172,7 @@ get_clinical_trials_data <- function(search_term, limit = 10000) {
         PublicationDate = pub_date_str,
         URL = url_val,
         NCTId = id_val,
+        Phase = phase_val,
         AdverseEvents = NA_character_, # Keeping simple for speed
         SeriousAdverseEvents = NA_character_,
         Source = "clinicaltrials.gov"
