@@ -9,7 +9,7 @@ $(document).ready(function(){
   // 36s and the pairing was arbitrary - the narwhal was at depth 2 while the
   // text said "Almost there". There is nothing to keep in sync now because
   // both are derived from the same counter.
-  const STEP_SPEED = 1500;          // 6 steps ~= 9s, about a median search
+  const STEP_SPEED = 2000;          // 6 steps = 12s; a typical search sees 4-5
   const DOT_ANIMATION_SPEED = 450;
   
   // 1. ASSET DEFINITIONS

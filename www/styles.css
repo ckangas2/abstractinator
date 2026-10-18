@@ -2059,3 +2059,8 @@ a.landing-card-link:focus-visible .landing-card {
       rgba(var(--accent-primary-rgb), 0.09) 55%,
       rgba(var(--accent-primary-rgb), 0) 76%);
 }
+
+/* The overlay must paint above the floating controls, or the donate button
+   and hamburger sit un-blurred on top of it while everything else behind
+   them is blurred. During a search, covering everything is the point. */
+.loading-overlay { z-index: 10050 !important; }
