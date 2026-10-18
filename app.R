@@ -1317,7 +1317,10 @@ server <- function(input, output, session) {
       }
 
       output$deduplicationSummaryContent <- renderUI({
-        tagList(
+        # The whole panel is one centred column: heading, table and timing line
+        # share an axis, so the heading does not float off to the left of a
+        # centred table.
+        div(style = "max-width: 760px; margin: 0 auto;",
           h4("Deduplicatinator"),
           # Four short columns stretched across the full page leave a lot of
           # empty space between a source and its count: this is a summary, not

@@ -62,6 +62,12 @@ $(document).ready(function(){
     // Update static completion images immediately
     $("#completionIconLeft").attr("src", config.complete);
     $("#completionIconRight").attr("src", config.complete);
+
+    // Preload. The icons are swapped by src on a timer, so an image the
+    // browser has not fetched yet leaves the slot empty for the length of the
+    // request - which is what makes the first cycle stutter. Six small PNGs.
+    loadingIcons.forEach(function (src) { var im = new Image(); im.src = src; });
+    var doneImg = new Image(); doneImg.src = config.complete;
   }
 
   // Initialize Default
@@ -87,7 +93,16 @@ $(document).ready(function(){
   // ------------------------------------------------------------------------
   Shiny.addCustomMessageHandler("show_loading", function(message) {
     $(".loading-overlay").show();
-    $(".loading-overlay").addClass('show-progress'); 
+    $(".loading-overlay").addClass('show-progress');
+
+    // show_loading can arrive again before hide_loading has run - a second
+    // search, a reconnect, a re-render. Without clearing first, each arrival
+    // stacked another icon timer and another dots timer on the ones already
+    // running, so the animation sped up and stuttered, and hide_loading could
+    // only ever clear the most recent of them. messageInterval was already
+    // guarded below; these two were not.
+    clearInterval(loadingInterval);
+    clearInterval(ellipsisInterval); 
 
     // 1. Initialize Icon
     currentIconIndex = 0;
