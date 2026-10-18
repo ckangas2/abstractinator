@@ -643,7 +643,11 @@ ui <- fluidPage(
       span("The Abstractinator v2.0", style = "opacity: 0.5; margin-right: 5px;"),
       "|",
       # Using actionLink so it can trigger a Shiny Modal
-      actionLink("footer_help_btn", " Help & Documentation", icon = icon("question-circle"))
+      actionLink("footer_help_btn", " Help & Documentation", icon = icon("question-circle")),
+      "|",
+      # TEMPORARY: a second copy of the help link, to test whether a third
+      # footer item misbehaves on its own or only #btc_donate did.
+      actionLink("footer_help_btn2", " Help & Documentation", icon = icon("question-circle"))
   ),
   tags$div(style = "height: 25px; display: block; clear: both;") 
 
