@@ -1267,7 +1267,7 @@ server <- function(input, output, session) {
       
       
       output$deduplicationTable <- DT::renderDataTable({
-        rv$deduplication_table
+        add_trial_phase_rows(rv$deduplication_table, rv$initial_extracted_data)
       },
       options = list(searching = FALSE, paging = FALSE, info = FALSE),
       # Row numbers carry no meaning here - the rows are sources, not a sequence.
@@ -1277,34 +1277,46 @@ server <- function(input, output, session) {
       selection = "none"
       )
       
-      # The table above counts duplicates. This says what the trials actually
-      # ARE, which is the question someone has when they see "Trials 50" - and
-      # it is read from the pre-dedup frame, so Phase never has to enter the
-      # results-table column contract.
-      output$trialPhaseSummary <- renderUI({
-        df <- rv$initial_extracted_data
-        if (is.null(df) || !"Source" %in% names(df)) return(NULL)
-        tr <- df[!is.na(df$Source) & df$Source == "clinicaltrials.gov", , drop = FALSE]
-        if (nrow(tr) == 0) return(NULL)
+      # Phase breakdown as indented rows beneath clinicaltrials.gov. Only the
+      # record count is filled in: the other two columns are about duplicates,
+      # and a phase subset has no honest value to put there, so they stay empty
+      # rather than repeating a number that would look computed.
+      add_trial_phase_rows <- function(tbl, raw) {
+        if (is.null(tbl) || !nrow(tbl)) return(tbl)
+        if (is.null(raw) || !"Source" %in% names(raw)) return(tbl)
+        tr <- raw[!is.na(raw$Source) & raw$Source == "clinicaltrials.gov", , drop = FALSE]
+        if (!nrow(tr)) return(tbl)
 
         ph <- if ("Phase" %in% names(tr)) as.character(tr$Phase) else rep(NA_character_, nrow(tr))
-        # Observational studies have no phase by design; say so rather than
-        # hiding them, or the counts will not add up to the trial total.
+        # Observational studies have no phase by design; count them rather than
+        # hiding them, or the sub-rows will not add up to the trial total.
         ph[is.na(ph) | !nzchar(trimws(ph))] <- "Not applicable"
 
         counts <- table(ph)
         nm <- names(counts)
         counts <- counts[order(nm == "Not applicable", nm)]
+        if (!length(counts)) return(tbl)
 
-        div(
-          style = "margin-top: 12px; color: #aaa; font-size: 0.9em;",
-          strong(sprintf("Trials by phase (%d): ", nrow(tr))),
-          paste(sprintf("%s %d", names(counts), as.integer(counts)),
-                collapse = "   \u00b7   ")
+        i <- which(trimws(tolower(as.character(tbl[[1]]))) == "clinicaltrials.gov")
+        if (!length(i)) return(tbl)
+        i <- i[1]
+
+        sub <- tbl[rep(i, length(counts)), , drop = FALSE]
+        sub[[1]] <- sprintf(
+          "<span style=\"padding-left: 26px; opacity: 0.6;\">&#8627;&nbsp; %s</span>",
+          names(counts)
         )
-      })
+        sub[[2]] <- as.integer(counts)
+        if (ncol(sub) >= 3) for (k in 3:ncol(sub)) sub[[k]] <- NA
 
-      output$deduplicationSummaryContent <- renderUI({
+        dplyr::bind_rows(
+          tbl[seq_len(i), , drop = FALSE],
+          sub,
+          if (i < nrow(tbl)) tbl[(i + 1):nrow(tbl), , drop = FALSE] else NULL
+        )
+      }
+
+output$deduplicationSummaryContent <- renderUI({
         tagList(
           h4("Deduplicatinator"),
           DT::dataTableOutput("deduplicationTable"),
