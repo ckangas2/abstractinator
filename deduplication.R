@@ -31,8 +31,11 @@ deduplicate_data <- function(df) {
       DOI_clean = trimws(tolower(Master_DOI)) %>% 
         gsub("^https?://(dx\\.)?doi\\.org/", "", .),
       
-      # Clean Title
-      clean_title = trimws(tolower(Title)) %>% gsub("[[:punct:]]$ ", "", .),
+      # Clean Title. The previous pattern was "[[:punct:]]$ " - a space AFTER the
+      # end-of-string anchor, which can never match. Trailing punctuation was
+      # therefore never stripped, so "Some Title." and "Some Title" were treated
+      # as two different papers.
+      clean_title = trimws(tolower(Title)) %>% gsub("[[:punct:]]+$", "", .),
       
       # Handle Author Affiliations
       AuthorAffiliations = if_else(
@@ -42,6 +45,37 @@ deduplicate_data <- function(df) {
       )
     )
   
+  # 1b. CROSS-FILL BEFORE CHOOSING A WINNER
+  # Sources carry different fields for the same paper: EPMC may have an abstract
+  # where OpenAlex has none, and only EPMC knows the PMCID. Picking one winner
+  # discards whatever only the losing copies had, which is how records ended up
+  # in the table with an empty abstract even though a sibling record had one.
+  # Fill the gaps across each duplicate group first; for the abstract, take the
+  # longest available, since sources truncate to different lengths.
+  blank_to_na <- function(x) {
+    x <- as.character(x)
+    x[trimws(x) %in% c("", "NA", "NULL", "No abstract available")] <- NA_character_
+    x
+  }
+
+  fill_within <- function(d, key, cols) {
+    cols <- intersect(cols, names(d))
+    if (!length(cols) || !key %in% names(d) || !nrow(d)) return(d)
+    for (cl in cols) d[[cl]] <- blank_to_na(d[[cl]])
+    d %>%
+      group_by(across(all_of(key))) %>%
+      mutate(across(all_of(cols), function(v) {
+        present <- v[!is.na(v)]
+        if (!length(present)) v else present[which.max(nchar(present))]
+      })) %>%
+      ungroup()
+  }
+
+  fill_cols <- c("Abstract", "PMCID", "IsOpenAccess")
+  is_doi <- !is.na(df$DOI_clean) & df$DOI_clean != ""
+  if (any(is_doi))  df[is_doi, ]  <- fill_within(df[is_doi, ],  "DOI_clean",   fill_cols)
+  if (any(!is_doi)) df[!is_doi, ] <- fill_within(df[!is_doi, ], "clean_title", fill_cols)
+
   # 2. Deduplicate with DOI (Using the new Master_DOI)
   with_doi <- df %>% filter(!is.na(DOI_clean) & DOI_clean != "")
   na_doi <- df %>% filter(is.na(DOI_clean) | DOI_clean == "")
@@ -50,18 +84,27 @@ deduplicate_data <- function(df) {
   dedup_doi <- with_doi %>%
     mutate(
       # Robust factor matching (handles variations in Source names)
-      Priority_Level = match(Source, priority_order, nomatch = 100) 
+      Priority_Level = match(Source, priority_order, nomatch = 100),
+      # OpenAlex, NIH and NSF all score 100, so ties were previously broken by
+      # whichever future happened to return first - sometimes handing the row to
+      # a copy with no abstract. Break the tie on content instead.
+      Abstract_Rank = ifelse(is.na(blank_to_na(Abstract)), 1L, 0L)
     ) %>%
-    arrange(Priority_Level) %>%
+    arrange(Priority_Level, Abstract_Rank) %>%
     filter(!duplicated(DOI_clean)) %>%
-    select(-Priority_Level, -DOI_clean, -clean_title, -Master_DOI)
+    select(-Priority_Level, -Abstract_Rank, -DOI_clean, -clean_title, -Master_DOI)
   
   # 4. Deduplicate Title
   dedup_na <- na_doi %>%
-    mutate(Priority_Level = match(Source, priority_order, nomatch = 100)) %>%
-    arrange(Priority_Level) %>%
+    mutate(
+      Priority_Level = match(Source, priority_order, nomatch = 100),
+      Abstract_Rank  = ifelse(is.na(blank_to_na(Abstract)), 1L, 0L)
+    ) %>%
+    arrange(Priority_Level, Abstract_Rank) %>%
     filter(!duplicated(clean_title)) %>%
-    select(-Priority_Level, -clean_title, -Master_DOI)
+    # DOI_clean was previously left in on this branch only, so bind_rows() below
+    # produced a phantom DOI_clean column that was NA for every DOI-matched row.
+    select(-Priority_Level, -Abstract_Rank, -DOI_clean, -clean_title, -Master_DOI)
   
   # 5. Combine
   deduplicated_df <- bind_rows(dedup_doi, dedup_na)

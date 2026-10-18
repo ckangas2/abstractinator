@@ -75,6 +75,12 @@ get_epmc_data <- function(search_term, page_size = 1000, result_type = "core", m
       title    <- results_df$title[i] %||% NA_character_
       abstract <- results_df$abstractText[i] %||% NA_character_
       pub_date <- results_df$firstPublicationDate[i] %||% NA_character_
+
+      # resultType="core" already returns these; they were being discarded.
+      # PMCID makes open-access full text a single call instead of a lookup
+      # plus a fetch, and isOpenAccess lets the UI say so.
+      pmcid    <- results_df$pmcid[i] %||% NA_character_
+      is_oa    <- results_df$isOpenAccess[i] %||% NA_character_
       
       # URL Logic
       url <- if (!is.na(doi)) {
@@ -143,10 +149,12 @@ get_epmc_data <- function(search_term, page_size = 1000, result_type = "core", m
       
       # --- Build Row ---
       epmc_results_list[[length(epmc_results_list) + 1]] <- data.frame(
-        EPMC_ID = epmc_id, 
-        DOI = doi, 
-        Title = title, 
-        Abstract = abstract, 
+        EPMC_ID = epmc_id,
+        PMCID = pmcid,
+        IsOpenAccess = is_oa,
+        DOI = doi,
+        Title = title,
+        Abstract = abstract,
         Authors = authors_text, 
         AuthorAffiliations = as.character(author_affiliations_combined), 
         PublicationDate = pub_date, 

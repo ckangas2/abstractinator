@@ -1114,6 +1114,9 @@ server <- function(input, output, session) {
             primary_cell         = if ("primary_cell" %in% names(.)) primary_cell else NA_character_,
             primary_virus        = if ("primary_virus" %in% names(.)) primary_virus else NA_character_,
             primary_bacteria     = if ("primary_bacteria" %in% names(.)) primary_bacteria else NA_character_,
+            # Only EPMC supplies these, so every other source needs them filled in
+            PMCID                = if ("PMCID" %in% names(.)) PMCID else NA_character_,
+            IsOpenAccess         = if ("IsOpenAccess" %in% names(.)) IsOpenAccess else NA_character_,
             
             # Ensure Boolean Flags exist
             is_bioinformatics = if ("is_bioinformatics" %in% names(.)) as.logical(is_bioinformatics) else FALSE,
@@ -1135,15 +1138,33 @@ server <- function(input, output, session) {
                      PublicationDate),
               orders = c("Ymd", "mdY", "Ym", "Y"), quiet = TRUE
             )),
-            ItemKey = make_item_key(DOI, URL, Title)
+            ItemKey = make_item_key(DOI, URL, Title),
+
+            # Abstract-less records are kept, not dropped: a grant or a trial
+            # with no abstract is still a real hit, and dropping them would make
+            # the per-source counts dishonest. They are sorted below records that
+            # do have one, and the cell says which source came up empty rather
+            # than leaving a blank that reads like a bug.
+            HasAbstract = !is.na(Abstract) &
+                          !trimws(as.character(Abstract)) %in% c("", "NA", "NULL"),
+            Abstract = ifelse(
+              HasAbstract,
+              as.character(Abstract),
+              paste0("<span style=\"opacity:0.45; font-style:italic;\">",
+                     "No abstract provided by ", Source, "</span>")
+            )
           ) %>% # <--- CLOSE MUTATE AND PIPE
           
           # --- UPDATE SELECT ---
-          select(Title, Abstract, Authors, AuthorAffiliations, PublicationDate, URL, DOI, 
-                 EPMC_ID, CORE_ID, NCTId, Source, Affiliations, AdverseEvents, 
-                 SeriousAdverseEvents, is_bioinformatics, primary_cell, 
+          # Column order is a contract: the table's JS reads row[5] URL, row[6] DOI,
+          # row[10] Source, row[17] primary_bacteria and row[22] ItemKey. New
+          # columns are APPENDED (23, 24, 25) so none of those indices move.
+          select(Title, Abstract, Authors, AuthorAffiliations, PublicationDate, URL, DOI,
+                 EPMC_ID, CORE_ID, NCTId, Source, Affiliations, AdverseEvents,
+                 SeriousAdverseEvents, is_bioinformatics, primary_cell,
                  primary_virus, primary_bacteria, immune_cell_hits_combined, virus_hits_combined,
-                 bacteria_hits_combined, SortDate, ItemKey) 
+                 bacteria_hits_combined, SortDate, ItemKey,
+                 HasAbstract, PMCID, IsOpenAccess)
       )
       
       output$resultsDisplay <- DT::renderDataTable({
@@ -1152,13 +1173,24 @@ server <- function(input, output, session) {
         if (!is.null(df) && f != "All") df <- df[df$Source == f, , drop = FALSE]
         df
       },
-      options = dt_options, 
+      # modifyList rather than editing dt_options, so the shared definition keeps
+      # serving the other tables untouched. Sort abstract-bearing rows first,
+      # then newest-first WITHIN each group - ordering by abstract alone would
+      # bury recent grants at the bottom of the table.
+      options = modifyList(dt_options, list(
+        order = list(list(23, "desc"), list(21, "desc")),
+        columnDefs = c(
+          if (is.null(dt_options$columnDefs)) list() else dt_options$columnDefs,
+          list(list(targets = c(23, 24, 25), visible = FALSE))
+        )
+      )),
       fillContainer = FALSE,
       colnames = c("Title", "Abstract", "Authors", "AuthorAffiliations", "Publication Date", 
                    "URL", "DOI", "EPMC_ID", "CORE_ID", "NCTId", "Source", "Affiliations", 
                    "AdverseEvents", "SeriousAdverseEvents", "Bioinformatics", 
                    "Primary Immune Cell", "Primary Virus", "Primary Bacteria", "Immune Cell Hits", "Virus Hits",
-                   "Bacteria Hits", "SortDate", "ItemKey"),
+                   "Bacteria Hits", "SortDate", "ItemKey",
+                   "HasAbstract", "PMCID", "IsOpenAccess"),
       rownames = FALSE,
       escape = FALSE,
       selection = 'none',
