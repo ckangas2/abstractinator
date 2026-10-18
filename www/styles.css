@@ -2100,3 +2100,21 @@ a.landing-card-link:focus-visible .landing-card {
 .thin-footer a {
   margin-left: 0;
 }
+
+/* The footer was a fixed 30px box with line-height 30px per item. Adding a
+   fourth item pushed the flex container onto a second line (Help at y=181,
+   Donate at y=196 - identical computed styles, so they could not have been
+   on one line), and overflow:hidden then clipped it.
+   Explicit nowrap, and let the bar size to its content. */
+.thin-footer {
+  flex-wrap: nowrap;
+  height: auto;
+  min-height: 30px;
+  line-height: 1;
+  padding: 7px 25px 7px 12px;
+  overflow: visible;
+}
+.thin-footer a,
+.thin-footer span {
+  line-height: 1;
+}
