@@ -106,19 +106,19 @@ dt_options <- list(
             
             // A. Check for Preprint (Orange)
             if (source && (source.toLowerCase().includes('biorxiv') || source.toLowerCase().includes('medrxiv') || source.toLowerCase().includes('preprint'))) {
-               badge = ' <span style=\"color: #ffab40; font-weight: bold; font-size: 0.75em; border: 1px solid #ffab40; border-radius: 4px; padding: 1px 4px; margin-left: 6px; vertical-align: middle;\">PREPRINT</span>';
+               badge = ' <span style=\"color: #ffab40; font-weight: bold; font-size: 0.75em; border: 1px solid #ffab40; border-radius: 4px; padding: 1px 4px; margin-left: 6px; vertical-align: middle; white-space: nowrap;\">PREPRINT</span>';
             }
             // B. Check for Patent (Red)
             else if (source && (source.toLowerCase().includes('patent') || source.toLowerCase().includes('uspto'))) {
-               badge = ' <span style=\"color: #ff5252; font-weight: bold; font-size: 0.75em; border: 1px solid #ff5252; border-radius: 4px; padding: 1px 4px; margin-left: 6px; vertical-align: middle;\">PATENT</span>';
+               badge = ' <span style=\"color: #ff5252; font-weight: bold; font-size: 0.75em; border: 1px solid #ff5252; border-radius: 4px; padding: 1px 4px; margin-left: 6px; vertical-align: middle; white-space: nowrap;\">PATENT</span>';
             }
             // C. Check for NIH Grant (Blue)
             else if (source && source.toLowerCase().includes('nih')) {
-               badge = ' <span style=\"color: #4da6ff; font-weight: bold; font-size: 0.75em; border: 1px solid #4da6ff; border-radius: 4px; padding: 1px 4px; margin-left: 6px; vertical-align: middle;\">NIH GRANT</span>';
+               badge = ' <span style=\"color: #4da6ff; font-weight: bold; font-size: 0.75em; border: 1px solid #4da6ff; border-radius: 4px; padding: 1px 4px; margin-left: 6px; vertical-align: middle; white-space: nowrap;\">NIH GRANT</span>';
             }
             // D. Check for NSF Grant (Green)
             else if (source && source.toLowerCase().includes('nsf')) {
-               badge = ' <span style=\"color: #4caf50; font-weight: bold; font-size: 0.75em; border: 1px solid #4caf50; border-radius: 4px; padding: 1px 4px; margin-left: 6px; vertical-align: middle;\">NSF GRANT</span>';
+               badge = ' <span style=\"color: #4caf50; font-weight: bold; font-size: 0.75em; border: 1px solid #4caf50; border-radius: 4px; padding: 1px 4px; margin-left: 6px; vertical-align: middle; white-space: nowrap;\">NSF GRANT</span>';
             }
             
             // E. Open access (teal): tells the reader they can actually read
@@ -126,13 +126,13 @@ dt_options <- list(
             // and orange - the OA movement's own colour - is already PREPRINT.
             var oa = row[25];
             if (oa === 'Y') {
-               badge += ' <span style=\"color: #00bfa5; font-weight: bold; font-size: 0.75em; border: 1px solid #00bfa5; border-radius: 4px; padding: 1px 4px; margin-left: 6px; vertical-align: middle;\">OPEN ACCESS</span>';
+               badge += ' <span style=\"color: #00bfa5; font-weight: bold; font-size: 0.75em; border: 1px solid #00bfa5; border-radius: 4px; padding: 1px 4px; margin-left: 6px; vertical-align: middle; white-space: nowrap;\">OPEN ACCESS</span>';
             }
 
             // F. Bacteria tag (purple), shown alongside any source badge
             var bacteria = row[17];
             if (bacteria && bacteria !== 'Non-descript') {
-               badge += ' <span style=\"color: #b388ff; font-weight: bold; font-size: 0.75em; border: 1px solid #b388ff; border-radius: 4px; padding: 1px 4px; margin-left: 6px; vertical-align: middle;\">' + bacteria.toUpperCase() + '</span>';
+               badge += ' <span style=\"color: #b388ff; font-weight: bold; font-size: 0.75em; border: 1px solid #b388ff; border-radius: 4px; padding: 1px 4px; margin-left: 6px; vertical-align: middle; white-space: nowrap;\">' + bacteria.toUpperCase() + '</span>';
             }
             
             // --- 2. CREATE TITLE LINK ---
@@ -2286,9 +2286,9 @@ server <- function(input, output, session) {
                 // --- BADGE LOGIC ---
                 var badge = '';
                 if (source && (source.toLowerCase().includes('biorxiv') || source.toLowerCase().includes('medrxiv') || source.toLowerCase().includes('preprint'))) {
-                   badge = ' <span style=\"color: #ffab40; font-weight: bold; font-size: 0.75em; border: 1px solid #ffab40; border-radius: 4px; padding: 1px 4px; margin-left: 6px; vertical-align: middle;\">PREPRINT</span>';
+                   badge = ' <span style=\"color: #ffab40; font-weight: bold; font-size: 0.75em; border: 1px solid #ffab40; border-radius: 4px; padding: 1px 4px; margin-left: 6px; vertical-align: middle; white-space: nowrap;\">PREPRINT</span>';
                 } else if (source && (source.toLowerCase().includes('patent') || source.toLowerCase().includes('uspto'))) {
-                   badge = ' <span style=\"color: #ff5252; font-weight: bold; font-size: 0.75em; border: 1px solid #ff5252; border-radius: 4px; padding: 1px 4px; margin-left: 6px; vertical-align: middle;\">PATENT</span>';
+                   badge = ' <span style=\"color: #ff5252; font-weight: bold; font-size: 0.75em; border: 1px solid #ff5252; border-radius: 4px; padding: 1px 4px; margin-left: 6px; vertical-align: middle; white-space: nowrap;\">PATENT</span>';
                 }
                 
                 var titleHtml = '';
