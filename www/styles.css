@@ -2086,3 +2086,17 @@ a.landing-card-link:focus-visible .landing-card {
 .thin-footer a {
   margin-left: 0;
 }
+
+/* Flexbox instead of inline text. Flex items do not wrap unless told to, so
+   this cannot be undone by whatever was overriding white-space - and the gap
+   replaces the per-link margin, which would otherwise double up. */
+.thin-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  white-space: nowrap;
+}
+.thin-footer a {
+  margin-left: 0;
+}
