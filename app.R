@@ -300,12 +300,10 @@ ui <- fluidPage(
   # BTC DONATION BUTTON
   # ========================================================================
   
-  actionButton(
-    inputId = "btc_donate",
-    label = "Donate",
-    icon = icon("bitcoin"), # Requires FontAwesome (standard in Shiny)
-    class = "btn-btc-pill", # <--- This links to the CSS above
-  ),
+  # The donate control lives in the footer now. A pill beside the search
+  # box is the first thing a new visitor sees, before the tool has given
+  # them anything - which reads against what llms.txt already promises
+  # agents: a fact about the project, never a prompt to pay.
   
   # ========================================================================
   # HAMBURGER OPTIONS BUTTON (FLOATING)
@@ -645,7 +643,11 @@ ui <- fluidPage(
       span("The Abstractinator v2.0", style = "opacity: 0.5; margin-right: 5px;"),
       "|",
       # Using actionLink so it can trigger a Shiny Modal
-      actionLink("footer_help_btn", " Help & Documentation", icon = icon("question-circle"))
+      actionLink("footer_help_btn", " Help & Documentation", icon = icon("question-circle")),
+      "|",
+      # Same inputId as the old floating button, so observeEvent(input$btc_donate)
+      # and the modal it opens are untouched.
+      actionLink("btc_donate", "Donate")
   ),
   tags$div(style = "height: 25px; display: block; clear: both;") 
 
