@@ -2034,3 +2034,28 @@ a.landing-card-link:focus-visible .landing-card {
   z-index: 1;
   filter: none;
 }
+
+/* ------------------------------------------------------------------ *
+ * Bloom colour: all accent, no white core.
+ * Appended as an override rather than edited in place - later rules win,
+ * so this does not depend on matching the earlier gradient exactly.
+ * rgba() cannot take a hex custom property, so the accent is kept as
+ * components here too; keep in step with --accent-primary (#00bcd4).
+ * ------------------------------------------------------------------ */
+:root { --accent-primary-rgb: 0, 188, 212; }
+
+.loading-icon-container::before {
+  background: radial-gradient(circle at 50% 45%,
+      rgba(var(--accent-primary-rgb), 0.38) 0%,
+      rgba(var(--accent-primary-rgb), 0.30) 34%,
+      rgba(var(--accent-primary-rgb), 0.18) 58%,
+      rgba(var(--accent-primary-rgb), 0.06) 74%,
+      rgba(var(--accent-primary-rgb), 0) 84%);
+}
+
+.loading-icon-container::after {
+  background: radial-gradient(ellipse at 50% 50%,
+      rgba(var(--accent-primary-rgb), 0.20) 0%,
+      rgba(var(--accent-primary-rgb), 0.09) 55%,
+      rgba(var(--accent-primary-rgb), 0) 76%);
+}
