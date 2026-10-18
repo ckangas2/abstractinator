@@ -463,7 +463,7 @@ ui <- fluidPage(
         feature_card("card_read", "book-open", "Readinator",
                      "Build and export a targeted reading list to Zotero or EndNote."),
         feature_card("agent_info", "robot", "Agentinator",
-                     "Let your AI assistant search The Abstractinator directly via MCP. Connector URL: https://mcp.abstractinator.me/mcp")
+                     "Let your AI assistant search The Abstractinator directly via MCP, then read open-access papers in full. Two tools: search_literature and get_fulltext. Connector URL: https://mcp.abstractinator.me/mcp")
       )
     }),
     
