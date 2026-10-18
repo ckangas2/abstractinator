@@ -207,7 +207,28 @@ fetch_search_logs <- function(dir = log_dir()) {
     }
   }
 
+  # One agent can appear under two identities: its MCP clientInfo when it
+  # announces itself, and its HTTP User-Agent when it does not. Counting those
+  # separately double-counts the same traffic.
+  if ("client" %in% names(logs_df)) {
+    logs_df$client_norm <- normalize_client(logs_df$client)
+  }
+
   arrange(logs_df, desc(timestamp))
+}
+
+CLIENT_ALIASES <- c(
+  "ua:undici"                 = "openclaw-agent",
+  "openclaw-bundle-mcp/0.0.0" = "openclaw-agent",
+  "ua:Claude-User"            = "claude-connector",
+  "Anthropic/1.0.0"           = "claude-connector"
+)
+
+#' Collapse the two identities one client can present into a single label.
+normalize_client <- function(x) {
+  x <- as.character(x)
+  out <- unname(CLIENT_ALIASES[x])
+  ifelse(is.na(out), sub("^ua:", "", x), out)
 }
 
 #' Admin tool: searches per day, split by channel. Counts completed searches
@@ -228,9 +249,15 @@ summarize_search_logs <- function(dir = log_dir()) {
 #' Admin tool: the MCP funnel. Shows how many clients connected, how many asked
 #' what tools exist, and how many actually called one. A wide gap between
 #' tools_list and tools_call points at the tool description, not at discovery.
-summarize_funnel <- function(dir = log_dir(), days = 30) {
+summarize_funnel <- function(dir = log_dir(), days = 30, include_probe = FALSE) {
   logs <- fetch_search_logs(dir)
   if (is.null(logs) || nrow(logs) == 0) return(NULL)
+  # The uptime probe reconnects every tick and never calls a tool, so including
+  # it makes "initialize" a heartbeat count rather than an arrival count.
+  if (!include_probe && "channel" %in% names(logs)) {
+    logs <- filter(logs, channel != "probe")
+  }
+  if (nrow(logs) == 0) return(NULL)
   logs %>%
     filter(timestamp >= Sys.time() - days * 86400) %>%
     mutate(day = as.Date(timestamp)) %>%
@@ -246,7 +273,8 @@ summarize_clients <- function(dir = log_dir()) {
   if (!"client" %in% names(logs)) return(NULL)
   logs %>%
     filter(!is.na(client)) %>%
-    group_by(client, channel) %>%
+    group_by(client = if ("client_norm" %in% names(.)) client_norm else client,
+             channel) %>%
     summarise(
       events   = n(),
       searches = sum(event == "search", na.rm = TRUE),

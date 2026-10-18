@@ -247,11 +247,11 @@ def _identity(ctx):
             rec["client"] = cli
         sid = sid or rec["session"]
         cli = cli or rec["client"]
-        # No header anywhere in this session: derive a stable handle from the
-        # session object so distinct sessions remain countable.
-        if sid is None:
-            sid = _hash_session("obj-{}".format(key))
-            rec["session"] = sid
+        # Deliberately NOT falling back to the ServerSession object's identity.
+        # These clients get a fresh object per request, so that fallback made
+        # "sessions" count requests - 76 sessions for 99 events - and read like
+        # a user count. A NULL session honestly says "this client does not
+        # maintain one".
 
     return sid, cli
 
@@ -311,9 +311,17 @@ def _safe_log_event(method, session, client, t0, status, tool=None):
         if event == "ping":
             return
 
+        # The uptime probe was 94% of all logged events and never calls a tool.
+        # Its measurements belong in uptime.csv, not here - and one JSON file
+        # per tick would reach six figures within a year, which matters because
+        # fetch_search_logs() reads every file on every call.
+        channel = _channel_for(client)
+        if channel == "probe":
+            return
+
         _write_event(
             event=event,
-            channel=_channel_for(client),
+            channel=channel,
             session=session,
             client=client,
             term=tool,

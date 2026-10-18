@@ -3,7 +3,7 @@ Description=Probe The Abstractinator every minute
 
 [Timer]
 OnBootSec=2min
-OnUnitActiveSec=5min
+OnUnitActiveSec=15min
 AccuracySec=5s
 Unit=abstractinator-uptime.service
 
