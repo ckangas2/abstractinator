@@ -2064,3 +2064,11 @@ a.landing-card-link:focus-visible .landing-card {
    and hamburger sit un-blurred on top of it while everything else behind
    them is blurred. During a search, covering everything is the point. */
 .loading-overlay { z-index: 10050 !important; }
+
+/* The footer is a single 30px line (height = line-height), so anything that
+   wraps renders below the viewport and vanishes. Adding Donate pushed it
+   over. There is plenty of horizontal room, so keep it on one line. */
+.thin-footer {
+  white-space: nowrap;
+  overflow: hidden;
+}
