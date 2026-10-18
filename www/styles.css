@@ -1929,3 +1929,38 @@ a.landing-card-link:focus-visible .landing-card {
   box-shadow: 0 0 10px var(--glow-subtle);
 }
 .pool-switch .btn i { margin-right: 5px; }
+
+/* ------------------------------------------------------------------ *
+ * Loading overlay, rebuilt.
+ * Flex centring replaces the ::before inline-block trick. The backdrop
+ * blurs the results rather than hiding them behind a flat scrim, so the
+ * app reads as working rather than gone.
+ * ------------------------------------------------------------------ */
+.loading-overlay {
+  background-color: rgba(10, 12, 16, 0.55);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  align-items: center;
+  justify-content: center;
+}
+.loading-overlay::before { content: none; }
+
+/* The narwhal floats on the blur: a solid accent-coloured card behind a
+   cartoon with a transparent background fought with it. */
+.loading-icon-container {
+  background-color: transparent;
+  box-shadow: none;
+  padding: 0;
+}
+
+/* Reserve the width of three dots so adding one cannot shift the centred
+   message sideways. */
+.loading-dots {
+  display: inline-block;
+  width: 1.6em;
+  text-align: left;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loading-overlay { backdrop-filter: none; -webkit-backdrop-filter: none; }
+}

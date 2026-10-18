@@ -4,9 +4,13 @@
 $(document).ready(function(){
   
   // --- CONFIGURATION ---
-  const ICON_CYCLE_SPEED = 3000;    
-  const MESSAGE_CYCLE_SPEED = 6000; 
-  const DOT_ANIMATION_SPEED = 700;
+  // One step = one frame AND its message. They used to run on separate timers
+  // (3000ms vs 6000ms), so 6 frames looped every 18s against 6 messages every
+  // 36s and the pairing was arbitrary - the narwhal was at depth 2 while the
+  // text said "Almost there". There is nothing to keep in sync now because
+  // both are derived from the same counter.
+  const STEP_SPEED = 1500;          // 6 steps ~= 9s, about a median search
+  const DOT_ANIMATION_SPEED = 450;
   
   // 1. ASSET DEFINITIONS
   const THEMES = {
@@ -36,6 +40,7 @@ $(document).ready(function(){
   var loadingIcons = [];     
   
   // Animation State
+  var step = 0;
   var currentIconIndex = 0;
   var currentMessageIndex = 0;
   var currentLoadingText = loadingMessages[0];
@@ -91,8 +96,22 @@ $(document).ready(function(){
   // ------------------------------------------------------------------------
   // HANDLER: SHOW LOADING (The Animation Loop)
   // ------------------------------------------------------------------------
+  // Both the frame and the line come from `step`. Clamped rather than wrapped,
+  // so a search longer than the arc rests on the last frame and the punchline.
+  function renderStep() {
+    if (loadingIcons.length) {
+      $("#loadingIcon").attr("src",
+        loadingIcons[Math.min(step, loadingIcons.length - 1)]);
+    }
+    currentLoadingText = loadingMessages[Math.min(step, loadingMessages.length - 1)];
+    $("#loadingText").text(currentLoadingText);
+    $("#loadingDots").text(".".repeat(dotCount));
+  }
+
   Shiny.addCustomMessageHandler("show_loading", function(message) {
-    $(".loading-overlay").show();
+    // .css() rather than .show(): jQuery's .show() restores a div to
+    // display:block, which would undo the flex centring. .hide() is fine.
+    $(".loading-overlay").css("display", "flex");
     $(".loading-overlay").addClass('show-progress');
 
     // show_loading can arrive again before hide_loading has run - a second
@@ -104,50 +123,30 @@ $(document).ready(function(){
     clearInterval(loadingInterval);
     clearInterval(ellipsisInterval); 
 
-    // 1. Initialize Icon
-    currentIconIndex = 0;
-    if(loadingIcons.length > 0) {
-        $("#loadingIcon").attr("src", loadingIcons[currentIconIndex]);
-    }
+    // Every search starts the story at the beginning.
+    step = 0;
+    dotCount = 3;
+    renderStep();
 
-    // 2. Initialize Message (Only reset text on first load or if needed)
-    if (initialShowLoading) {
-      currentMessageIndex = 0;
-      currentLoadingText = loadingMessages[0];
-      $("#loadingMessage").text(currentLoadingText + "...");
-      dotCount = 3;
-      initialShowLoading = false;
-    }
-
-    // 3. START INTERVAL: Cycle Icons
+    // 3. ONE STEP = ONE FRAME + ONE LINE
+    // The messages are a narrative - dive, deeper, abstractinating, almost
+    // there, is this thing working, only one way to know - so once the arc
+    // reaches the end it HOLDS. Looping back to "Diving deep..." on a long
+    // search restarts the story and makes it read as filler.
     loadingInterval = setInterval(function() {
-      if(loadingIcons.length === 0) return;
-      currentIconIndex = (currentIconIndex + 1) % loadingIcons.length;
-      $("#loadingIcon").attr("src", loadingIcons[currentIconIndex]);
-    }, ICON_CYCLE_SPEED);
+      var last = Math.max(loadingIcons.length, loadingMessages.length) - 1;
+      if (step >= last) return;                     // arc finished; hold here
+      step += 1;
+      renderStep();
+    }, STEP_SPEED);
 
-    // 4. START INTERVAL: Animate Dots (...)
+    // 4. Dots animate within the step. They live in their own fixed-width
+    // span, so adding one does not shift the centred message sideways -
+    // which is what made the ellipsis look chunky.
     ellipsisInterval = setInterval(function() {
-      var dots = ".".repeat(dotCount);
-      $("#loadingMessage").text(currentLoadingText + dots);
       dotCount = (dotCount % 3) + 1;
+      $("#loadingDots").text(".".repeat(dotCount));
     }, DOT_ANIMATION_SPEED);
-
-    // 5. START INTERVAL: Cycle Messages (RESTORED LOGIC)
-    if (!messageInterval) { 
-      messageInterval = setInterval(function() {
-        // Advance index
-        currentMessageIndex = (currentMessageIndex + 1) % loadingMessages.length;
-        
-        // Update Base Text
-        currentLoadingText = loadingMessages[currentMessageIndex];
-        
-        // Immediate Update (don't wait for dot cycle)
-        $("#loadingMessage").text(currentLoadingText + "...");
-        dotCount = 3; // Reset dots for new message
-        
-      }, MESSAGE_CYCLE_SPEED);
-    }
   });
 
 
@@ -175,7 +174,8 @@ $(document).ready(function(){
   Shiny.addCustomMessageHandler("update_loading_message", function(message) {
     if (message) {
       currentLoadingText = message; // Update the base text
-      $("#loadingMessage").text(currentLoadingText + "...");
+      $("#loadingText").text(currentLoadingText);
+      $("#loadingDots").text("...");
       dotCount = 3;
     }
   });

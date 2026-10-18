@@ -328,8 +328,12 @@ ui <- fluidPage(
   div(
     class = "loading-overlay",
     div(class = "loading-icon-container",
-        img(src = "loading1.png", id = "loadingIcon", width = "50px", height = "50px"),
-        div(id = "loadingMessage", style = "color: white; margin-top: 20px; text-align: center;")
+        # width/height match the CSS so the box does not jump from 50px to
+        # 300px between first paint and stylesheet application.
+        img(src = "loading1.png", id = "loadingIcon", width = "300px", height = "300px"),
+        div(id = "loadingMessage", style = "color: white; margin-top: 20px; text-align: center;",
+            tags$span(id = "loadingText"),
+            tags$span(id = "loadingDots", class = "loading-dots"))
     )
   ),
   
