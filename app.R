@@ -648,7 +648,7 @@ ui <- fluidPage(
       # Deliberately keeps the footer_help_btn2 id: stylesheet rules left over
       # from the old floating button still target #btc_donate and take it out
       # of flow, which is what broke the footer layout.
-      actionLink("footer_help_btn2", " Donate", icon = icon("bitcoin"))
+      actionLink("footer_donate_btn", "Donate")
   ),
   tags$div(style = "height: 25px; display: block; clear: both;") 
 
@@ -1433,7 +1433,7 @@ server <- function(input, output, session) {
   # BTC DONATION BUTTON
   # ========================================================================
   
-  observeEvent(input$footer_help_btn2, {
+  observeEvent(input$footer_donate_btn, {
     showModal(modalDialog(
       title = div(icon("bitcoin"), " Value for Value"),
       
