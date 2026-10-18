@@ -1972,3 +1972,65 @@ a.landing-card-link:focus-visible .landing-card {
 #loadingIcon {
   filter: invert(1) drop-shadow(0 0 14px rgba(77, 208, 225, 0.35));
 }
+
+/* ------------------------------------------------------------------ *
+ * Moonstone bloom behind the loading narwhal.
+ *
+ * Replaces both the old accent card and the invert filter: the frames are
+ * black line art and need something light behind them, but a hard panel
+ * fought with the blurred backdrop. A radial gradient under heavy blur has
+ * no edge to fight with - it fades into the backdrop instead of sitting on
+ * it. Two layers: a bright core, and a wider dimmer one offset slightly so
+ * the edge frays rather than reading as a perfect circle.
+ * ------------------------------------------------------------------ */
+.loading-icon-container {
+  position: relative;
+}
+
+/* wide, dim, offset - the fray */
+.loading-icon-container::after {
+  content: "";
+  position: absolute;
+  left: 46%;
+  top: 140px;
+  width: 460px;
+  height: 420px;
+  transform: translate(-50%, -50%) rotate(-8deg);
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 50% 50%,
+      rgba(168, 200, 220, 0.38) 0%,
+      rgba(168, 200, 220, 0.18) 55%,
+      rgba(168, 200, 220, 0) 76%);
+  filter: blur(26px);
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* tight, bright - the core the line art reads against */
+.loading-icon-container::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 150px;
+  width: 330px;
+  height: 330px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 45%,
+      rgba(231, 239, 243, 0.90) 0%,
+      rgba(207, 227, 238, 0.72) 40%,
+      rgba(176, 208, 227, 0.32) 66%,
+      rgba(176, 208, 227, 0) 80%);
+  filter: blur(16px);
+  z-index: 0;
+  pointer-events: none;
+  display: block;
+  height: 330px;
+}
+
+/* the narwhal sits on top of the bloom, in its original black */
+#loadingIcon {
+  position: relative;
+  z-index: 1;
+  filter: none;
+}
