@@ -150,7 +150,13 @@ fetch_search_logs <- function(dir = log_dir()) {
       # Guard against any nested value sneaking in: keep scalars only, so
       # bind_rows() cannot fail on a list column.
       rec <- rec[vapply(rec, function(x) length(x) <= 1, logical(1))]
-      as_tibble(lapply(rec, function(x) if (length(x) == 0) NA else x))
+      # Everything is read as character and converted back below. Letting
+      # jsonlite infer per file meant one record writing "20000" and another
+      # writing 20000 made bind_rows() refuse the whole log - and the schema
+      # will keep gaining fields, so this class of break would keep recurring.
+      as_tibble(lapply(rec, function(x) {
+        if (length(x) == 0) NA_character_ else as.character(x)
+      }))
     }, error = function(e) NULL)
   })
 
@@ -190,6 +196,15 @@ fetch_search_logs <- function(dir = log_dir()) {
   for (num in c("duration", "total_found", "returned", "n_results",
                 "max_results", "abstract_chars")) {
     if (num %in% names(logs_df)) logs_df[[num]] <- suppressWarnings(as.numeric(logs_df[[num]]))
+  }
+
+  # Flags must come back as real logicals: summarize_quality() tests them with
+  # `%in% TRUE`, which silently reports FALSE for the string "TRUE".
+  for (lg in c("deep", "from_cache", "has_elsevier", "has_uspto", "has_core")) {
+    if (lg %in% names(logs_df)) {
+      logs_df[[lg]] <- toupper(trimws(as.character(logs_df[[lg]]))) %in%
+        c("TRUE", "T", "YES", "Y", "1")
+    }
   }
 
   arrange(logs_df, desc(timestamp))

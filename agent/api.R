@@ -135,7 +135,7 @@ function(req, res, pmcid = "", doi = "", max_chars = 20000) {
       event        = "fulltext",
       session      = if (nzchar(agent_session)) agent_session else NA_character_,
       client       = if (nzchar(agent_client))  agent_client  else NA_character_,
-      max_results  = max_chars,
+      max_results  = suppressWarnings(as.integer(max_chars)),
       returned     = if (is.null(out$chars)) NA_integer_ else out$chars,
       total_found  = if (is.null(out$total_chars)) NA_integer_ else out$total_chars,
       from_cache   = isTRUE(out$from_cache),
