@@ -463,7 +463,7 @@ ui <- fluidPage(
         feature_card("card_read", "book-open", "Readinator",
                      "Build and export a targeted reading list to Zotero or EndNote."),
         feature_card("agent_info", "robot", "Agentinator",
-                     "Let your AI assistant search The Abstractinator directly via MCP, then read open-access papers in full. Two tools: search_literature and get_fulltext. Connector URL: https://mcp.abstractinator.me/mcp")
+                     "Let your AI assistant search The Abstractinator and read open-access full text via MCP. Connector URL: https://mcp.abstractinator.me/mcp")
       )
     }),
     
@@ -865,13 +865,15 @@ server <- function(input, output, session) {
       
       h5("What your assistant gets", style = "margin-top: 20px;"),
       tags$ul(style = "color: #ccc;",
-        tags$li("A ", code("search_literature"), " tool covering Europe PMC, OpenAlex, ClinicalTrials.gov, bioRxiv/medRxiv, NIH RePORTER and NSF awards."),
-        tags$li("Deduplicated records with title, abstract, authors, date, DOI and link."),
-        tags$li("Each record tagged with its most prominent immune cell type and virus."),
-        tags$li("Results balanced across sources; repeat searches return instantly.")
+        tags$li(code("search_literature"), " \u2014 Europe PMC, OpenAlex, ClinicalTrials.gov, bioRxiv/medRxiv, NIH RePORTER and NSF awards, in one call."),
+        tags$li(code("get_fulltext"), " \u2014 reads one open-access article in full from Europe PMC, so your assistant can go past the abstract. ",
+                "Only the open-access subset can be served; a paywalled paper comes back marked ", em("not open access"), " rather than failing, and the DOI is there to follow by hand."),
+        tags$li("Deduplicated records with title, abstract, authors, date, DOI and link. Open-access records also carry a ", code("pmcid"), ", which is what ", code("get_fulltext"), " takes."),
+        tags$li("Each record tagged with its most prominent immune cell type, virus and bacterium."),
+        tags$li("Results balanced across sources rather than taken from whichever database returned most; repeat searches return instantly from cache.")
       ),
       p(icon("circle-info"), " The AI connector uses open-access sources only, so no API keys are needed or shared. ",
-        "Searches are rate-limited to keep the service available for everyone.",
+        "Searches and full-text requests are rate-limited separately, so one cannot crowd out the other.",
         style = "color: #888; font-size: 0.85em; margin-top: 15px;")
     ))
   })
