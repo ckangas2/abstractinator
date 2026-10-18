@@ -645,9 +645,10 @@ ui <- fluidPage(
       # Using actionLink so it can trigger a Shiny Modal
       actionLink("footer_help_btn", " Help & Documentation", icon = icon("question-circle")),
       "|",
-      # TEMPORARY: a second copy of the help link, to test whether a third
-      # footer item misbehaves on its own or only #btc_donate did.
-      actionLink("footer_help_btn2", " Help & Documentation", icon = icon("question-circle"))
+      # Deliberately keeps the footer_help_btn2 id: stylesheet rules left over
+      # from the old floating button still target #btc_donate and take it out
+      # of flow, which is what broke the footer layout.
+      actionLink("footer_help_btn2", " Donate", icon = icon("bitcoin"))
   ),
   tags$div(style = "height: 25px; display: block; clear: both;") 
 
@@ -1432,7 +1433,7 @@ server <- function(input, output, session) {
   # BTC DONATION BUTTON
   # ========================================================================
   
-  observeEvent(input$btc_donate, {
+  observeEvent(input$footer_help_btn2, {
     showModal(modalDialog(
       title = div(icon("bitcoin"), " Value for Value"),
       
