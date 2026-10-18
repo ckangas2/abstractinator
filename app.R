@@ -1316,11 +1316,16 @@ server <- function(input, output, session) {
         )
       }
 
-output$deduplicationSummaryContent <- renderUI({
+      output$deduplicationSummaryContent <- renderUI({
         tagList(
           h4("Deduplicatinator"),
-          DT::dataTableOutput("deduplicationTable"),
-          uiOutput("trialPhaseSummary"),
+          # Four short columns stretched across the full page leave a lot of
+          # empty space between a source and its count: this is a summary, not
+          # a grid. The width goes on the DT output as well as the wrapper,
+          # because a max-width on a parent div does not constrain the table
+          # element DT generates for itself.
+          div(style = "max-width: 760px;",
+              DT::dataTableOutput("deduplicationTable", width = "760px")),
           uiOutput("searchTime")
         )
       })
