@@ -21,6 +21,14 @@
         "readOnlyHint": true,
         "openWorldHint": true
       }
+    },
+    {
+      "name": "get_fulltext",
+      "description": "Read the full text of one open-access article from Europe PMC, given a pmcid from a search result (or a DOI). Returns clean JATS section text. Paywalled articles return status not_open_access rather than an error.",
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": true
+      }
     }
   ],
   "authentication": {

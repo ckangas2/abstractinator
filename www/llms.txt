@@ -18,6 +18,8 @@ In Claude: Settings -> Connectors -> Add custom connector -> paste the URL
 above and choose "No sign-in". Any MCP client supporting remote streamable
 HTTP servers works the same way.
 
+Two tools: search_literature to find records, get_fulltext to read one.
+
 ### Tool: search_literature
 
     search_literature(query, max_results=25, abstract_chars=1500, deep=false)
@@ -32,7 +34,39 @@ HTTP servers works the same way.
 
 Returns: total_found, returned, source_counts, and a results list. Each record
 carries title, abstract, authors, publication_date, doi, url, source,
-primary_cell, primary_virus and is_bioinformatics.
+primary_cell, primary_virus, primary_bacteria, is_bioinformatics, and - for
+open-access articles in Europe PMC - pmcid and is_open_access. A record with a
+pmcid can be read in full with get_fulltext.
+
+Records with no abstract are kept rather than dropped: a grant award or a trial
+registration with no abstract is still a real result, and removing them would
+make the per-source counts misleading. They are listed after records that do
+have one.
+
+### Tool: get_fulltext
+
+    get_fulltext(pmcid, doi, max_chars=20000)
+
+Reads the full text of ONE open-access article from Europe PMC.
+
+- pmcid: from a search result, e.g. "PMC5334499". Preferred.
+- doi: used to look up the PMCID when pmcid is not supplied. One extra request,
+  and only works for articles Europe PMC indexes.
+- max_chars: truncate the response. Default 20000, maximum 100000. The whole
+  text is cached server-side, so reading more later costs nothing.
+
+Only the open-access subset can be served. A paywalled article returns status
+"not_open_access" rather than an error; follow its DOI by hand instead. Use
+this in preference to fetching a publisher page: the text comes back as clean
+JATS sections, with no navigation or paywall interstitials.
+
+Returns pmcid, status, chars, total_chars, truncated, from_cache and full_text.
+total_chars is the length of the whole article, so a truncated response says
+how much was left unread.
+
+Full-text requests are rate limited separately from searches. The limit exists
+to stay within Europe PMC's tolerance - please do not use this to mirror the
+open-access corpus; EBI offer bulk downloads for that.
 
 A fresh search takes about 5-10 seconds. Repeat searches within 7 days return
 immediately from cache. Searches are rate limited to keep the service

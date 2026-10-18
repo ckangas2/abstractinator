@@ -269,10 +269,15 @@ async def usage_logging_middleware(ctx, call_next):
     """Log one event per inbound MCP message, then pass it through untouched."""
     _debug_dump(ctx)
 
-    method = session = client = None
+    method = session = client = tool = None
     try:
         method = getattr(ctx, "method", None)
         session, client = _identity(ctx)
+        # Which tool was called. With more than one tool, "tools_call" alone
+        # cannot tell search from full text in the funnel.
+        if method == "tools/call":
+            params = getattr(ctx, "params", None) or {}
+            tool = params.get("name") if isinstance(params, dict) else None
     except Exception:
         if CTX_DEBUG:
             traceback.print_exc()
@@ -287,9 +292,9 @@ async def usage_logging_middleware(ctx, call_next):
         try:
             result = await call_next(ctx)
         except Exception:
-            _safe_log_event(method, session, client, t0, "error")
+            _safe_log_event(method, session, client, t0, "error", tool)
             raise
-        _safe_log_event(method, session, client, t0, "ok")
+        _safe_log_event(method, session, client, t0, "ok", tool)
         return result
     finally:
         with contextlib.suppress(Exception):
@@ -297,7 +302,7 @@ async def usage_logging_middleware(ctx, call_next):
             _ctx_client.reset(tok_c)
 
 
-def _safe_log_event(method, session, client, t0, status):
+def _safe_log_event(method, session, client, t0, status, tool=None):
     try:
         event = EVENT_NAMES.get(method, method or "other")
 
@@ -311,6 +316,7 @@ def _safe_log_event(method, session, client, t0, status):
             channel=_channel_for(client),
             session=session,
             client=client,
+            term=tool,
             duration=round(time.perf_counter() - t0, 3),
             status=status,
         )
@@ -398,6 +404,76 @@ async def search_literature(
         return {"error": "Rate limit reached on The Abstractinator. Wait a minute and retry."}
     if r.status_code >= 400:
         return {"error": f"Search failed (HTTP {r.status_code}).", "detail": r.text[:500]}
+    return r.json()
+
+
+@mcp.tool(
+    annotations=ToolAnnotations(
+        title="Read open-access full text",
+        read_only_hint=True,
+        open_world_hint=True,
+    )
+)
+async def get_fulltext(
+    pmcid: str = "", doi: str = "", max_chars: int = 20000
+) -> dict:
+    """Read the full text of ONE open-access article from Europe PMC.
+
+    Use this after search_literature, on a result that has a pmcid (or whose
+    is_open_access is "Y"). Only the open-access subset can be served: for a
+    paywalled article this returns status "not_open_access" rather than an
+    error, and the DOI should be followed by hand instead.
+
+    Prefer this over fetching the publisher's page: Europe PMC returns clean
+    JATS text, already split into sections, with no navigation or paywall
+    interstitials to work around.
+
+    Args:
+        pmcid: PMC identifier from a search result, e.g. "PMC5334499".
+        doi: DOI, used to look up the PMCID when pmcid is not supplied. Slower
+            by one request, and only works if the article is in Europe PMC.
+        max_chars: Truncate the returned text. Default 20000, maximum 100000.
+            The whole text is cached server-side either way, so asking for more
+            later costs nothing.
+
+    Returns a dict with pmcid, status, chars, total_chars, truncated,
+    from_cache and full_text. total_chars is the length of the whole article,
+    so a truncated response says how much was left unread.
+    """
+    params = {"max_chars": max_chars}
+    if pmcid:
+        params["pmcid"] = pmcid
+    if doi:
+        params["doi"] = doi
+    if not pmcid and not doi:
+        return {"error": "Supply either pmcid (e.g. PMC5334499) or doi."}
+
+    headers = {}
+    try:
+        sess, cli = _ctx_session.get(), _ctx_client.get()
+        if sess:
+            headers["X-Session-Id"] = sess
+        if cli:
+            headers["X-Client-Name"] = cli
+    except Exception:
+        pass
+
+    try:
+        async with httpx2.AsyncClient(timeout=180) as client:
+            r = await client.get(f"{API_URL}/fulltext", params=params, headers=headers)
+    except httpx2.HTTPError as e:
+        return {"error": f"The Abstractinator API is unreachable: {e}"}
+    if r.status_code == 429:
+        return {"error": "Full-text rate limit reached. Wait a minute and retry."}
+    if r.status_code >= 500:
+        # The API returns 502 when Europe PMC itself failed; the body explains.
+        try:
+            return r.json()
+        except Exception:
+            return {"error": f"Full-text fetch failed (HTTP {r.status_code})."}
+    if r.status_code >= 400:
+        return {"error": f"Full-text fetch failed (HTTP {r.status_code}).",
+                "detail": r.text[:500]}
     return r.json()
 
 
