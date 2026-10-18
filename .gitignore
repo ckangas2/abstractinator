@@ -27,3 +27,8 @@ logs/
 app_cache/
 *.bak
 *.absbak
+*.absbak
+*.ftbak
+*.ft2bak
+*.typebak
+*.patchbak*
