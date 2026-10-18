@@ -643,11 +643,7 @@ ui <- fluidPage(
       span("The Abstractinator v2.0", style = "opacity: 0.5; margin-right: 5px;"),
       "|",
       # Using actionLink so it can trigger a Shiny Modal
-      actionLink("footer_help_btn", " Help & Documentation", icon = icon("question-circle")),
-      "|",
-      # Same inputId as the old floating button, so observeEvent(input$btc_donate)
-      # and the modal it opens are untouched.
-      actionLink("btc_donate", "Donate")
+      actionLink("footer_help_btn", " Help & Documentation", icon = icon("question-circle"))
   ),
   tags$div(style = "height: 25px; display: block; clear: both;") 
 
