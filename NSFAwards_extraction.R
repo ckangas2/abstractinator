@@ -3,86 +3,34 @@ library(jsonlite)
 library(httr)
 
 # ---- NSF keyword construction -------------------------------------------
-# research.gov's `keyword` parameter defaults to OR across terms. Verified
-# against the live endpoint 2026-10-19:
+# research.gov's `keyword` defaults to OR across terms and sorts by date, so a
+# multi-word query returns the newest awards matching ANY one of the words.
+# Verified against the live endpoint 2026-10-19:
 #
 #   Listeria immunity         -> totalCount 1607, matching "immunity" alone
 #   Listeria OR immunity      -> totalCount 1607  (identical: bare == OR)
 #   Listeria AND immunity     -> totalCount 1
 #   Listeria NOT immunity     -> totalCount 33    (1 + 33 = all 34 Listeria awards)
 #
-# The documented AND/OR/NOT operators work correctly, so we AND every term the
-# user typed -- that is what killed the algebraic-geometry and squid-swimming
-# awards that were matching on "cell" and "immunity" alone.
+# The documented AND operator works, so every term is required -- the same
+# semantics NIHReporter_extraction.R has always used via operator = "and".
+# If that returns nothing, NSF genuinely funds no such work and contributes no
+# rows; the source balancer then gives its share to the other databases.
 #
-# AND is frequently and correctly strict: a four-term AND on a narrow topic
-# legitimately returns zero. Rather than silently returning nothing, we walk a
-# deterministic ladder from all-terms down to one and take the first tier with
-# any hits, logging which tier won.
-#
-# NOTE: record count lives at response$metadata$totalCount. The previous code
+# NOTE: the record count is response$metadata$totalCount. The previous code
 # read response$totalRecords, which does not exist -- it always coerced to 0,
-# so the "all available records captured" exit never fired and NSF paginated
-# to max_results regardless of how few real matches there were.
+# so the "all available records captured" exit never fired.
 # NOTE: printFields is documented as "no longer functional"; the API ignores it.
 
-NSF_API_BASE <- "https://www.research.gov/awardapi-service/v1/awards.json"
-
-# Words with no discriminative power inside an AND -- dropped so they cannot
-# turn a good query into a zero-result one. This is not a guess at which of
-# your words matter; every content word is kept and required.
-NSF_STOPWORDS <- c("the", "and", "for", "with", "from", "into", "that", "this",
-                   "their", "its", "via", "using", "about", "between", "during",
-                   "toward", "towards", "are", "was", "were", "has", "have",
-                   "been", "how", "why", "does", "not", "but",
-                   "to", "of", "in", "on", "at", "by", "as", "an", "or", "if",
-                   "is", "be", "it", "we", "us", "our", "than", "then")
-
-nsf_tokenize <- function(search_term) {
+nsf_build_keyword <- function(search_term) {
   t <- trimws(search_term)
-  if (!nzchar(t)) return(character(0))
-  # Preserve caller-supplied "quoted phrases" as single AND operands.
+  if (!nzchar(t)) return(t)
+  # keep "quoted phrases" intact as single AND operands
   phrases <- regmatches(t, gregexpr('"[^"]+"', t))[[1]]
-  rest <- gsub('"[^"]+"', " ", t)
-  toks <- unlist(strsplit(rest, "[^[:alnum:]'-]+"))
-  toks <- toks[nzchar(toks)]
-  toks <- toks[nchar(toks) >= 2L & !tolower(toks) %in% NSF_STOPWORDS]
-  c(phrases, toks)
-}
-
-# Most specific first: all terms ANDed, then drop the trailing term, etc.
-nsf_keyword_ladder <- function(search_term) {
-  toks <- nsf_tokenize(search_term)
-  if (length(toks) == 0L) return(trimws(search_term))
-  unique(vapply(rev(seq_along(toks)),
-                function(n) paste(toks[seq_len(n)], collapse = " AND "),
-                character(1)))
-}
-
-# One cheap rpp=1 request to read totalCount for a candidate keyword.
-nsf_count_for <- function(keyword) {
-  u <- paste0(NSF_API_BASE, "?keyword=", URLencode(keyword, reserved = TRUE),
-              "&rpp=1&offset=0")
-  r <- tryCatch(httr::GET(u, httr::timeout(15)), error = function(e) NULL)
-  if (is.null(r) || httr::http_error(r)) return(NA_integer_)
-  j <- tryCatch(jsonlite::fromJSON(httr::content(r, "text", encoding = "UTF-8"),
-                                   flatten = FALSE),
-                error = function(e) NULL)
-  n <- j$response$metadata$totalCount
-  if (is.null(n) || length(n) == 0L) return(NA_integer_)
-  suppressWarnings(as.integer(n))
-}
-
-nsf_resolve_keyword <- function(search_term, verbose = TRUE) {
-  cands <- nsf_keyword_ladder(search_term)
-  for (cand in cands) {
-    n <- nsf_count_for(cand)
-    if (verbose) cat(sprintf("  [NSF KEY] %-55s -> %s\n", cand,
-                             if (is.na(n)) "request failed" else n))
-    if (!is.na(n) && n > 0L) return(cand)
-    Sys.sleep(0.3)
-  }
-  utils::tail(cands, 1)
+  words <- unlist(strsplit(gsub('"[^"]+"', " ", t), "[[:space:]]+"))
+  parts <- c(phrases, words[nzchar(words)])
+  if (length(parts) == 0L) return(t)
+  paste(parts, collapse = " AND ")
 }
 
 get_all_nsf_awards_baseR_v2 <- function(search_term, rows_per_page = 25, max_results = 100, print_fields = NULL) {
@@ -94,9 +42,9 @@ get_all_nsf_awards_baseR_v2 <- function(search_term, rows_per_page = 25, max_res
   
   cat(sprintf("\n[NSF START] Query: '%s' | Target: %d\n", search_term, max_results))
 
-  search_key <- nsf_resolve_keyword(search_term)
+  search_key <- nsf_build_keyword(search_term)
   if (!identical(search_key, search_term)) {
-    cat(sprintf("[NSF KEY] Using: %s
+    cat(sprintf("[NSF KEY] %s
 ", search_key))
   }
   
