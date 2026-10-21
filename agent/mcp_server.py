@@ -398,8 +398,12 @@ async def search_literature(
         offset: Skip this many records before returning, to page through a
             large result set. Ordering is deterministic, so paging cannot
             repeat or skip a record. Check has_more in the response.
+            total_found is the whole deduplicated pool; available is what is
+            pageable after any sources= filter, so page against available or
+            has_more, not total_found.
 
-    Returns a dict with total_found, returned, offset, has_more, source_counts
+    Returns a dict with total_found, available, returned, offset, has_more,
+    source_counts
     and a results list of records (title, abstract, authors,
     publication_date, doi, url, source, primary_cell, primary_virus,
     primary_bacteria, is_bioinformatics).

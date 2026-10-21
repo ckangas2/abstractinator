@@ -328,6 +328,9 @@ function(req, res, q = "", limit = 25, abstract_chars = 1500, deep = "false",
     total_found = nrow(df),
     returned = nrow(picked),
     offset = offset,
+    # total_found is the whole deduplicated pool; available is what is
+    # actually pageable after any sources= filter. They differ when filtering.
+    available = balanced_total,
     has_more = (offset + nrow(picked)) < balanced_total,
     source_counts = src,
     results = picked
