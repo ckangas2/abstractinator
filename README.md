@@ -312,3 +312,25 @@ If you use The Abstractinator in your research, please cite:
   version = {2.0.0}
 }
 ```
+
+## Reproducing the environment
+
+`renv.lock` records the exact package versions the live deployment runs,
+generated from that machine's library (R 4.6.1, 155 packages). To install the
+same set:
+
+```r
+install.packages("renv")
+renv::restore(lockfile = "renv.lock", library = .libPaths()[1], prompt = FALSE)
+```
+
+The lockfile is a *record*, not an activated renv project: there is no
+`.Rprofile` and no `renv/` directory in this repository, both of which are
+gitignored. The live server is updated with `git pull`, and an `.Rprofile`
+arriving that way would switch the Shiny and plumber services onto a project
+library that is not populated for the service user, taking the site down.
+
+`.github/workflows/tests.yml` runs the offline suite on every push against
+current package versions; `.github/workflows/deps.yml` restores the locked
+versions weekly and runs the same suite, so drift shows up without slowing
+every commit.

@@ -38,3 +38,9 @@ app_cache/
 *.quickbak
 *.subrowbak
 *.phasebak
+
+# renv is used to RECORD versions (renv.lock), not to activate a project
+# library. An .Rprofile here would auto-activate renv on the live server,
+# where the project library is not populated for the service user.
+.Rprofile
+renv/
