@@ -4,6 +4,13 @@
 library(digest)
 
 CACHE_DIR <- ".cache/s3_mimic/"
+
+# Bump this whenever the SHAPE of a cached result changes: a new column, a
+# renamed field, different dedup output. Old entries then hash to a different
+# filename and are simply never found, instead of being served with the new
+# fields missing -- which is how the clinicaltrials.gov Phase column failed to
+# appear on repeat searches. Invalidating is cheap: the window is 7 days.
+CACHE_SCHEMA_VERSION <- 2L
 if (!dir.exists(CACHE_DIR)) dir.create(CACHE_DIR, recursive = TRUE)
 
 # --- KEY GENERATION ---
@@ -14,7 +21,8 @@ get_cache_key <- function(search_term, has_elsevier = FALSE, has_uspto = FALSE, 
     clean_term, 
     "|elsevier:", isTRUE(has_elsevier), 
     "|uspto:", isTRUE(has_uspto),
-    "|core:", isTRUE(has_core)
+    "|core:", isTRUE(has_core),
+    "|schema:", CACHE_SCHEMA_VERSION
   )
   # Deep searches (limit != 50) get their own cache entries. Standard searches keep
   # the original signature, so existing cache files stay valid.

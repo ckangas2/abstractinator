@@ -176,7 +176,8 @@ function(req, res, pmcid = "", doi = "", max_chars = 20000) {
 #* @param deep "true" for a deep search: up to 250 results per source instead of 50 (slower)
 #* @get /search
 #* @serializer unboxedJSON
-function(req, res, q = "", limit = 25, abstract_chars = 1500, deep = "false") {
+function(req, res, q = "", limit = 25, abstract_chars = 1500, deep = "false",
+         offset = 0, sources = "") {
   q <- trimws(as.character(q))
   if (!nzchar(q) || nchar(q) > MAX_QUERY_CHARS) {
     res$status <- 400
@@ -188,6 +189,28 @@ function(req, res, q = "", limit = 25, abstract_chars = 1500, deep = "false") {
   abstract_chars <- suppressWarnings(as.integer(abstract_chars))
   if (is.na(abstract_chars)) abstract_chars <- 1500L
   abstract_chars <- max(0L, min(abstract_chars, 10000L))
+
+  offset <- suppressWarnings(as.integer(offset))
+  if (is.na(offset) || offset < 0L) offset <- 0L
+
+  # Friendly groups as well as exact source names, matched as substrings so
+  # "preprint" catches both bioRxiv and medRxiv. Note this filters the result
+  # set rather than the dispatch: one cache entry per query serves every
+  # sources= combination, instead of fragmenting the cache per combination.
+  SOURCE_GROUPS <- list(
+    papers    = c("epmc", "openalex"),
+    grants    = c("nih", "nsf"),
+    preprints = c("preprint"),
+    trials    = c("clinicaltrials")
+  )
+  keep_pat <- character(0)
+  if (nzchar(trimws(as.character(sources)))) {
+    toks <- tolower(trimws(strsplit(as.character(sources), ",")[[1]]))
+    toks <- toks[nzchar(toks)]
+    for (tk in toks) {
+      keep_pat <- c(keep_pat, if (!is.null(SOURCE_GROUPS[[tk]])) SOURCE_GROUPS[[tk]] else tk)
+    }
+  }
 
   deep <- tolower(as.character(deep)) %in% c("true", "1", "yes")
   per_source <- if (deep) DEEP_SEARCH_LIMIT else 50L
@@ -270,13 +293,24 @@ function(req, res, q = "", limit = 25, abstract_chars = 1500, deep = "false") {
 
   # Source-balanced selection: round-robin across databases instead of
   # returning the first N rows (which would all come from one source).
+  if (length(keep_pat)) {
+    src_l <- tolower(slim$source)
+    hit <- Reduce(`|`, lapply(keep_pat, function(pt) grepl(pt, src_l, fixed = TRUE)))
+    slim <- slim[hit, , drop = FALSE]
+  }
+
   picked <- slim %>%
     group_by(source) %>%
     mutate(.rank = row_number()) %>%
     ungroup() %>%
     arrange(.rank) %>%
-    select(-.rank) %>%
-    head(limit)
+    select(-.rank)
+
+  # Deterministic ordering above, so paging cannot repeat or skip a record.
+  balanced_total <- nrow(picked)
+  picked <- if (offset >= balanced_total) picked[0, , drop = FALSE]
+            else picked[seq.int(offset + 1L, balanced_total), , drop = FALSE]
+  picked <- head(picked, limit)
 
   if ("abstract" %in% names(picked)) {
     if (abstract_chars == 0) {
@@ -293,6 +327,8 @@ function(req, res, q = "", limit = 25, abstract_chars = 1500, deep = "false") {
   c(base, list(
     total_found = nrow(df),
     returned = nrow(picked),
+    offset = offset,
+    has_more = (offset + nrow(picked)) < balanced_total,
     source_counts = src,
     results = picked
   ))

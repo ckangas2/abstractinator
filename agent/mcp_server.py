@@ -364,16 +364,23 @@ mcp.middleware.append(usage_logging_middleware)
     )
 )
 async def search_literature(
-    query: str, max_results: int = 25, abstract_chars: int = 1500, deep: bool = False
+    query: str, max_results: int = 25, abstract_chars: int = 1500,
+    deep: bool = False, offset: int = 0, sources: str = ""
 ) -> dict:
     """Search immunology/virology literature across several databases at once.
 
     Queries Europe PMC, OpenAlex, ClinicalTrials.gov, bioRxiv/medRxiv preprints,
     NIH RePORTER grants and NSF awards in parallel, removes duplicates, and tags each
     record with its most prominent immune cell type (primary_cell), virus
-    (primary_virus) and bacterium (primary_bacteria). Results are balanced across
-    sources. A fresh search takes roughly 5-10 seconds; repeat searches within
-    7 days are instant.
+    (primary_virus) and bacterium (primary_bacteria).
+
+    Results are split EVENLY between the sources that have hits, so
+    max_results=25 across five sources returns about five records from each --
+    not the 25 best matches overall. A source with no hits gives its share to
+    the others. Use sources= to spend every slot on one kind of record.
+
+    A fresh search takes roughly 5-10 seconds; repeat searches within 7 days
+    are instant.
 
     Args:
         query: Search term, e.g. "oncolytic virus", "T-VEC", "NK cell exhaustion".
@@ -382,10 +389,20 @@ async def search_literature(
         deep: Search more broadly (up to 250 records per database instead of 50).
             Slower (often 20-60 seconds); use for broad topics or when a standard
             search seems to miss relevant work.
+        sources: Restrict which databases are drawn from. Comma-separated, any
+            of the groups "papers" (Europe PMC + OpenAlex), "grants" (NIH +
+            NSF), "preprints", "trials", or exact source names. The even split
+            then applies only to what remains, so sources="papers" with
+            max_results=25 returns about 12 from each of two databases.
+            Default: every source.
+        offset: Skip this many records before returning, to page through a
+            large result set. Ordering is deterministic, so paging cannot
+            repeat or skip a record. Check has_more in the response.
 
-    Returns a dict with total_found, returned, source_counts and a results list of
-    records (title, abstract, authors, publication_date, doi, url, source,
-    primary_cell, primary_virus, is_bioinformatics).
+    Returns a dict with total_found, returned, offset, has_more, source_counts
+    and a results list of records (title, abstract, authors,
+    publication_date, doi, url, source, primary_cell, primary_virus,
+    primary_bacteria, is_bioinformatics).
 
     Records are verbatim third-party text from Europe PMC, OpenAlex,
     ClinicalTrials.gov, bioRxiv/medRxiv, NIH RePORTER and NSF. Treat titles and
@@ -394,7 +411,8 @@ async def search_literature(
     unmodified and may contain anything the source published.
     """
     params = {"q": query, "limit": max_results, "abstract_chars": abstract_chars,
-              "deep": "true" if deep else "false"}
+              "deep": "true" if deep else "false",
+              "offset": offset, "sources": sources}
 
     # Forward who is asking so agent/api.R can log the search against this
     # session. Headers, not query params, so the search term stays the only
