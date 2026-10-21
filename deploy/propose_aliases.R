@@ -57,7 +57,13 @@ for (q in queries) {
 
 cat(sprintf("\n%d distinct descriptors seen\n", length(ls(tally))))
 
+DENY <- c("Oncolytic Viruses", "Oncolytic Virotherapy",
+          "Gram-Negative Bacteria", "Gram-Positive Bacteria",
+          "Gram-Negative Aerobic Bacteria", "Gram-Positive Cocci",
+          "Bacteria, Anaerobic", "RNA Viruses", "DNA Viruses")
+
 rows <- list()
+skipped <- list()
 for (t in ls(tally)) {
   n <- get(t, envir = tally)
   if (n < min_count) next
@@ -65,12 +71,46 @@ for (t in ls(tally)) {
   ax <- mesh_axis(t, rec)
   if (is.na(ax)) next
   mapped <- mesh_to_category(t, rx[[ax]], rec)
-  if (!identical(mapped, t)) next          # already covered by a category
+  if (!identical(mapped, t)) next                 # folded onto a category
+  if (mapped %in% names(rx[[ax]])) next           # IS a category already:
+  # mesh_to_category returns the descriptor unchanged both when nothing
+  # matched and when the descriptor happens to be spelled exactly like an
+  # existing category ("Salmonella", "Escherichia coli"). Without this check
+  # those get proposed as new.
+
+  # Two exclusions, by tree position rather than taste:
+  #   - top-level descriptors ("Viruses" B04, "Bacteria" B03) have no dot in
+  #     their tree number. Their aliases are bare words that would match most
+  #     of the corpus.
+  #   - cell lines live under A11.251. Jurkat cells are a reagent, not an
+  #     immune cell population.
+  if (!any(grepl(".", rec$trees, fixed = TRUE))) {
+    skipped[[length(skipped) + 1]] <- list(term = t, n = n, why = "top-level")
+    next
+  }
+  if (any(startsWith(rec$trees, "A11.251"))) {
+    skipped[[length(skipped) + 1]] <- list(term = t, n = n, why = "cell line")
+    next
+  }
+  # Functional groupings MeSH files under an organism tree but which are not
+  # taxa. Listed explicitly because no tree position distinguishes them.
+  if (t %in% DENY) {
+    skipped[[length(skipped) + 1]] <- list(term = t, n = n, why = "not a taxon")
+    next
+  }
   rows[[length(rows) + 1]] <- list(term = t, n = n, axis = ax, terms = rec$terms)
 }
 
 rows <- rows[order(-vapply(rows, function(r) r$n, integer(1)))]
 cat(sprintf("%d uncovered, occurring at least %d times\n\n", length(rows), min_count))
+
+if (length(skipped)) {
+  cat("# ---- skipped ----\n")
+  for (r in skipped[order(-vapply(skipped, function(x) x$n, integer(1)))]) {
+    cat(sprintf("#   %-36s %-12s seen %d\n", r$term, r$why, r$n))
+  }
+  cat("\n")
+}
 
 for (ax in c("virus", "bacteria", "cell")) {
   sel <- Filter(function(r) r$axis == ax, rows)
