@@ -1,0 +1,13 @@
+# Keeps the GitHub Actions in .github/workflows up to date. Action versions go
+# stale silently -- checkout@v4 was already running on a deprecated Node
+# runtime -- and a build that breaks for toolchain reasons is indistinguishable
+# from one broken by a code change until you read the log.
+#
+# R packages are not managed here: their versions are pinned in renv.lock.
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 3
