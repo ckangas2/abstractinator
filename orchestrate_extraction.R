@@ -192,8 +192,8 @@ tag_with_alias_list <- function(df, alias_list, prefix, weight_title = 20, weigh
   abstract <- tolower(ifelse(is.na(df$Abstract), "", df$Abstract))
   
   score <- vapply(regex_list, function(rx) {
-    grepl(rx, title, perl = TRUE) * weight_title +
-      grepl(rx, abstract, perl = TRUE) * weight_abstract
+    stringr::str_count(title, rx) * weight_title +
+      stringr::str_count(abstract, rx) * weight_abstract
   }, numeric(nrow(df)))
   if (is.null(dim(score))) score <- matrix(score, nrow = nrow(df), dimnames = list(NULL, names(regex_list)))
   
@@ -203,11 +203,95 @@ tag_with_alias_list <- function(df, alias_list, prefix, weight_title = 20, weigh
   cats <- names(regex_list)
   hits <- lapply(seq_len(nrow(df)), function(i) cats[score[i, ] > 0])
   top <- vapply(seq_len(nrow(df)), function(i) {
-    if (max(score[i, ]) > 0) cats[which.max(score[i, ])] else "Non-descript"
+    if (max(score[i, ]) >= MIN_PRIMARY_SCORE) cats[which.max(score[i, ])] else "Non-descript"
   }, character(1))
   
   df[[paste0(prefix, "_hits_combined")]] <- hits
   df[[paste0("primary_", prefix)]] <- top
+  df
+}
+
+
+# Minimum score for a term to be called the PRIMARY subject. A title is
+# worth 20 per occurrence and an abstract 3, so any title mention qualifies
+# but a term appearing once in an abstract and nowhere else does not. It
+# stays in <axis>_hits_combined regardless: the distinction is "mentioned"
+# versus "what this is about", not lost information.
+MIN_PRIMARY_SCORE <- 6
+
+# --- HELPER 5: CURATED SUBJECTS FROM MeSH ---------------------------------
+# Europe PMC returns MeSH descriptors assigned by human indexers, with
+# majorTopic_YN marking what a paper is ABOUT rather than merely mentioned.
+# That is the distinction the regex path can only approximate by weighting
+# titles above abstracts -- and it gets it wrong in a specific way: an NSF
+# phage grant whose abstract says "as in the recent movement of HIV into
+# humans from chimpanzees" was tagged primary_virus = HIV, because one
+# incidental mention scores the same as twenty.
+#
+# MeSH is present on only ~40-70% of Europe PMC records (non-MEDLINE journals
+# are never indexed, recent papers not yet) and absent entirely from grants,
+# trials and preprints, so this overrides the regex tag where curated terms
+# exist and leaves it alone otherwise.
+if (!exists("mesh_lookup")) {
+  .mesh_path_src <- file.path("R", "mesh_utils.R")
+  if (file.exists(.mesh_path_src)) source(.mesh_path_src)
+}
+
+apply_mesh_tags <- function(df, max_new_lookups = 60L) {
+  if (is.null(df) || nrow(df) == 0) return(df)
+  if (!exists("mesh_lookup")) return(df)
+  if (!any(c("MeSH_Major", "MeSH_All") %in% names(df))) return(df)
+
+  rx <- list(
+    cell     = aliases_to_regex(immune_cell_alias_list),
+    virus    = aliases_to_regex(virus_alias_expanded),
+    bacteria = aliases_to_regex(bacteria_alias_expanded)
+  )
+  col_for <- c(cell = "primary_cell", virus = "primary_virus",
+               bacteria = "primary_bacteria")
+
+  split_terms <- function(x) {
+    if (length(x) != 1 || is.na(x) || !nzchar(x)) return(character(0))
+    t <- trimws(unlist(strsplit(x, ";", fixed = TRUE)))
+    t[nzchar(t)]
+  }
+
+  # Bound the network work a single search may do. Anything already cached is
+  # free; only this many NEW descriptors get looked up, and the rest keep
+  # their regex tag. So a cold cache costs latency once, never unboundedly.
+  budget <- as.integer(max_new_lookups)
+  n_mesh <- 0L
+
+  for (i in seq_len(nrow(df))) {
+    terms <- split_terms(df$MeSH_Major[i])
+    if (length(terms) == 0 && "MeSH_All" %in% names(df)) {
+      terms <- split_terms(df$MeSH_All[i])
+    }
+    if (length(terms) == 0) next
+
+    # First classified descriptor per axis wins. MeSH order reflects the
+    # indexer, not a ranking, but a major topic is by definition a subject of
+    # the paper, so any of them is a defensible answer.
+    found <- list()
+    for (t in terms) {
+      if (!mesh_is_cached(t)) {
+        if (budget <= 0L) next
+        budget <- budget - 1L
+      }
+      rec <- mesh_lookup(t)
+      ax <- mesh_axis(t, rec)
+      if (is.na(ax)) next
+      if (is.null(found[[ax]])) found[[ax]] <- mesh_to_category(t, rx[[ax]], rec)
+    }
+    if (length(found)) n_mesh <- n_mesh + 1L
+    for (ax in names(found)) {
+      cl <- col_for[[ax]]
+      if (cl %in% names(df)) df[[cl]][i] <- found[[ax]]
+    }
+  }
+
+  message(sprintf("[MeSH] Curated subjects applied to %d of %d records (%d lookups left in budget).",
+                  n_mesh, nrow(df), budget))
   df
 }
 
@@ -227,10 +311,15 @@ perform_hit_detection <- function(df, immune_regex_list, virus_regex_list, weigh
     
     # 1. SCAN TITLES (Vectorized)
     # Returns list of indices: matches_title[[regex_name]] = c(row1, row5, ...)
-    matches_title <- purrr::imap(regex_list, ~ which(stringr::str_detect(title_vec, .x)))
+    # str_count, not str_detect: presence made one passing mention score
+    # the same as twenty, so an aside ("as in the movement of HIV into
+    # humans from chimpanzees") could outrank the record's real subject.
+    counts_title_by_hit <- purrr::map(regex_list, ~ stringr::str_count(title_vec, .x))
+    matches_title <- purrr::map(counts_title_by_hit, ~ which(.x > 0))
     
     # 2. SCAN ABSTRACTS (Vectorized)
-    matches_abst  <- purrr::imap(regex_list, ~ which(stringr::str_detect(abst_vec, .x)))
+    counts_abst_by_hit <- purrr::map(regex_list, ~ stringr::str_count(abst_vec, .x))
+    matches_abst  <- purrr::map(counts_abst_by_hit, ~ which(.x > 0))
     
     # 3. BUILD "LONG" SCORING TABLE (The Magic Step)
     # We create a simple math table: Row | Hit | Score
@@ -241,7 +330,7 @@ perform_hit_detection <- function(df, immune_regex_list, virus_regex_list, weigh
       data.frame(
         row_idx = unlist(matches_title, use.names = FALSE),
         hit = rep(names(matches_title), counts_t),
-        score = w_title,
+        score = unlist(purrr::map2(counts_title_by_hit, matches_title, ~ .x[.y]), use.names = FALSE) * w_title,
         source = "Title",
         stringsAsFactors = FALSE
       ) 
@@ -253,7 +342,7 @@ perform_hit_detection <- function(df, immune_regex_list, virus_regex_list, weigh
       data.frame(
         row_idx = unlist(matches_abst, use.names = FALSE),
         hit = rep(names(matches_abst), counts_a),
-        score = w_abst,
+        score = unlist(purrr::map2(counts_abst_by_hit, matches_abst, ~ .x[.y]), use.names = FALSE) * w_abst,
         source = "Abstract",
         stringsAsFactors = FALSE
       )
@@ -280,7 +369,8 @@ perform_hit_detection <- function(df, immune_regex_list, virus_regex_list, weigh
       group_by(row_idx) %>%
       arrange(desc(total_score)) %>%
       slice(1) %>% # Take top scorer
-      ungroup()
+      ungroup() %>%
+      filter(total_score >= MIN_PRIMARY_SCORE)
     
     # 6. BUILD OUTPUTS
     # A. Primary Hit Vector (Default "Non-descript")
@@ -500,6 +590,9 @@ finish_extraction <- function(search_term, vals, limit, elsevier_key, core_key, 
   # Bacteria tagging (primary_bacteria), from the same alias machinery
   if (exists("bacteria_alias_expanded")) {
     final_data <- tag_with_alias_list(final_data, bacteria_alias_expanded, "bacteria")
+
+    # Curated MeSH subjects override the regex guess where Europe PMC has them.
+    final_data <- apply_mesh_tags(final_data)
   }
   
   # Bioinformatics flag (vectorized)

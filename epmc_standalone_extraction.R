@@ -81,6 +81,32 @@ get_epmc_data <- function(search_term, page_size = 1000, result_type = "core", m
       # plus a fetch, and isOpenAccess lets the UI say so.
       pmcid    <- results_df$pmcid[i] %||% NA_character_
       is_oa    <- results_df$isOpenAccess[i] %||% NA_character_
+
+      # MeSH: curated subject terms assigned by human indexers.
+      # majorTopic_YN marks what a paper is ABOUT rather than merely
+      # mentioned -- the distinction the regex tagger can only approximate
+      # (an NSF phage grant that name-drops HIV once gets tagged HIV).
+      # Present on only ~40-70% of records: non-MEDLINE journals are never
+      # indexed and recent papers not yet, so this supplements the regex
+      # path rather than replacing it. Some records carry MeSH with no major
+      # topics flagged, hence keeping both columns.
+      mesh_major <- NA_character_
+      mesh_all   <- NA_character_
+      mh <- if ("meshHeadingList.meshHeading" %in% names(results_df)) {
+        results_df$meshHeadingList.meshHeading[[i]]
+      } else NULL
+      if (!is.null(mh) && is.data.frame(mh) && nrow(mh) > 0 &&
+          "descriptorName" %in% names(mh)) {
+        nm <- as.character(mh$descriptorName)
+        nm <- nm[!is.na(nm) & nzchar(nm)]
+        if (length(nm)) mesh_all <- paste(nm, collapse = "; ")
+        if ("majorTopic_YN" %in% names(mh)) {
+          keep <- !is.na(mh$majorTopic_YN) & mh$majorTopic_YN == "Y"
+          maj <- as.character(mh$descriptorName)[keep]
+          maj <- maj[!is.na(maj) & nzchar(maj)]
+          if (length(maj)) mesh_major <- paste(maj, collapse = "; ")
+        }
+      }
       
       # URL Logic
       url <- if (!is.na(doi)) {
@@ -152,6 +178,8 @@ get_epmc_data <- function(search_term, page_size = 1000, result_type = "core", m
         EPMC_ID = epmc_id,
         PMCID = pmcid,
         IsOpenAccess = is_oa,
+        MeSH_Major = mesh_major,
+        MeSH_All = mesh_all,
         DOI = doi,
         Title = title,
         Abstract = abstract,
