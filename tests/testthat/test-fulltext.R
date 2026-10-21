@@ -2,8 +2,10 @@
 # strip_invisible() was defined inside the plumber file while its caller lived
 # in the global environment, so every call failed with "could not find
 # function". These tests need no network.
-
-source(file.path("..", "..", "fulltext_extraction.R"))
+#
+# Loading happens in helper-setup.R, not here: a source("../../...") in a test
+# file only resolves when the working directory is tests/testthat, which is
+# true under test_dir but not under covr.
 
 test_that("strip_invisible is reachable from this file alone", {
   # The regression guard: fetch_epmc_fulltext() calls it, and sourcing only
