@@ -468,9 +468,11 @@ async def get_fulltext(
         pmcid: PMC identifier from a search result, e.g. "PMC5334499".
         doi: DOI, used to look up the PMCID when pmcid is not supplied. Slower
             by one request, and only works if the article is in Europe PMC.
-        max_chars: Truncate the returned text. Default 20000, maximum 100000.
-            The whole text is cached server-side either way, so asking for more
-            later costs nothing.
+        max_chars: Truncate the returned text. Default 20000, maximum 100000,
+            minimum 500 -- asking for less than 500 still returns 500. A
+            truncated response also carries a trailing "[truncated]" marker,
+            so chars can exceed max_chars by 13. The whole text is cached
+            server-side either way, so asking for more later costs nothing.
 
     Returns a dict with pmcid, status, chars, total_chars, truncated,
     from_cache and full_text. total_chars is the length of the whole article,

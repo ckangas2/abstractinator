@@ -22,17 +22,30 @@ Two tools: search_literature to find records, get_fulltext to read one.
 
 ### Tool: search_literature
 
-    search_literature(query, max_results=25, abstract_chars=1500, deep=false)
+    search_literature(query, max_results=25, abstract_chars=1500, deep=false,
+                      offset=0, sources="")
 
 - query: a search term, e.g. "oncolytic HSV", "NK cell exhaustion", "T-VEC".
-- max_results: records returned, 1-100. Results are balanced across sources
-  rather than taken from whichever source returned most.
+- max_results: records returned, 1-100. Results are split EVENLY between the
+  sources that have hits, so max_results=25 across five sources returns about
+  five records from each, NOT the 25 best matches overall. A source with no
+  hits gives its share to the others.
 - abstract_chars: truncate each abstract; 0 omits abstracts entirely.
 - deep: widen the SEARCH to up to 250 records per source instead of 50.
   This is independent of max_results, so an agent can search broadly and
   still read a small sample. Slower (roughly 20-60 seconds).
+- sources: restrict which databases the result is drawn from. Comma
+  separated, any of the groups "papers" (Europe PMC + OpenAlex), "grants"
+  (NIH + NSF), "preprints", "trials", or exact source names. The even split
+  then applies only to what remains, so sources="papers" with max_results=25
+  returns about 12 from each of two databases. Default: every source.
+- offset: skip this many records, to page through a large result set. The
+  ordering is deterministic, so paging cannot repeat or skip a record.
 
-Returns: total_found, returned, source_counts, and a results list. Each record
+Returns: total_found, available, returned, offset, has_more, source_counts,
+and a results list. total_found is the whole deduplicated pool; available is
+what is pageable after any sources= filter, so page against available or
+has_more, never total_found. Each record
 carries title, abstract, authors, publication_date, doi, url, source,
 primary_cell, primary_virus, primary_bacteria, is_bioinformatics, and - for
 open-access articles in Europe PMC - pmcid and is_open_access. A record with a
@@ -52,8 +65,11 @@ Reads the full text of ONE open-access article from Europe PMC.
 - pmcid: from a search result, e.g. "PMC5334499". Preferred.
 - doi: used to look up the PMCID when pmcid is not supplied. One extra request,
   and only works for articles Europe PMC indexes.
-- max_chars: truncate the response. Default 20000, maximum 100000. The whole
-  text is cached server-side, so reading more later costs nothing.
+- max_chars: truncate the response. Default 20000, maximum 100000, minimum
+  500 - asking for less than 500 still returns 500. A truncated response
+  carries a trailing "[truncated]" marker, so chars can exceed max_chars by
+  13. The whole text is cached server-side, so reading more later costs
+  nothing.
 
 Only the open-access subset can be served. A paywalled article returns status
 "not_open_access" rather than an error; follow its DOI by hand instead. Use
