@@ -1,3 +1,29 @@
+# ---- Text safety for agent output ---------------------------------------
+# Records handed to an agent are third-party text we do not control. Meaning
+# cannot be sanitised -- an abstract that says "ignore previous instructions"
+# is indistinguishable from a paper *about* prompt injection, and stripping
+# phrases would corrupt real literature. But invisible characters have no
+# legitimate place in bibliographic text, and they are how instructions get
+# hidden from a human reading the same record. Those we remove.
+strip_invisible <- function(x) {
+  if (!is.character(x)) return(x)
+  na <- is.na(x)
+  # C0/C1 control characters, keeping tab and newline
+  x <- gsub("[\001-\010\013\014\016-\037\177]", "", x, useBytes = TRUE)
+  # zero-width spaces/joiners, bidi overrides and isolates, word joiner, BOM
+  x <- gsub("[\u200b-\u200f\u202a-\u202e\u2060-\u2064\u2066-\u2069\ufeff]",
+            "", x, perl = TRUE)
+  x[na] <- NA_character_
+  x
+}
+
+# Defined here rather than in agent/api.R because api.R sources its
+# dependencies with source(), which evaluates them in the global
+# environment. A function defined inside the plumber file is not visible
+# from there, so fetch_epmc_fulltext() could not see it and every
+# /fulltext call failed with 'could not find function strip_invisible'.
+# Global is visible to both.
+
 # fulltext_extraction.R
 # Open-access full text from Europe PMC, for one article at a time.
 #
