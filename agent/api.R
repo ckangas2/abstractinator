@@ -1,3 +1,22 @@
+# ---- Text safety for agent output ---------------------------------------
+# Records handed to an agent are third-party text we do not control. Meaning
+# cannot be sanitised -- an abstract that says "ignore previous instructions"
+# is indistinguishable from a paper *about* prompt injection, and stripping
+# phrases would corrupt real literature. But invisible characters have no
+# legitimate place in bibliographic text, and they are how instructions get
+# hidden from a human reading the same record. Those we remove.
+strip_invisible <- function(x) {
+  if (!is.character(x)) return(x)
+  na <- is.na(x)
+  # C0/C1 control characters, keeping tab and newline
+  x <- gsub("[\001-\010\013\014\016-\037\177]", "", x, useBytes = TRUE)
+  # zero-width spaces/joiners, bidi overrides and isolates, word joiner, BOM
+  x <- gsub("[\u200b-\u200f\u202a-\u202e\u2060-\u2064\u2066-\u2069\ufeff]",
+            "", x, perl = TRUE)
+  x[na] <- NA_character_
+  x
+}
+
 # agent/api.R
 # REST API for AI agents and scripts. Wraps the same search engine as the website.
 # Run from the repo root (see agent/run_api.R); listens on 127.0.0.1 only.
@@ -246,7 +265,7 @@ function(req, res, q = "", limit = 25, abstract_chars = 1500, deep = "false") {
   cols <- cols[cols %in% names(df)]
   slim <- df[, unname(cols), drop = FALSE]
   names(slim) <- names(cols)
-  slim <- as.data.frame(lapply(slim, function(x) if (is.list(x)) vapply(x, function(v) paste(unlist(v), collapse = "; "), "") else x),
+  slim <- as.data.frame(lapply(slim, function(x) strip_invisible(if (is.list(x)) vapply(x, function(v) paste(unlist(v), collapse = "; "), "") else x)),
                         stringsAsFactors = FALSE)
 
   # Source-balanced selection: round-robin across databases instead of

@@ -197,6 +197,7 @@ fetch_epmc_fulltext <- function(pmcid,
   txt <- if (is.null(ft) || length(ft) == 0 || is.na(ft[1])) "" else as.character(ft[1])
   total <- nchar(txt)
   truncated <- total > max_chars
+  txt <- strip_invisible(txt)
   if (truncated) txt <- paste0(substr(txt, 1, max_chars), "\n\n[truncated]")
   list(
     pmcid      = rec$pmcid,
