@@ -14,9 +14,28 @@ test_that("cache keys separate standard and deep searches", {
   expect_false(identical(std, deep))
   # case and surrounding spaces don't matter
   expect_identical(std, get_cache_key("  oncolytic virus "))
-  # standard searches keep the original signature, so old cache files stay valid
-  legacy <- paste0(digest::digest("oncolytic virus|elsevier:FALSE|uspto:FALSE|core:FALSE", algo = "md5"), ".rds")
-  expect_identical(std, legacy)
+  # The signature format is pinned, but the schema version is read from the
+  # constant rather than frozen: a deliberate bump must be allowed (it is how
+  # a result-shape change invalidates stale entries), while an accidental
+  # change to the signature itself still fails here.
+  expected <- paste0(digest::digest(paste0(
+    "oncolytic virus|elsevier:FALSE|uspto:FALSE|core:FALSE|schema:",
+    CACHE_SCHEMA_VERSION), algo = "md5"), ".rds")
+  expect_identical(std, expected)
+
+  # Bumping the version must change the key -- that is the whole mechanism.
+  withr::defer(assign("CACHE_SCHEMA_VERSION", CACHE_SCHEMA_VERSION, envir = globalenv()))
+  assign("CACHE_SCHEMA_VERSION", CACHE_SCHEMA_VERSION + 1L, envir = globalenv())
+  expect_false(identical(std, get_cache_key("Oncolytic Virus")))
+})
+
+test_that("BYOK flags give a search its own cache entry", {
+  # A visitor supplying their own key gets extra sources, so the result shape
+  # differs and must not share a cache entry with the keyless search.
+  plain <- get_cache_key("Oncolytic Virus")
+  expect_false(identical(plain, get_cache_key("Oncolytic Virus", has_core = TRUE)))
+  expect_false(identical(plain, get_cache_key("Oncolytic Virus", has_uspto = TRUE)))
+  expect_false(identical(plain, get_cache_key("Oncolytic Virus", has_elsevier = TRUE)))
 })
 
 test_that("safe_source turns a crash into a marked, empty result", {
