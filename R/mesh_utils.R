@@ -34,16 +34,28 @@ mesh_cache_dir <- function() {
 # One cached record per descriptor: tree numbers plus entry terms (synonyms).
 # Negative results are cached too, so a descriptor outside our axes is not
 # re-fetched on every search.
+# Process-lifetime memo in front of the disk cache. Descriptors repeat heavily
+# across a result set -- "Animals" and "Mice" appear in hundreds of records --
+# and a readRDS per row per descriptor is thousands of file reads per search.
+.mesh_mem <- new.env(parent = emptyenv())
+
 mesh_lookup <- function(label, use_cache = TRUE) {
   label <- trimws(as.character(label))
   if (length(label) != 1 || is.na(label) || !nzchar(label)) {
     return(list(trees = character(0), terms = character(0)))
   }
+  key <- tolower(label)
+  if (use_cache && exists(key, envir = .mesh_mem, inherits = FALSE)) {
+    return(get(key, envir = .mesh_mem, inherits = FALSE))
+  }
   if (use_cache) {
     p <- .mesh_path(label)
     if (file.exists(p)) {
       hit <- tryCatch(readRDS(p), error = function(e) NULL)
-      if (!is.null(hit)) return(hit)
+      if (!is.null(hit)) {
+        assign(key, hit, envir = .mesh_mem)
+        return(hit)
+      }
     }
   }
 
@@ -80,13 +92,17 @@ mesh_lookup <- function(label, use_cache = TRUE) {
   d <- mesh_cache_dir()
   if (!dir.exists(d)) dir.create(d, recursive = TRUE, showWarnings = FALSE)
   tryCatch(saveRDS(rec, .mesh_path(label)), error = function(e) invisible(NULL))
+  assign(key, rec, envir = .mesh_mem)
   Sys.sleep(0.1)
   rec
 }
 
 # Is this descriptor already cached? Used to bound how much network work a
 # single search will do.
-mesh_is_cached <- function(label) file.exists(.mesh_path(label))
+mesh_is_cached <- function(label) {
+  exists(tolower(trimws(label)), envir = .mesh_mem, inherits = FALSE) ||
+    file.exists(.mesh_path(label))
+}
 
 mesh_axis <- function(label, rec = NULL) {
   if (is.null(rec)) rec <- mesh_lookup(label)
