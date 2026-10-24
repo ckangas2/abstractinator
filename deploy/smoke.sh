@@ -29,6 +29,7 @@ OA_PMCID="PMC13318009"
 fails=0
 ok   () { printf '  \033[32mok\033[0m    %s\n' "$1"; }
 bad  () { printf '  \033[31mFAIL\033[0m  %s\n' "$1"; fails=$((fails+1)); }
+warn () { printf '  \033[33mwarn\033[0m  %s\n' "$1"; }
 
 jqcheck () {  # jqcheck <label> <json> <python expression over d>
   local label="$1" json="$2" expr="$3"
@@ -48,11 +49,21 @@ echo "== $MODE =="
 H=$(curl -sS --max-time 15 "$API/health" 2>/dev/null)
 jqcheck "/health reports ok" "$H" "d.get('status') == 'ok'"
 
-# 2. search returns records with the fields the UI and agents read
-S=$(curl -sS --max-time 60 "$API/search?q=listeria%20monocytogenes&limit=5&abstract_chars=0" 2>/dev/null)
-jqcheck "/search returns records"        "$S" "d.get('returned', 0) > 0"
-jqcheck "/search records carry fields"   "$S" "all(k in d['results'][0] for k in ('title','url','source','primary_virus'))"
-jqcheck "/search reports paging state"   "$S" "'available' in d and 'has_more' in d"
+# 2. search returns records with the fields the UI and agents read.
+# A 429 here is not a failed deploy: it means the service is up and the rate
+# limiter is working. Running this script twice inside a minute will do it,
+# since the checks themselves consume the 20/min search bucket.
+SBODY=$(mktemp)
+SCODE=$(curl -sS --max-time 60 -o "$SBODY" -w '%{http_code}' \
+  "$API/search?q=listeria%20monocytogenes&limit=5&abstract_chars=0" 2>/dev/null)
+S=$(cat "$SBODY"); rm -f "$SBODY"
+if [ "$SCODE" = "429" ]; then
+  warn "/search throttled (429) -- service up, bucket full; re-run in a minute"
+else
+  jqcheck "/search returns records"        "$S" "d.get('returned', 0) > 0"
+  jqcheck "/search records carry fields"   "$S" "all(k in d['results'][0] for k in ('title','url','source','primary_virus'))"
+  jqcheck "/search reports paging state"   "$S" "'available' in d and 'has_more' in d"
+fi
 
 # 3. full text -- the check that would have caught the strip_invisible bug
 F=$(curl -sS --max-time 60 "$API/fulltext?pmcid=$OA_PMCID&max_chars=600" 2>/dev/null)
