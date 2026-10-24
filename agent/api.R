@@ -62,12 +62,35 @@ function(req, res) {
   if (!identical(getwd(), ROOT)) setwd(ROOT)
   path <- req$PATH_INFO
   if (!path %in% c("/search", "/fulltext")) return(forward())
+  # A throttled request returns before the endpoint runs, so nothing was
+  # logged: "nobody used it" and "everyone was turned away" looked identical.
+  # Logged under its own event name rather than as a search with a failed
+  # status, so it cannot inflate the search counts in summarize_funnel().
+  log_throttle <- function(ev) {
+    tryCatch({
+      cli  <- trimws(req$HTTP_X_CLIENT_NAME %||% "")
+      sess <- trimws(req$HTTP_X_SESSION_ID %||% "")
+      qs   <- req$QUERY_STRING %||% ""
+      m    <- regmatches(qs, regexpr("(^|[?&])q=[^&]*", qs))
+      term <- if (length(m)) utils::URLdecode(sub("^[?&]?q=", "", m[1])) else NA_character_
+      log_search_to_s3(
+        search_term = term,
+        channel = if (grepl("uptime-probe|abstractinator-probe", tolower(cli))) "probe"
+                  else if (nzchar(cli) || nzchar(sess)) "agent" else "website",
+        event   = ev,
+        session = if (nzchar(sess)) sess else NA_character_,
+        client  = if (nzchar(cli))  cli  else NA_character_,
+        status  = "rate_limited"
+      )
+    }, error = function(e) invisible(NULL))
+  }
   now <- as.numeric(Sys.time())
 
   if (identical(path, "/search")) {
     .recent_searches <<- .recent_searches[.recent_searches > now - 60]
     if (length(.recent_searches) >= SEARCHES_PER_MIN) {
       res$status <- 429
+      log_throttle("search_rate_limited")
       return(list(error = "Rate limit reached. Please wait a minute and try again."))
     }
     .recent_searches <<- c(.recent_searches, now)
@@ -75,6 +98,7 @@ function(req, res) {
     .recent_fulltext <<- .recent_fulltext[.recent_fulltext > now - 60]
     if (length(.recent_fulltext) >= FULLTEXT_PER_MIN) {
       res$status <- 429
+      log_throttle("fulltext_rate_limited")
       return(list(error = "Full-text rate limit reached. Please wait a minute and try again."))
     }
     .recent_fulltext <<- c(.recent_fulltext, now)
