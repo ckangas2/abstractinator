@@ -44,3 +44,7 @@ app_cache/
 # where the project library is not populated for the service user.
 .Rprofile
 renv/
+
+# Secrets live in ~/.config/abstractinator/, never in the tree. This is a
+# guard against adding one here by accident.
+*.env

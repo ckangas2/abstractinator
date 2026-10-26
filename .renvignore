@@ -1,0 +1,29 @@
+# Paths renv::dependencies() should skip when building renv.lock.
+#
+# The lockfile describes what the DEPLOYED SERVICE needs: app.R, agent/api.R,
+# their source chains, and the daily preprint refresh in /etc/cron.d/abstractinator.
+# Everything below is a retired generation still in the tree for reference, and
+# including it pulled ~8 packages the service never loads into the lockfile --
+# one of which (igraph, via tidygraph) needs a system library that broke the
+# weekly restore check on a clean runner.
+#
+# Verified unused 2026-10-26: no shell history invocations, no logged searches
+# from a CLI channel, and the `abstractinator` alias points at the v6 tree, not
+# at this copy. Still in git history if any of it is ever wanted back.
+
+# CLI generation -- superseded by the Shiny app and the MCP server
+abstractinator.sh
+cli_engine.R
+agent_api.R
+db_utils_local_cache.R
+
+# targets pipeline -- its cron entries in root's crontab have never run
+# (one has a literal /ABSOLUTE_PATH_TO/ placeholder) and are superseded by
+# /etc/cron.d/abstractinator
+_targets.R
+triangulation_engine.R
+
+# one-off build and utility scripts, run by hand if ever
+build_master_db.R
+build_abstractinator_db.R
+batch_rename_png.R
