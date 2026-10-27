@@ -416,7 +416,6 @@ ui <- fluidPage(
     ),
     
     # Shown only when a search comes back empty (or fails)
-    uiOutput("emptyState"),
     
     div(
       class = "search-feedback hidden",
@@ -783,7 +782,6 @@ server <- function(input, output, session) {
     }
   }
 
-  output$emptyState        <- renderUI(empty_state_box(empty_state()))
   output$resultsEmptyNotice <- renderUI(empty_state_box(empty_state()))
   
   # Shiny suspends an output while it is not visible, and after a successful
@@ -792,7 +790,6 @@ server <- function(input, output, session) {
   # display without reliably resuming it. The box then never appeared, but
   # only on a second search: from the home page the container had never been
   # hidden, so the output was live and it worked.
-  outputOptions(output, "emptyState", suspendWhenHidden = FALSE)
   outputOptions(output, "resultsEmptyNotice", suspendWhenHidden = FALSE)
 
   source_display_name <- function(x) {
