@@ -11,7 +11,7 @@ $(document).ready(function(){
   // both are derived from the same counter.
   // Slow and calm on purpose. One frame every 3s with a 700ms cross-fade
   // reads as breathing; the old 2s hard swap read as flicking through cards.
-  const STEP_SPEED = 4200;
+  const STEP_SPEED = 3500;
   const DOT_ANIMATION_SPEED = 900;  // was 450: a fast dot cycle under a slow
                                     // image cadence is two rhythms fighting.
   
