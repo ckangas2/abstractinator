@@ -539,6 +539,10 @@ ui <- fluidPage(
       # Tab 1: Search Results
       bslib::nav_panel(
         title = "Search Results",
+        # A search that finds nothing keeps the results layout and puts this
+        # in place of the table, rather than throwing the user back to the
+        # landing page and losing their context.
+        uiOutput("resultsEmptyNotice"),
         uiOutput("sourceChips"),
         DT::dataTableOutput("resultsDisplay")
       ),
@@ -764,9 +768,10 @@ server <- function(input, output, session) {
   
   # --- Empty state: what to show when a search finds nothing ---
   empty_state <- reactiveVal(NULL)
-  output$emptyState <- renderUI({
-    es <- empty_state()
-    req(es)
+  # One definition, rendered in two places: in the results layout (where a
+  # zero-result search now stays) and on the landing page (first visit).
+  empty_state_box <- function(es) {
+    if (is.null(es)) return(NULL)
     if (isTRUE(es$error)) {
       div(class = "empty-state",
           h5("That search didn't go through"),
@@ -776,7 +781,10 @@ server <- function(input, output, session) {
           h5(paste0("No results for \u201c", es$term, "\u201d")),
           p("Try fewer or broader words, check the spelling, or turn on Deep search for a wider net."))
     }
-  })
+  }
+
+  output$emptyState        <- renderUI(empty_state_box(empty_state()))
+  output$resultsEmptyNotice <- renderUI(empty_state_box(empty_state()))
   
   # Shiny suspends an output while it is not visible, and after a successful
   # search the landing container is hidden -- so a later zero-result search
@@ -785,6 +793,7 @@ server <- function(input, output, session) {
   # only on a second search: from the home page the container had never been
   # hidden, so the output was live and it worked.
   outputOptions(output, "emptyState", suspendWhenHidden = FALSE)
+  outputOptions(output, "resultsEmptyNotice", suspendWhenHidden = FALSE)
 
   source_display_name <- function(x) {
     lookup <- c("EPMC" = "Europe PMC", "clinicaltrials.gov" = "Trials",
@@ -1353,8 +1362,11 @@ server <- function(input, output, session) {
     } else {
       output$searchResults <- renderText("No results found or an error occurred during the search.")
       empty_state(list(term = search_term, error = (st != "success")))
-      shinyjs::hide("results_container")
-      shinyjs::show("landing_container")
+      # Stay on the results layout. Bouncing back to the landing page threw
+      # away the search context, and the notice rendered into a container the
+      # user had just been navigated away from.
+      shinyjs::show("results_container")
+      shinyjs::hide("landing_container")
       output$completionIconLeft <- renderImage({ return(NULL) }, deleteFile = FALSE)
       output$completionIconRight <- renderImage({ return(NULL) }, deleteFile = FALSE)
       output$resultsDisplay <- renderDataTable(NULL)
