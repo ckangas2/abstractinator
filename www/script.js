@@ -11,7 +11,7 @@ $(document).ready(function(){
   // both are derived from the same counter.
   // Slow and calm on purpose. One frame every 3s with a 700ms cross-fade
   // reads as breathing; the old 2s hard swap read as flicking through cards.
-  const STEP_SPEED = 3000;
+  const STEP_SPEED = 4200;
   const FADE_MS = 700;              // must match the #loadingIcon transition
   const DOT_ANIMATION_SPEED = 900;  // was 450: a fast dot cycle under a slow
                                     // image cadence is two rhythms fighting.
@@ -113,10 +113,11 @@ $(document).ready(function(){
   // froze while the picture carried on. Either way a deep search (20-60s)
   // sat on a dead frame for most of its duration and looked broken.
   //
-  // Looping the frames keeps something alive for as long as the search takes,
-  // and makes frame count irrelevant to pacing, so every theme now feels the
-  // same. Holding the text still lands the narrative on its last line rather
-  // than restarting the joke every 18 seconds.
+  // Both loop. Holding the text on its last line was the first attempt, but
+  // a still line under a moving picture reads as half-stuck; the whole thing
+  // cycling reads as patient. Frames and messages wrap on their own lengths
+  // (5, 6 or 7 against 6), so the pairing rotates over a long search rather
+  // than repeating -- which is fine, since no line describes a given frame.
   var fadeTimer = null;
 
   function setIcon(src) {
@@ -139,7 +140,7 @@ $(document).ready(function(){
         setIcon(src);
       }
     }
-    currentLoadingText = loadingMessages[Math.min(step, loadingMessages.length - 1)];
+    currentLoadingText = loadingMessages[step % loadingMessages.length];
     $("#loadingText").text(currentLoadingText);
 
     // A line that ends in its own punctuation gets no trailing dots, and the
@@ -169,11 +170,9 @@ $(document).ready(function(){
     dotCount = 3;
     renderStep(true);   // first frame appears at once, no fade-in
 
-    // 3. ONE STEP = ONE FRAME + ONE LINE
-    // The messages are a narrative - dive, deeper, abstractinating, almost
-    // there, is this thing working, only one way to know - so once the arc
-    // reaches the end it HOLDS. Looping back to "Diving deep..." on a long
-    // search restarts the story and makes it read as filler.
+    // 3. ONE STEP = ONE FRAME + ONE LINE, both wrapping. A search that
+    // outlasts the narrative starts it over rather than stalling on the
+    // punchline, which looked broken on a 20-60s deep search.
     loadingInterval = setInterval(function() {
       step += 1;                   // never stops: renderStep wraps the frame
       renderStep();                // and holds the text at its last line
