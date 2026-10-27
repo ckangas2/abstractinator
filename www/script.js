@@ -9,8 +9,12 @@ $(document).ready(function(){
   // 36s and the pairing was arbitrary - the narwhal was at depth 2 while the
   // text said "Almost there". There is nothing to keep in sync now because
   // both are derived from the same counter.
-  const STEP_SPEED = 2000;          // 6 steps = 12s; a typical search sees 4-5
-  const DOT_ANIMATION_SPEED = 450;
+  // Slow and calm on purpose. One frame every 3s with a 700ms cross-fade
+  // reads as breathing; the old 2s hard swap read as flicking through cards.
+  const STEP_SPEED = 3000;
+  const FADE_MS = 700;              // must match the #loadingIcon transition
+  const DOT_ANIMATION_SPEED = 900;  // was 450: a fast dot cycle under a slow
+                                    // image cadence is two rhythms fighting.
   
   // 1. ASSET DEFINITIONS
   const THEMES = {
@@ -26,13 +30,17 @@ $(document).ready(function(){
   };
 
   // --- RESTORED: LOADING MESSAGES ARRAY ---
+  // No leading "..." in the strings: the animated dot span supplies the
+  // trailing ellipsis, and having both produced "...Deeper .." with dots at
+  // each end. Lines ending in ? or ! suppress the dots entirely (see
+  // renderStep) so the punchline is not followed by stray periods.
   var loadingMessages = [
-    "Diving deep...",
-    "...Deeper",
-    "...Abstractinating",
-    "...Almost there",
-    "...is this thing working???",
-    "...Only one way to know"
+    "Diving deep",
+    "Deeper",
+    "Abstractinating",
+    "Almost there",
+    "Is this thing working???",
+    "Only one way to know"
   ];
 
   // State Variables
@@ -96,16 +104,49 @@ $(document).ready(function(){
   // ------------------------------------------------------------------------
   // HANDLER: SHOW LOADING (The Animation Loop)
   // ------------------------------------------------------------------------
-  // Both the frame and the line come from `step`. Clamped rather than wrapped,
-  // so a search longer than the arc rests on the last frame and the punchline.
-  function renderStep() {
+  // The image LOOPS and the text HOLDS, which are different jobs.
+  //
+  // Previously both were clamped with Math.min against
+  // Math.max(icons, messages), and the three themes have 5, 6 and 7 frames
+  // against 6 messages -- so on the dino set the picture froze four seconds
+  // before the end while the text carried on, and on the frog set the text
+  // froze while the picture carried on. Either way a deep search (20-60s)
+  // sat on a dead frame for most of its duration and looked broken.
+  //
+  // Looping the frames keeps something alive for as long as the search takes,
+  // and makes frame count irrelevant to pacing, so every theme now feels the
+  // same. Holding the text still lands the narrative on its last line rather
+  // than restarting the joke every 18 seconds.
+  var fadeTimer = null;
+
+  function setIcon(src) {
+    var $i = $("#loadingIcon");
+    if (!src || $i.attr("src") === src) return;
+    clearTimeout(fadeTimer);
+    $i.css("opacity", 0);
+    fadeTimer = setTimeout(function () {
+      $i.attr("src", src).css("opacity", 1);
+    }, FADE_MS);
+  }
+
+  function renderStep(immediate) {
     if (loadingIcons.length) {
-      $("#loadingIcon").attr("src",
-        loadingIcons[Math.min(step, loadingIcons.length - 1)]);
+      var src = loadingIcons[step % loadingIcons.length];
+      if (immediate) {
+        clearTimeout(fadeTimer);
+        $("#loadingIcon").attr("src", src).css("opacity", 1);
+      } else {
+        setIcon(src);
+      }
     }
     currentLoadingText = loadingMessages[Math.min(step, loadingMessages.length - 1)];
     $("#loadingText").text(currentLoadingText);
-    $("#loadingDots").text(".".repeat(dotCount));
+
+    // A line that ends in its own punctuation gets no trailing dots, and the
+    // reserved width goes away with them so the text stays centred.
+    var wantsDots = !/[?!.]$/.test(currentLoadingText);
+    $("#loadingMessage").toggleClass("no-dots", !wantsDots);
+    $("#loadingDots").text(wantsDots ? ".".repeat(dotCount) : "");
   }
 
   Shiny.addCustomMessageHandler("show_loading", function(message) {
@@ -126,7 +167,7 @@ $(document).ready(function(){
     // Every search starts the story at the beginning.
     step = 0;
     dotCount = 3;
-    renderStep();
+    renderStep(true);   // first frame appears at once, no fade-in
 
     // 3. ONE STEP = ONE FRAME + ONE LINE
     // The messages are a narrative - dive, deeper, abstractinating, almost
@@ -134,10 +175,8 @@ $(document).ready(function(){
     // reaches the end it HOLDS. Looping back to "Diving deep..." on a long
     // search restarts the story and makes it read as filler.
     loadingInterval = setInterval(function() {
-      var last = Math.max(loadingIcons.length, loadingMessages.length) - 1;
-      if (step >= last) return;                     // arc finished; hold here
-      step += 1;
-      renderStep();
+      step += 1;                   // never stops: renderStep wraps the frame
+      renderStep();                // and holds the text at its last line
     }, STEP_SPEED);
 
     // 4. Dots animate within the step. They live in their own fixed-width
@@ -161,6 +200,8 @@ $(document).ready(function(){
     clearInterval(loadingInterval);
     clearInterval(ellipsisInterval);
     clearInterval(messageInterval);
+    clearTimeout(fadeTimer);
+    $("#loadingIcon").css("opacity", 1);   // next search starts visible
     
     messageInterval = null; 
     // We do NOT reset initialShowLoading here if we want the messages to 

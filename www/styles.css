@@ -2064,3 +2064,33 @@ a.landing-card-link:focus-visible .landing-card {
    and hamburger sit un-blurred on top of it while everything else behind
    them is blurred. During a search, covering everything is the point. */
 .loading-overlay { z-index: 10050 !important; }
+
+/* ------------------------------------------------------------------ *
+ * Loading polish.
+ *
+ * The frame swap cross-fades rather than cutting; FADE_MS in script.js
+ * must match this duration.
+ *
+ * Centring: .loading-dots reserves 1.6em so a dot appearing cannot shift
+ * the line, but reserving it on one side only pushed the text 0.8em left
+ * of centre. A matching invisible slot before the text restores it, and
+ * both are removed together for lines that end in their own punctuation.
+ * ------------------------------------------------------------------ */
+#loadingIcon {
+  transition: opacity 700ms ease;
+}
+
+#loadingMessage::before {
+  content: "";
+  display: inline-block;
+  width: 1.6em;
+}
+
+#loadingMessage.no-dots::before,
+#loadingMessage.no-dots .loading-dots {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #loadingIcon { transition: none; }
+}
