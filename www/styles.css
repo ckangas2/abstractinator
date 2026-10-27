@@ -1957,7 +1957,7 @@ a.landing-card-link:focus-visible .landing-card {
    message sideways. */
 .loading-dots {
   display: inline-block;
-  width: 1.6em;
+  width: 1.9em;
   text-align: left;
 }
 
@@ -2079,11 +2079,7 @@ a.landing-card-link:focus-visible .landing-card {
 #loadingMessage::before {
   content: "";
   display: inline-block;
-  width: 1.6em;
+  width: 1.9em;
 }
 
-#loadingMessage.no-dots::before,
-#loadingMessage.no-dots .loading-dots {
-  display: none;
-}
 

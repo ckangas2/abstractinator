@@ -330,8 +330,13 @@ ui <- fluidPage(
         # 300px between first paint and stylesheet application.
         img(src = "loading1.png", id = "loadingIcon", width = "300px", height = "300px"),
         div(id = "loadingMessage", style = "color: white; margin-top: 20px; text-align: center;",
-            tags$span(id = "loadingText"),
-            tags$span(id = "loadingDots", class = "loading-dots"))
+            # One HTML string rather than two tags$span() children:
+            # htmltools separates children with a newline, and a newline
+            # between inline elements renders as a space -- which put a gap
+            # between the word and its animated ellipsis ("Deeper ..").
+            HTML(paste0(
+              '<span id="loadingText"></span>',
+              '<span id="loadingDots" class="loading-dots"></span>')))
     )
   ),
   

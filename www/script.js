@@ -51,6 +51,7 @@ $(document).ready(function(){
   var currentIconIndex = 0;
   var currentMessageIndex = 0;
   var currentLoadingText = loadingMessages[0];
+  var currentGlyph = ".";          // character the trailing animation repeats
   var dotCount = 0;
   var initialShowLoading = true;
 
@@ -121,14 +122,17 @@ $(document).ready(function(){
     if (loadingIcons.length) {
       $("#loadingIcon").attr("src", loadingIcons[step % loadingIcons.length]);
     }
-    currentLoadingText = loadingMessages[step % loadingMessages.length];
+    // Whatever punctuation a line ends with becomes the animated glyph, so
+    // "Is this thing working???" pulses ? ?? ??? the same way the others
+    // pulse . .. ... -- rather than the question marks sitting static while
+    // a separate ellipsis ticks beside them. Lines with no trailing
+    // punctuation get dots.
+    var raw = loadingMessages[step % loadingMessages.length];
+    var tail = raw.match(/([.?!])\1*$/);
+    currentGlyph = tail ? tail[1] : ".";
+    currentLoadingText = tail ? raw.slice(0, tail.index) : raw;
     $("#loadingText").text(currentLoadingText);
-
-    // A line that ends in its own punctuation gets no trailing dots, and the
-    // reserved width goes away with them so the text stays centred.
-    var wantsDots = !/[?!.]$/.test(currentLoadingText);
-    $("#loadingMessage").toggleClass("no-dots", !wantsDots);
-    $("#loadingDots").text(wantsDots ? ".".repeat(dotCount) : "");
+    $("#loadingDots").text(currentGlyph.repeat(dotCount));
   }
 
   Shiny.addCustomMessageHandler("show_loading", function(message) {
@@ -164,7 +168,7 @@ $(document).ready(function(){
     // which is what made the ellipsis look chunky.
     ellipsisInterval = setInterval(function() {
       dotCount = (dotCount % 3) + 1;
-      $("#loadingDots").text(".".repeat(dotCount));
+      $("#loadingDots").text(currentGlyph.repeat(dotCount));
     }, DOT_ANIMATION_SPEED);
   });
 
