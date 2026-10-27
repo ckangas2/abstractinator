@@ -778,6 +778,14 @@ server <- function(input, output, session) {
     }
   })
   
+  # Shiny suspends an output while it is not visible, and after a successful
+  # search the landing container is hidden -- so a later zero-result search
+  # set empty_state() into a suspended output, and shinyjs::show() toggles CSS
+  # display without reliably resuming it. The box then never appeared, but
+  # only on a second search: from the home page the container had never been
+  # hidden, so the output was live and it worked.
+  outputOptions(output, "emptyState", suspendWhenHidden = FALSE)
+
   source_display_name <- function(x) {
     lookup <- c("EPMC" = "Europe PMC", "clinicaltrials.gov" = "Trials",
                 "Preprint (biorxiv)" = "bioRxiv", "Preprint (medrxiv)" = "medRxiv",
