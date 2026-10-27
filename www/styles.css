@@ -2076,10 +2076,6 @@ a.landing-card-link:focus-visible .landing-card {
  * of centre. A matching invisible slot before the text restores it, and
  * both are removed together for lines that end in their own punctuation.
  * ------------------------------------------------------------------ */
-#loadingIcon {
-  transition: opacity 700ms ease;
-}
-
 #loadingMessage::before {
   content: "";
   display: inline-block;
@@ -2091,6 +2087,3 @@ a.landing-card-link:focus-visible .landing-card {
   display: none;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  #loadingIcon { transition: none; }
-}

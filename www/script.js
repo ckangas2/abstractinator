@@ -12,7 +12,6 @@ $(document).ready(function(){
   // Slow and calm on purpose. One frame every 3s with a 700ms cross-fade
   // reads as breathing; the old 2s hard swap read as flicking through cards.
   const STEP_SPEED = 4200;
-  const FADE_MS = 700;              // must match the #loadingIcon transition
   const DOT_ANIMATION_SPEED = 900;  // was 450: a fast dot cycle under a slow
                                     // image cadence is two rhythms fighting.
   
@@ -118,27 +117,9 @@ $(document).ready(function(){
   // cycling reads as patient. Frames and messages wrap on their own lengths
   // (5, 6 or 7 against 6), so the pairing rotates over a long search rather
   // than repeating -- which is fine, since no line describes a given frame.
-  var fadeTimer = null;
-
-  function setIcon(src) {
-    var $i = $("#loadingIcon");
-    if (!src || $i.attr("src") === src) return;
-    clearTimeout(fadeTimer);
-    $i.css("opacity", 0);
-    fadeTimer = setTimeout(function () {
-      $i.attr("src", src).css("opacity", 1);
-    }, FADE_MS);
-  }
-
-  function renderStep(immediate) {
+  function renderStep() {
     if (loadingIcons.length) {
-      var src = loadingIcons[step % loadingIcons.length];
-      if (immediate) {
-        clearTimeout(fadeTimer);
-        $("#loadingIcon").attr("src", src).css("opacity", 1);
-      } else {
-        setIcon(src);
-      }
+      $("#loadingIcon").attr("src", loadingIcons[step % loadingIcons.length]);
     }
     currentLoadingText = loadingMessages[step % loadingMessages.length];
     $("#loadingText").text(currentLoadingText);
@@ -168,7 +149,7 @@ $(document).ready(function(){
     // Every search starts the story at the beginning.
     step = 0;
     dotCount = 3;
-    renderStep(true);   // first frame appears at once, no fade-in
+    renderStep();
 
     // 3. ONE STEP = ONE FRAME + ONE LINE, both wrapping. A search that
     // outlasts the narrative starts it over rather than stalling on the
@@ -199,8 +180,7 @@ $(document).ready(function(){
     clearInterval(loadingInterval);
     clearInterval(ellipsisInterval);
     clearInterval(messageInterval);
-    clearTimeout(fadeTimer);
-    $("#loadingIcon").css("opacity", 1);   // next search starts visible
+
     
     messageInterval = null; 
     // We do NOT reset initialShowLoading here if we want the messages to 
