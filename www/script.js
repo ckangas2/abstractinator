@@ -211,14 +211,6 @@ $(document).ready(function(){
   // ------------------------------------------------------------------------
   // HANDLER: UPDATE LOADING MESSAGE (Specific Override)
   // ------------------------------------------------------------------------
-  Shiny.addCustomMessageHandler("update_loading_message", function(message) {
-    if (message) {
-      currentLoadingText = message; // Update the base text
-      $("#loadingText").text(currentLoadingText);
-      $("#loadingDots").text("...");
-      dotCount = 3;
-    }
-  });
 
 });
 

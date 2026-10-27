@@ -971,11 +971,6 @@ server <- function(input, output, session) {
     search_ctx$core       <- resolve_api_key(session_keys$core, "CORE_API_KEY")
     search_ctx$uspto      <- resolve_api_key(session_keys$uspto, "USPTO_API_KEY")
     
-    # Standard searches keep the original loading messages from script.js
-    # ("Diving deep...", "...Deeper", ...). Deep searches go one further.
-    if (search_ctx$deep) {
-      session$sendCustomMessage(type = 'update_loading_message', message = "Diving extra deep...")
-    }
     
     empty_state(NULL)
     shinyjs::addClass("searchButton", "is-searching")
