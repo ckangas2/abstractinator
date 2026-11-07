@@ -45,7 +45,7 @@ virus_alias_expanded <- list(
   "Rabies Virus" = c("Rabies Virus"),
   "Human Immunodeficiency Virus" = c("human immunodeficiency virus", "HIV", "HIV-1"),
   "Herpes Simplex Virus" = c("talimogene laherparepvec", "TVEC", "T-VEC", "herpes simplex virus type 1", "HSV-1", "HSV1", "oHSV", "herpes simplex virus", "HSVs", "HSV"),
-  "Herpes Simplex Virus 2" = c("HSV-2", "HSV2"),
+  "Herpes Simplex Virus 2" = c("HSV-2", "HSV2", "herpes simplex virus type 2", "herpes simplex virus 2"),
   "Vaccinia Virus" = c("vaccinia virus", "VACV"),
   "Measles Virus" = c("measles virus", "rubeola"),
   "Lentivirus" = c("lentivirus", "lentiviruses", "LVV", "lentiviral vector", "lentiviral vectors"),

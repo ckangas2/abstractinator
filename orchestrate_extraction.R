@@ -341,6 +341,12 @@ if (!exists("mesh_lookup")) {
   if (file.exists(.mesh_path_src)) source(.mesh_path_src)
 }
 
+# MeSH descriptors filed under an organism tree that are groupings or
+# functions rather than a subject anyone would filter by. Never used as a tag.
+MESH_NOT_SUBJECTS <- c("Viruses", "Bacteria", "Oncolytic Viruses", "Arboviruses",
+                       "DNA Viruses", "RNA Viruses", "Gram-Negative Bacteria",
+                       "Gram-Positive Bacteria", "Bacteria, Anaerobic", "Bacteria, Aerobic")
+
 apply_mesh_tags <- function(df, max_new_lookups = 60L) {
   if (is.null(df) || nrow(df) == 0) return(df)
   if (!exists("mesh_lookup")) return(df)
@@ -373,10 +379,14 @@ apply_mesh_tags <- function(df, max_new_lookups = 60L) {
     }
     if (length(terms) == 0) next
 
-    # First classified descriptor per axis wins. MeSH order reflects the
-    # indexer, not a ranking, but a major topic is by definition a subject of
-    # the paper, so any of them is a defensible answer.
-    found <- list()
+    # Per axis, the first descriptor that maps to one of our categories wins.
+    # MeSH order reflects the indexer, not a ranking, but a major topic is by
+    # definition a subject of the paper. A descriptor with no category (an
+    # organism we don't list) is kept as a fallback, used only when the regex
+    # found nothing: the PubTator3 benchmark showed raw descriptors such as
+    # "Betacoronavirus" or "Oncolytic Viruses" replacing a correct, more
+    # specific regex tag (SARS-CoV-2, Measles Virus).
+    found <- list(); fallback <- list()
     for (t in terms) {
       if (!mesh_is_cached(t)) {
         if (budget <= 0L) next
@@ -384,14 +394,25 @@ apply_mesh_tags <- function(df, max_new_lookups = 60L) {
       }
       rec <- mesh_lookup(t)
       ax <- mesh_axis(t, rec)
-      if (is.na(ax)) next
-      if (is.null(found[[ax]])) found[[ax]] <- mesh_to_category(t, rx[[ax]], rec)
+      if (is.na(ax) || !is.null(found[[ax]])) next
+      val <- mesh_to_category(t, rx[[ax]], rec)
+      if (val %in% names(rx[[ax]])) {
+        found[[ax]] <- val
+      } else if (is.null(fallback[[ax]]) && !val %in% MESH_NOT_SUBJECTS) {
+        fallback[[ax]] <- val
+      }
     }
-    if (length(found)) n_mesh <- n_mesh + 1L
-    for (ax in names(found)) {
+    applied <- FALSE
+    for (ax in names(col_for)) {
       cl <- col_for[[ax]]
-      if (cl %in% names(df)) df[[cl]][i] <- found[[ax]]
+      if (!cl %in% names(df)) next
+      if (!is.null(found[[ax]])) {
+        df[[cl]][i] <- found[[ax]]; applied <- TRUE
+      } else if (!is.null(fallback[[ax]]) && identical(df[[cl]][i], "Non-descript")) {
+        df[[cl]][i] <- fallback[[ax]]; applied <- TRUE
+      }
     }
+    if (applied) n_mesh <- n_mesh + 1L
   }
 
   message(sprintf("[MeSH] Curated subjects applied to %d of %d records (%d lookups left in budget).",

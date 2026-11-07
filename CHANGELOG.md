@@ -9,6 +9,13 @@ Development before v2.0.0 was untagged; see the git history for detail.
 ## [Unreleased]
 
 ### Fixed
+- MeSH subjects replaced a correct regex tag with a vaguer or non-organism
+  descriptor (Measles Virus became "Oncolytic Viruses", SARS-CoV-2 became
+  "Betacoronavirus"). MeSH now replaces a tag only with one of our categories;
+  an unlisted organism fills in only when the regex found nothing, and broad
+  groupings ("Viruses", "Bacteria", "Oncolytic Viruses") are never used.
+  "Herpes simplex virus type 2" is tagged HSV-2. Found by the PubTator3
+  benchmark. Cached results are refreshed (cache schema 8).
 - Tags for "CD8+ T cell" and "CD4+ T cell" never matched: the `+` in each
   alias was read as a regex operator. Aliases are now literal text.
 - Short acronyms matched in any case, so Alzheimer's disease ("AD") was tagged

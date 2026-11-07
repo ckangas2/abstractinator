@@ -63,7 +63,8 @@ VIRUS_ANCHORS = {
     "West Nile Virus": ["West Nile virus"],
     "Simian virus 40": ["Simian virus 40"],
     "Rabies Virus": ["rabies virus", "Rabies lyssavirus"],
-    "Human Immunodeficiency Virus": ["Human immunodeficiency virus 1", "Human immunodeficiency virus 2"],
+    "Human Immunodeficiency Virus": ["Human immunodeficiency virus", "Human immunodeficiency virus 1",
+                                     "Human immunodeficiency virus 2"],
     "Herpes Simplex Virus": ["Human alphaherpesvirus 1", "herpes simplex virus 1"],
     "Herpes Simplex Virus 2": ["Human alphaherpesvirus 2", "herpes simplex virus 2"],
     "Vaccinia Virus": ["Vaccinia virus"],
@@ -85,10 +86,12 @@ VIRUS_ANCHORS = {
     "Norovirus": ["Norovirus"],
     "Rotavirus": ["Rotavirus"],
     "Sapovirus": ["Sapovirus"],
-    "Influenza": ["Influenza A virus", "Influenza B virus"],
+    "Influenza": ["Alphainfluenzavirus", "Betainfluenzavirus", "Influenza A virus", "Influenza B virus",
+                  "unidentified influenza virus"],
     "Hepatitis B Virus": ["Hepatitis B virus"],
     "Hepatitis C Virus": ["Hepatitis C virus"],
-    "Cytomegalovirus": ["Human betaherpesvirus 5", "human cytomegalovirus", "Murid betaherpesvirus 1"],
+    "Cytomegalovirus": ["Cytomegalovirus", "Human betaherpesvirus 5", "human cytomegalovirus",
+                        "Murid betaherpesvirus 1"],
     "Epstein-Barr Virus": ["Human gammaherpesvirus 4", "Epstein-Barr virus"],
     "Varicella-Zoster Virus": ["Human alphaherpesvirus 3", "varicella-zoster virus"],
     "Kaposi's Sarcoma-Associated Herpesvirus": ["Human gammaherpesvirus 8"],
@@ -179,7 +182,10 @@ def pubtator_species(pmids):
         data = json.loads(get(PUBTATOR, {"pmids": ",".join(batch)}))
         docs = data.get("PubTator3", data) if isinstance(data, dict) else data
         for doc in docs if isinstance(docs, list) else []:
-            pmid = str(doc.get("id") or "")
+            # "_id" is "PMID|PMCID"; "id" is the PMC number for open-access papers.
+            pmid = str(doc.get("_id") or "").split("|")[0]
+            if not pmid.isdigit():
+                pmid = str(doc.get("pmid") or "")
             for p in doc.get("passages", []):
                 ptype = str(p.get("infons", {}).get("type", "")).lower()
                 if not pmid:

@@ -9,9 +9,12 @@ test_that("every app file parses", {
 })
 
 test_that("every server part listed in app.R exists, and every file is listed", {
-  app_src <- paste(readLines(file.path(repo_root, "app.R")), collapse = "\n")
-  listed <- regmatches(app_src, gregexpr('"[a-z_]+"', sub("(?s).*SERVER_PARTS <- c\\(([^)]*)\\).*", "\\1", app_src, perl = TRUE)))[[1]]
-  listed <- gsub('"', "", listed)
+  # Read SERVER_PARTS the way R does: parse app.R and evaluate that assignment.
+  exprs <- as.list(parse(file.path(repo_root, "app.R"), keep.source = FALSE))
+  def <- Filter(function(e) is.call(e) && identical(e[[1]], as.name("<-")) &&
+                  identical(e[[2]], as.name("SERVER_PARTS")), exprs)
+  expect_length(def, 1)
+  listed <- eval(def[[1]][[3]], baseenv())
   on_disk <- sub("\\.R$", "", list.files(file.path(repo_root, "app", "server"), "\\.R$"))
   expect_setequal(listed, on_disk)
 })

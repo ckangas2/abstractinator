@@ -155,3 +155,39 @@ test_that("cell subsets win over their parent type", {
                c("Microglia", "Plasmacytoid dendritic cell", "Gamma delta T cell",
                  "T follicular helper cell"))
 })
+
+# --- Regressions found by the PubTator3 benchmark (2026-11-07) ---------------
+
+test_that("herpes simplex virus type 2 written out is HSV-2, not HSV-1", {
+  expect_equal(tag_cells_and_viruses("A novel oncolytic herpes simplex virus type 2 remodels the tumour")$primary_virus,
+               "Herpes Simplex Virus 2")
+})
+
+test_that("MeSH replaces a regex tag only with one of our categories", {
+  # Stand-ins for the MeSH lookups, so the test needs no network.
+  fake <- list(
+    mesh_lookup      = function(t) list(terms = character(0)),
+    mesh_is_cached   = function(t) TRUE,
+    mesh_axis        = function(t, rec) "virus",
+    mesh_to_category = function(t, rx, rec) if (t == "Measles virus") "Measles Virus" else t
+  )
+  had <- vapply(names(fake), exists, logical(1), envir = globalenv(), inherits = FALSE)
+  old <- lapply(names(fake)[had], get, envir = globalenv()); names(old) <- names(fake)[had]
+  for (n in names(fake)) assign(n, fake[[n]], envir = globalenv())
+  withr::defer({
+    rm(list = names(fake), envir = globalenv())
+    for (n in names(old)) assign(n, old[[n]], envir = globalenv())
+  })
+
+  df <- data.frame(
+    primary_virus    = c("Measles Virus", "Measles Virus", "Non-descript", "Non-descript"),
+    primary_cell     = "Non-descript", primary_bacteria = "Non-descript",
+    MeSH_Major       = c("Oncolytic Viruses", "Oncolytic Viruses; Measles virus",
+                         "Bluetongue virus", "Viruses"),
+    stringsAsFactors = FALSE)
+  expect_equal(apply_mesh_tags(df)$primary_virus,
+               c("Measles Virus",      # a grouping never overrides the regex tag
+                 "Measles Virus",      # the descriptor that maps to a category wins
+                 "Bluetongue virus",   # an unlisted organism fills in when regex found none
+                 "Non-descript"))      # "Viruses" is too broad to be a tag
+})
