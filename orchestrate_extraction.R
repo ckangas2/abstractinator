@@ -545,6 +545,7 @@ dispatch_source_futures <- function(search_term, limit, elsevier_key, core_key, 
 # --- STEP 3: COMBINE, DEDUPLICATE, TAG, CACHE ---
 # 'vals' is the named list of source results (same names as dispatch_source_futures).
 finish_extraction <- function(search_term, vals, limit, elsevier_key, core_key, uspto_key) {
+  failed <- names(vals)[vapply(vals, source_failed, logical(1))]
   public_data <- bind_rows(list(
     EPMC = vals$EPMC, 
     OpenAlex = vals$OpenAlex, 
@@ -566,7 +567,7 @@ finish_extraction <- function(search_term, vals, limit, elsevier_key, core_key, 
   
   if (nrow(combined_data) == 0) {
     print("No results found across any database.")
-    return(list(deduplicated_data = NULL, original_combined_data = NULL))
+    return(list(deduplicated_data = NULL, original_combined_data = NULL, failed_sources = failed))
   }
   
   # Deduplicate
@@ -606,7 +607,6 @@ finish_extraction <- function(search_term, vals, limit, elsevier_key, core_key, 
   
   final_output <- final_data %>% distinct(DOI, Title, .keep_all = TRUE)
   
-  failed <- names(vals)[vapply(vals, source_failed, logical(1))]
   if (length(failed) > 0) {
     message(sprintf("[Orchestrator] Not caching '%s': %s failed this time, so the next search will retry.",
                     search_term, paste(failed, collapse = ", ")))
@@ -618,7 +618,8 @@ finish_extraction <- function(search_term, vals, limit, elsevier_key, core_key, 
   list(
     deduplicated_data = final_output, 
     original_combined_data = combined_data,
-    metadata = list(source = "API", timestamp = Sys.time()) 
+    metadata = list(source = "API", timestamp = Sys.time()),
+    failed_sources = failed 
   )
 }
 

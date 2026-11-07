@@ -235,6 +235,9 @@ function(req, res, q = "", limit = 25, abstract_chars = 1500, deep = "false",
   }
 
   df <- out$deduplicated_data
+  # Sources that errored this time (e.g. Europe PMC returning 503). Results
+  # are then incomplete and were not cached.
+  failed_src <- as.character(out$failed_sources %||% character(0))
   
   # Who is asking. The MCP server forwards a hashed session id and the client
   # name it received at initialize; both are absent for a direct REST caller.
@@ -274,10 +277,11 @@ function(req, res, q = "", limit = 25, abstract_chars = 1500, deep = "false",
     query = q,
     deep = deep,
     from_cache = identical(out$metadata$source, "CACHE"),
+    unavailable_sources = I(failed_src),
     seconds = round(as.numeric(difftime(Sys.time(), t0, units = "secs")), 1)
   )
   if (is.null(df) || nrow(df) == 0) {
-    log_this_search(0L, 0L, NULL, "empty")
+    log_this_search(0L, 0L, NULL, if (length(failed_src)) "partial" else "empty")
     return(c(base, list(total_found = 0, returned = 0, results = list())))
   }
 
@@ -327,7 +331,7 @@ function(req, res, q = "", limit = 25, abstract_chars = 1500, deep = "false",
   }
 
   src <- as.list(table(df$Source))
-  log_this_search(nrow(df), nrow(picked), src, "ok")
+  log_this_search(nrow(df), nrow(picked), src, if (length(failed_src)) "partial" else "ok")
 
   c(base, list(
     total_found = nrow(df),

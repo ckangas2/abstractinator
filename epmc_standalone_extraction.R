@@ -44,9 +44,13 @@ get_epmc_data <- function(search_term, page_size = 1000, result_type = "core", m
       return(NULL) 
     })
     
-    if (is.null(response) || http_error(response)) { 
-      print(paste("EPMC API Request Failed. Status:", http_status(response)$status_code))
-      break 
+    if (is.null(response) || http_error(response)) {
+      status <- if (is.null(response)) "network error" else httr::status_code(response)
+      # Nothing fetched yet: raise, so safe_source() marks Europe PMC as failed
+      # instead of reporting zero results.
+      if (total_fetched == 0) stop(sprintf("Europe PMC request failed (%s)", status))
+      print(paste("EPMC API Request Failed on a later page. Status:", status))
+      break
     }
     
     # 3. Parse JSON
