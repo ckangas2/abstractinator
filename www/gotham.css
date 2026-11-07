@@ -270,8 +270,8 @@ html.gotham body:has(#landing_container[style*="display: none"]) .gotham-scene {
 .gotham .g-mist        { stop-color: var(--g-mist); }
 .gotham .g-waterline   { fill: color-mix(in srgb, var(--g-accent-glow) 60%, transparent); }
 
-.gotham .g-win-a { fill: var(--g-win-a); opacity: 0.8; }
-.gotham .g-win-b { fill: var(--g-win-b); opacity: 0.7; }
+.g-win-a { fill: var(--g-win-a); opacity: 0.8; }
+.g-win-b { fill: var(--g-win-b); opacity: 0.7; }
 
 /* The mascot in the moon, as a black silhouette. */
 /* Silhouette comes from the SVG filter #gSilhouette in gotham-scene.html; a CSS
@@ -279,32 +279,32 @@ html.gotham body:has(#landing_container[style*="display: none"]) .gotham-scene {
 .gotham .g-mascot { opacity: 0.86; }
 
 /* Lab gear */
-.gotham .g-rung     { fill: none; stroke: var(--g-glow); stroke-width: 1.8; opacity: 0.85; }
-.gotham .g-liquid   { fill: var(--g-glow); opacity: 0.85; }
-.gotham .g-liquid-2 { fill: #ff5bd0; opacity: 0.75; }
+.g-rung     { fill: none; stroke: var(--g-glow); stroke-width: 1.8; opacity: 0.85; }
+.g-liquid   { fill: var(--g-glow); opacity: 0.85; }
+.g-liquid-2 { fill: #ff5bd0; opacity: 0.75; }
 
 /* Pumpkins (halloween carved and lit; thanksgiving plain) */
-.gotham .g-pumpkin { fill: #e8701e; }
-.gotham .g-rib     { fill: #000; opacity: 0.13; }
-.gotham .g-stem    { fill: #3f6b2a; }
-.gotham .g-carve   { fill: #ffe77a; }
+.g-pumpkin { fill: #e8701e; }
+.g-rib     { fill: #000; opacity: 0.13; }
+.g-stem    { fill: #3f6b2a; }
+.g-carve   { fill: #ffe77a; }
 
 /* Thanksgiving */
-.gotham .g-hay       { fill: #d9b65a; }
-.gotham .g-hay-line  { fill: none; stroke: #a8853a; stroke-width: 0.8; }
-.gotham .g-gourd     { fill: #c9b23a; }
-.gotham .g-corn      { fill: #c8a86a; }
-.gotham .g-corn-line { fill: none; stroke: #9a7a40; stroke-width: 0.8; }
-.gotham .g-corn-tie  { fill: #7a5a2a; }
+.g-hay       { fill: #d9b65a; }
+.g-hay-line  { fill: none; stroke: #a8853a; stroke-width: 0.8; }
+.g-gourd     { fill: #c9b23a; }
+.g-corn      { fill: #c8a86a; }
+.g-corn-line { fill: none; stroke: #9a7a40; stroke-width: 0.8; }
+.g-corn-tie  { fill: #7a5a2a; }
 .gotham .g-geese path { fill: none; stroke: var(--g-silhouette); stroke-width: 1.4; stroke-linecap: round; }
 
 /* Christmas */
-.gotham .g-snow   { fill: #f4f8ff; }
-.gotham .g-wire   { fill: none; stroke: #0a0f1c; stroke-width: 0.6; }
-.gotham .g-tree   { fill: #1f7a3a; }
-.gotham .g-star   { fill: #ffd23f; }
-.gotham .g-ribbon { fill: #ffd23f; }
-.gotham .g-bulb   { animation: g-twinkle 2.4s ease-in-out infinite; animation-delay: calc(var(--i) * -0.6s); }
+.g-snow   { fill: #f4f8ff; }
+.g-wire   { fill: none; stroke: #0a0f1c; stroke-width: 0.6; }
+.g-tree   { fill: #1f7a3a; }
+.g-star   { fill: #ffd23f; }
+.g-ribbon { fill: #ffd23f; }
+.g-bulb   { animation: g-twinkle 2.4s ease-in-out infinite; animation-delay: calc(var(--i) * -0.6s); }
 @keyframes g-twinkle { 50% { opacity: 0.35; } }
 
 /* Things in the sky */
@@ -316,11 +316,20 @@ html.gotham body:has(#landing_container[style*="display: none"]) .gotham-scene {
    5. SEASON VISIBILITY, LEAVES AND SNOW
    Every seasonal piece carries "g-season g-<season>". Only the pieces for
    the season on <html data-season> are shown.
+   The city and its decorations are drawn as two <use> copies of #gothamWorld
+   (the reflection and the city itself). Selectors that need an ancestor, like
+   ".gotham .g-tree", don't reach inside those copies, but CSS variables do.
+   So the season switches pieces on through --g-show-<season>, and the rules
+   for pieces inside #gothamWorld use bare class names (they appear nowhere
+   else on the page).
    ========================================================================== */
-.gotham .g-season { display: none; }
-.gotham[data-season="halloween"]    .g-halloween,
-.gotham[data-season="thanksgiving"] .g-thanksgiving,
-.gotham[data-season="christmas"]    .g-christmas { display: inline; }
+.g-season       { display: none; }
+.g-halloween    { display: var(--g-show-halloween, none); }
+.g-thanksgiving { display: var(--g-show-thanksgiving, none); }
+.g-christmas    { display: var(--g-show-christmas, none); }
+.gotham[data-season="halloween"]    { --g-show-halloween: inline; }
+.gotham[data-season="thanksgiving"] { --g-show-thanksgiving: inline; }
+.gotham[data-season="christmas"]    { --g-show-christmas: inline; }
 
 .gotham .g-weather {
   position: absolute;
@@ -345,7 +354,7 @@ html.gotham body:has(#landing_container[style*="display: none"]) .gotham-scene {
 /* Reduced motion: nothing falls or twinkles; leaves and snow rest where they are. */
 @media (prefers-reduced-motion: reduce) {
   .gotham .g-weather > span { animation: none; top: var(--rest); }
-  .gotham .g-bulb { animation: none; }
+  .g-bulb { animation: none; }
 }
 
 
