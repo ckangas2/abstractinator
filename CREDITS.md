@@ -1,5 +1,23 @@
 # Credits
 
+## Data sources
+
+Search results come from these services. Titles, abstracts and other content
+remain the copyright of their authors and publishers; records link back to the
+original. Data is fetched at search time or refreshed daily, and may not
+reflect the most current version held by each source.
+
+| Source | Provider | Used for |
+|---|---|---|
+| [Europe PMC](https://europepmc.org) | EMBL-EBI; includes PubMed/MEDLINE data courtesy of the U.S. National Library of Medicine | Papers, MeSH subjects, open-access full text |
+| [OpenAlex](https://openalex.org) | OurResearch (CC0) | Papers |
+| [ClinicalTrials.gov](https://clinicaltrials.gov) | U.S. National Library of Medicine | Clinical trials |
+| [bioRxiv](https://www.biorxiv.org) / [medRxiv](https://www.medrxiv.org) | Cold Spring Harbor Laboratory | Preprints |
+| [NIH RePORTER](https://reporter.nih.gov) | U.S. National Institutes of Health | Grants |
+| [NSF Award Search](https://www.research.gov/common/webapi/awardapisearch-v1.htm) | U.S. National Science Foundation | Grants |
+| [MeSH](https://www.nlm.nih.gov/mesh/) | U.S. National Library of Medicine | Organism and cell-type classification |
+
+
 ## Icons (Flaticon free license: attribution required)
 
 | Icon | Author | Source | Used for |
