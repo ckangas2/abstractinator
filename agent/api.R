@@ -32,7 +32,14 @@ dir.create(get("CACHE_DIR", envir = globalenv()), recursive = TRUE, showWarnings
 
 MAX_RETURN         <- 100L  # most results one call can return
 MAX_QUERY_CHARS    <- 200L
-SEARCHES_PER_MIN   <- 20L   # server-wide cap, protects the machine and upstream APIs
+# The API runs as several processes (agent/abstractinator-api*.service) so one
+# slow search does not hold up the others. Each enforces its share of the
+# server-wide caps; the MCP server moves on to another process on a 429.
+API_PROCESSES <- suppressWarnings(as.integer(Sys.getenv("ABSTRACTINATOR_API_PROCESSES", "1")))
+if (is.na(API_PROCESSES) || API_PROCESSES < 1L) API_PROCESSES <- 1L
+per_process <- function(server_wide) as.integer(ceiling(server_wide / API_PROCESSES))
+
+SEARCHES_PER_MIN   <- per_process(20L)   # server-wide cap, protects the machine and upstream APIs
 .recent_searches   <- numeric(0)
 
 # Full text gets its own bucket so it cannot starve search, and vice versa.
@@ -42,7 +49,7 @@ SEARCHES_PER_MIN   <- 20L   # server-wide cap, protects the machine and upstream
 # IP blocked, which would take search down too.
 # Note this counts cache hits as well, since the filter runs before the handler
 # knows whether the text is already on disk - hence a generous limit.
-FULLTEXT_PER_MIN   <- 30L
+FULLTEXT_PER_MIN   <- per_process(30L)
 .recent_fulltext   <- numeric(0)
 
 #* Run every request from the repo root, and rate-limit /search

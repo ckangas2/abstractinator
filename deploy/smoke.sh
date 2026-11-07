@@ -49,6 +49,14 @@ echo "== $MODE =="
 H=$(curl -sS --max-time 15 "$API/health" 2>/dev/null)
 jqcheck "/health reports ok" "$H" "d.get('status') == 'ok'"
 
+# 1b. the extra API processes (local only; see agent/abstractinator-api.service)
+if [ "$MODE" = "local" ]; then
+  for port in 8101 8102; do
+    H=$(curl -sS --max-time 15 "http://127.0.0.1:$port/health" 2>/dev/null)
+    jqcheck "/health on API process $port" "$H" "d.get('status') == 'ok'"
+  done
+fi
+
 # 2. search returns records with the fields the UI and agents read.
 # A 429 here is not a failed deploy: it means the service is up and the rate
 # limiter is working. Running this script twice inside a minute will do it,

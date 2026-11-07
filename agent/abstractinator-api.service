@@ -1,10 +1,19 @@
+# The REST API. Three identical processes so one slow search does not hold up
+# the others: this unit on port 8100, plus abstractinator-api@8101 and @8102,
+# which it starts and which follow it on stop/restart. So
+#   sudo systemctl restart abstractinator-api
+# restarts all three. The MCP server spreads requests across them
+# (ABSTRACTINATOR_APIS in abstractinator-mcp.service).
 [Unit]
-Description=Abstractinator REST API (plumber)
+Description=Abstractinator REST API (plumber), port 8100
 After=network.target
+Wants=abstractinator-api@8101.service abstractinator-api@8102.service
 
 [Service]
 User=shiny
 WorkingDirectory=/srv/shiny-server/abstractinator
+Environment=ABSTRACTINATOR_API_PORT=8100
+Environment=ABSTRACTINATOR_API_PROCESSES=3
 ExecStart=/usr/bin/Rscript agent/run_api.R
 Restart=on-failure
 RestartSec=5

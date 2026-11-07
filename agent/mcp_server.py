@@ -41,7 +41,12 @@ from mcp.server.mcpserver import MCPServer
 from mcp.types import ToolAnnotations
 from mcp.server.transport_security import TransportSecuritySettings
 
-API_URL = os.environ.get("ABSTRACTINATOR_API", "http://127.0.0.1:8100")
+# The REST API runs as several identical processes (see agent/*.service), so
+# one slow search - a cold one can take a minute - does not hold up the rest.
+# ABSTRACTINATOR_APIS lists them, comma-separated.
+API_URLS = [u.strip().rstrip("/") for u in os.environ.get(
+    "ABSTRACTINATOR_APIS",
+    os.environ.get("ABSTRACTINATOR_API", "http://127.0.0.1:8100")).split(",") if u.strip()]
 PORT = int(os.environ.get("MCP_PORT", "8200"))
 PUBLIC_HOST = os.environ.get("MCP_PUBLIC_HOST", "mcp.abstractinator.me")
 
@@ -56,6 +61,49 @@ LOG_DIR = Path(
 # the extraction below can be corrected if a future SDK release moves things.
 CTX_DEBUG = os.environ.get("MCP_LOG_CTX_DEBUG", "") == "1"
 _ctx_debug_done = False
+
+# --- Routing across API processes -------------------------------------------
+# Each request goes to the process with the fewest requests in flight (ties go
+# to the first listed). A process that refuses the connection is skipped for
+# DOWN_SECONDS; one that answers 429 has used its share of the rate limit, so
+# the next is tried. A request that reached a process and then timed out is
+# NOT retried elsewhere: it may still be running, and a retry would double the
+# load at exactly the wrong moment.
+DOWN_SECONDS = 30
+_in_flight = {u: 0 for u in API_URLS}
+_down_until = {u: 0.0 for u in API_URLS}
+
+
+def _backend_order():
+    now = time.monotonic()
+    up = [u for u in API_URLS if _down_until[u] <= now]
+    return sorted(up or API_URLS, key=lambda u: _in_flight[u])
+
+
+async def _api_get(path, params, headers):
+    """GET path from the least busy API process. Returns the response from the
+    first process that accepted the request without a 429 (or the last 429), and
+    raises the connection error if none could be reached."""
+    last_resp, last_err = None, None
+    for url in _backend_order():
+        _in_flight[url] += 1
+        try:
+            async with httpx2.AsyncClient(timeout=180) as client:
+                r = await client.get(f"{url}{path}", params=params, headers=headers)
+        except httpx2.ConnectError as e:
+            _down_until[url] = time.monotonic() + DOWN_SECONDS
+            last_err = e
+            continue
+        finally:
+            _in_flight[url] -= 1
+        if r.status_code == 429:
+            last_resp = r
+            continue
+        return r
+    if last_resp is not None:
+        return last_resp
+    raise last_err
+
 
 # Client names we treat as our own traffic rather than real usage.
 OUR_CLIENTS = ("uptime-probe", "abstractinator-probe", "curl", "python-httpx")
@@ -432,8 +480,7 @@ async def search_literature(
         pass
 
     try:
-        async with httpx2.AsyncClient(timeout=180) as client:
-            r = await client.get(f"{API_URL}/search", params=params, headers=headers)
+        r = await _api_get("/search", params, headers)
     except httpx2.HTTPError as e:
         return {"error": f"The Abstractinator API is unreachable: {e}"}
     if r.status_code == 429:
@@ -502,8 +549,7 @@ async def get_fulltext(
         pass
 
     try:
-        async with httpx2.AsyncClient(timeout=180) as client:
-            r = await client.get(f"{API_URL}/fulltext", params=params, headers=headers)
+        r = await _api_get("/fulltext", params, headers)
     except httpx2.HTTPError as e:
         return {"error": f"The Abstractinator API is unreachable: {e}"}
     if r.status_code == 429:

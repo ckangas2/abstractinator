@@ -188,7 +188,7 @@ server {
 ```bash
 sudo /usr/bin/python3 -m venv /opt/abstractinator-mcp
 sudo /opt/abstractinator-mcp/bin/pip install -r agent/requirements.txt   # pinned, MCP Python SDK 2.x
-sudo cp agent/abstractinator-api.service agent/abstractinator-mcp.service /etc/systemd/system/
+sudo cp agent/abstractinator-api.service 'agent/abstractinator-api@.service' agent/abstractinator-mcp.service /etc/systemd/system/
 sudo systemctl daemon-reload
 sudo systemctl enable --now abstractinator-api abstractinator-mcp
 ```
@@ -210,7 +210,7 @@ sudo cp deploy/abstractinator.cron /etc/cron.d/abstractinator   # runs update_bi
 cd /srv/shiny-server/abstractinator
 sudo -u shiny git pull
 sudo systemctl restart shiny-server            # app.R, www/, search scripts
-sudo systemctl restart abstractinator-api      # agent/api.R, search scripts
+sudo systemctl restart abstractinator-api      # agent/api.R, search scripts (all three API processes)
 sudo systemctl restart abstractinator-mcp      # agent/mcp_server.py
 ```
 

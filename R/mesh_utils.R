@@ -91,7 +91,11 @@ mesh_lookup <- function(label, use_cache = TRUE) {
 
   d <- mesh_cache_dir()
   if (!dir.exists(d)) dir.create(d, recursive = TRUE, showWarnings = FALSE)
-  tryCatch(saveRDS(rec, .mesh_path(label)), error = function(e) invisible(NULL))
+  # Temp file + rename, so concurrent processes never read a partial file.
+  path <- .mesh_path(label)
+  tmp <- paste0(path, ".tmp", Sys.getpid())
+  tryCatch({ saveRDS(rec, tmp); file.rename(tmp, path) },
+           error = function(e) invisible(NULL), finally = unlink(tmp))
   assign(key, rec, envir = .mesh_mem)
   Sys.sleep(0.1)
   rec

@@ -90,8 +90,12 @@ save_to_s3 <- function(search_term, data, elsevier_key = NULL, uspto_key = NULL,
   message(sprintf("[LocalCache] Saving partition: %s (E:%s U:%s C:%s)", search_term, has_elsevier, has_uspto, has_core))
   
   tryCatch({
-    saveRDS(data, file = full_path)
-    TRUE
+    # Temp file + rename: several API processes share this cache, and a rename
+    # is atomic, so a reader never sees a half-written file.
+    tmp <- paste0(full_path, ".tmp", Sys.getpid())
+    on.exit(unlink(tmp), add = TRUE)
+    saveRDS(data, file = tmp)
+    file.rename(tmp, full_path)
   }, error = function(e) {
     warning(paste("[LocalCache] Save failed:", e$message))
     FALSE

@@ -73,7 +73,12 @@ fulltext_cache_dir <- function() {
   tryCatch({
     d <- fulltext_cache_dir()
     if (!dir.exists(d)) dir.create(d, recursive = TRUE, showWarnings = FALSE)
-    writeLines(jsonlite::toJSON(rec, auto_unbox = TRUE), .ft_cache_path(rec$pmcid))
+    # Temp file + rename, so concurrent processes never read a partial file.
+    path <- .ft_cache_path(rec$pmcid)
+    tmp <- paste0(path, ".tmp", Sys.getpid())
+    on.exit(unlink(tmp), add = TRUE)
+    writeLines(jsonlite::toJSON(rec, auto_unbox = TRUE), tmp)
+    file.rename(tmp, path)
     TRUE
   }, error = function(e) FALSE)
 }

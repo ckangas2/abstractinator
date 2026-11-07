@@ -1,0 +1,15 @@
+# An extra REST API process on port %i. Started by, and restarted/stopped with,
+# abstractinator-api.service; see the notes there.
+[Unit]
+Description=Abstractinator REST API (plumber), port %i
+After=network.target
+PartOf=abstractinator-api.service
+
+[Service]
+User=shiny
+WorkingDirectory=/srv/shiny-server/abstractinator
+Environment=ABSTRACTINATOR_API_PORT=%i
+Environment=ABSTRACTINATOR_API_PROCESSES=3
+ExecStart=/usr/bin/Rscript agent/run_api.R
+Restart=on-failure
+RestartSec=5

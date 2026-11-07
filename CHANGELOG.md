@@ -35,6 +35,9 @@ Development before v2.0.0 was untagged; see the git history for detail.
   results are refreshed (cache schema 5).
 
 ### Changed
+- The REST API runs as three processes, and the MCP server sends each request
+  to the least busy one, so one slow search no longer blocks the others.
+  Cache writes are atomic, since the processes share the cache.
 - Spaces and hyphens in aliases are interchangeable ("T cell" = "T-cell").
 - Records are normalised across sources: DOIs are bare (`10.…`, not
   `https://doi.org/10.…`), HTML entities in titles and abstracts are decoded,
