@@ -249,7 +249,7 @@ fluidPage(
         feature_card("card_dedup", "filter", "Deduplicatinator",
                      "Searches Europe PMC, OpenAlex, ClinicalTrials.gov, bioRxiv, NIH, NSF & more at once."),
         feature_card("card_plot", "chart-area", "Plotinator",
-                     "Visualize viral-immune trends over time with interactive analytics."),
+                     "Plot the viruses and immune cells in your results over time."),
         feature_card("card_read", "book-open", "Readinator",
                      "Build and export a targeted reading list to Zotero or EndNote."),
         feature_card("agent_info", "robot", "Agentinator",
@@ -318,6 +318,7 @@ fluidPage(
         # in place of the table, rather than throwing the user back to the
         # landing page and losing their context.
         uiOutput("resultsEmptyNotice"),
+        uiOutput("sourceCoverage"),
         uiOutput("sourceChips"),
         DT::dataTableOutput("resultsDisplay")
       ),
@@ -406,6 +407,11 @@ fluidPage(
             )
         ),
         
+        # The plot counts records in this result set: each database's top
+        # matches, not the whole literature, so it shows what was retrieved
+        # rather than true publication trends.
+        p(class = "plot-caveat",
+          "Counts are within the retrieved records (each database's top matches; see Search Results), not the full literature."),
         plotlyOutput("allArticlesPlotOutput", height = "700px")
       ),
       

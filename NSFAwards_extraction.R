@@ -39,6 +39,8 @@ get_all_nsf_awards_baseR_v2 <- function(search_term, rows_per_page = 25, max_res
   results_accumulator <- list() 
   offset <- 0
   total_fetched <- 0
+  incomplete <- FALSE      # a later page failed: partial set, not cached
+  total_avail <- NA_real_  # NSF's own count of matching awards
   
   cat(sprintf("\n[NSF START] Query: '%s' | Target: %d\n", search_term, max_results))
 
@@ -72,7 +74,14 @@ get_all_nsf_awards_baseR_v2 <- function(search_term, rows_per_page = 25, max_res
       return(NULL) 
     })
     
-    if (is.null(response) || httr::http_error(response)) break
+    if (is.null(response) || httr::http_error(response)) {
+      status <- if (is.null(response)) "network error" else httr::status_code(response)
+      # Nothing fetched yet: raise, so safe_source() marks NSF as failed
+      # instead of reporting zero results.
+      if (total_fetched == 0) stop(sprintf("NSF award search failed (%s)", status))
+      incomplete <- TRUE
+      break
+    }
     
     # 3. Parse JSON
     raw_content <- httr::content(response, "text", encoding = "UTF-8")
@@ -116,11 +125,13 @@ get_all_nsf_awards_baseR_v2 <- function(search_term, rows_per_page = 25, max_res
     # bind_rows handles the 62 vs 64 column mismatch gracefully
     final_df <- dplyr::bind_rows(results_accumulator)
     cat(sprintf("[NSF DONE] Successfully extracted %d records.\n\n", nrow(final_df)))
-    return(final_df)
   } else {
     cat("[NSF DONE] Zero records found.\n\n")
-    return(data.frame()) 
+    final_df <- data.frame()
   }
+  attr(final_df, "total_hits") <- total_avail
+  if (incomplete) attr(final_df, "source_failed") <- TRUE
+  final_df
 }
 
 

@@ -451,8 +451,10 @@ async def search_literature(
             has_more, not total_found.
 
     Returns a dict with total_found, available, returned, offset, has_more,
-    source_counts
-    and a results list of records (title, abstract, authors,
+    source_counts, retrieved_at (when the databases were queried; a cached
+    result can be up to 7 days old), sources (per database: records
+    retrieved, total_matches the database reported, and status ok, partial
+    or failed) and a results list of records (title, abstract, authors,
     publication_date, doi, url, source, primary_cell, primary_virus,
     primary_bacteria, is_bioinformatics, pmid, pmcid, is_open_access,
     is_retracted, and for clinical trials trial_status, trial_start, trial_end

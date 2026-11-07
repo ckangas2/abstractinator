@@ -233,6 +233,12 @@ virus_alias_expanded <- add_aliases(virus_alias_expanded, list(
   "Poliovirus" = c("polio", "poliomyelitis")
 ))
 
+# German measles is rubella. As its own category it also stays out of Measles:
+# the nested-category mask blanks "German measles" before Measles is counted.
+virus_alias_expanded <- c(virus_alias_expanded, list(
+  "Rubella Virus" = c("rubella virus", "rubella", "German measles")
+))
+
 bacteria_alias_expanded <- add_aliases(bacteria_alias_expanded, list(
   "Vibrio cholerae" = c("cholera"),
   "Listeria" = c("listeriosis"),

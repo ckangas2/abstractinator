@@ -12,6 +12,8 @@ get_clinical_trials_data <- function(search_term, limit = 10000) {
   next_token <- NULL         # The cursor
   total_fetched <- 0
   page_size_max <- 1000      # API Limit is usually 1000
+  incomplete <- FALSE        # a later page failed: partial set, not cached
+  total_hits <- NA_real_     # the registry's own count (countTotal = true)
   
   # --- THE PAGINATION LOOP ---
   while (total_fetched < limit) {
@@ -37,17 +39,23 @@ get_clinical_trials_data <- function(search_term, limit = 10000) {
     # 3. Fetch Data
     # We use tryCatch to prevent one bad page from crashing the whole pipeline
     response <- tryCatch({
-      GET(url = api_url, query = query_params, add_headers(`accept` = "application/json"))
+      GET(url = api_url, query = query_params, add_headers(`accept` = "application/json"), httr::timeout(60))
     }, error = function(e) NULL)
     
     if (is.null(response) || http_status(response)$category != "Success") {
-      warning(paste("clinicaltrials.gov API Error on batch:", http_status(response)$message))
+      status <- if (is.null(response)) "network error" else http_status(response)$message
+      # Nothing fetched yet: raise, so safe_source() marks the source as failed
+      # instead of reporting that no trials matched.
+      if (total_fetched == 0) stop(sprintf("clinicaltrials.gov request failed (%s)", status))
+      warning(paste("clinicaltrials.gov API Error on a later batch:", status))
+      incomplete <- TRUE
       break
     }
     
     # 4. Parse JSON
     api_data_raw <- content(response, "text", encoding = "UTF-8")
     api_data_parsed <- fromJSON(api_data_raw)
+    if (is.na(total_hits)) total_hits <- suppressWarnings(as.numeric(api_data_parsed$totalCount %||% NA))
     
     # 5. Check if studies exist in this batch
     # Zero results come back as an empty list, where nrow() is NULL, so check
@@ -195,9 +203,11 @@ get_clinical_trials_data <- function(search_term, limit = 10000) {
   if (length(all_studies_list) > 0) {
     final_df <- bind_rows(all_studies_list)
     print(paste("clinicaltrials.gov: Total retrieved:", nrow(final_df)))
-    return(final_df)
   } else {
     print("clinicaltrials.gov: No studies found.")
-    return(NULL)
+    final_df <- data.frame()
   }
+  attr(final_df, "total_hits") <- total_hits
+  if (incomplete) attr(final_df, "source_failed") <- TRUE
+  final_df
 }

@@ -275,11 +275,29 @@ function(req, res, q = "", limit = 25, abstract_chars = 1500, deep = "false",
     )
   }
   
+  # Each source returns a ranked sample (its top N), not every match. This
+  # says, per source, how many records were retrieved, how many the source
+  # reported matching in total (null if it doesn't say), and whether it ran
+  # cleanly ("ok"), stopped part-way ("partial") or failed.
+  sc <- out$source_counts
+  per_source <- if (is.data.frame(sc) && nrow(sc) > 0) {
+    lapply(seq_len(nrow(sc)), function(i) list(
+      source = sc$source[i], retrieved = sc$retrieved[i],
+      total_matches = sc$total[i],   # NA serialises as null
+      status = sc$status[i]))
+  } else list()
+  retrieved_at <- out$metadata$retrieved_at
+  retrieved_at <- if (inherits(retrieved_at, "POSIXt"))
+    format(retrieved_at, "%Y-%m-%dT%H:%M:%SZ", tz = "UTC") else NULL
+
   base <- list(
     query = q,
     deep = deep,
     from_cache = identical(out$metadata$source, "CACHE"),
+    # When the sources were queried (a cached result can be up to 7 days old).
+    retrieved_at = retrieved_at,
     unavailable_sources = I(failed_src),
+    sources = per_source,
     seconds = round(as.numeric(difftime(Sys.time(), t0, units = "secs")), 1)
   )
   if (is.null(df) || nrow(df) == 0) {

@@ -101,3 +101,64 @@ test_that("dates with a time part become plain ISO dates", {
                                 "2024-06", "07/15/2023", NA)),
                c("2024-06-01", "2024-06-01", "2024-06-01", "2024-06", "07/15/2023", NA))
 })
+
+# --- Per-source counts, partial results and cache variants ------------------
+
+test_that("per-source counts report retrieved, total and status", {
+  ok      <- structure(data.frame(x = 1:3), total_hits = 1200)
+  partial <- structure(data.frame(x = 1:2), total_hits = 40, source_failed = TRUE)
+  failed  <- structure(data.frame(), source_failed = TRUE)
+  vals <- list(EPMC = ok, OpenAlex = partial, NIH = failed,
+               bioRxiv = data.frame(x = 1), Scopus = NULL)
+  sc <- summarise_sources(vals)
+  expect_equal(sc$source, c("EPMC", "OpenAlex", "NIH", "bioRxiv", "Scopus"))
+  expect_equal(sc$retrieved, c(3L, 2L, 0L, 1L, 0L))
+  expect_equal(sc$total, c(1200, 40, NA, NA, NA))
+  expect_equal(sc$status, c("ok", "partial", "failed", "ok", "ok"))
+
+  expect_equal(source_coverage_items(sc[1:4, ]),
+               c("Europe PMC 3 of 1,200", "OpenAlex 2 of 40 (stopped early)",
+                 "NIH RePORTER: no response", "bioRxiv/medRxiv 1"))
+  expect_equal(incomplete_source_labels(sc), c("OpenAlex", "NIH RePORTER"))
+  expect_equal(source_coverage_items(NULL), character(0))
+})
+
+test_that("cache entries are separated by MeSH mode and alias version", {
+  plain <- get_cache_key("Oncolytic Virus")
+  web   <- get_cache_key("Oncolytic Virus", variant = cache_variant(0L))
+  api   <- get_cache_key("Oncolytic Virus", variant = cache_variant(60L))
+  expect_false(identical(web, api))
+  expect_false(identical(plain, web))
+  expect_match(cache_variant(0L), "^mesh:cached\\|aliases:[0-9a-f]{10}$")
+  expect_match(cache_variant(60L), "^mesh:live\\|aliases:")
+})
+
+test_that("a partial source result is shown but not cached; a clean one is cached with its counts", {
+  withr::local_envvar(INTEGRATE_NIH_NSF = "")
+  rec <- function(i) data.frame(
+    Title = paste("Interferon signalling in CD8+ T cells, study", i),
+    Abstract = "We studied influenza virus infection.",
+    DOI = paste0("10.9999/test.", i), Authors = "A; B",
+    PublicationDate = "2024-01-01", Source = "EPMC", stringsAsFactors = FALSE)
+  epmc <- structure(rbind(rec(1), rec(2)), total_hits = 512)
+
+  # Clean run: cached, with counts and retrieval time stored on the result.
+  out <- suppressMessages(finish_extraction("zz test clean", list(EPMC = epmc), 50,
+                                            NULL, NULL, NULL, mesh_lookups = 0L))
+  expect_equal(nrow(out$deduplicated_data), 2)
+  expect_equal(out$source_counts$total, 512)
+  expect_true(inherits(out$metadata$retrieved_at, "POSIXct"))
+  hit <- get_cached_extraction("zz test clean", 50, NULL, NULL, NULL, variant = cache_variant(0L))
+  expect_false(is.null(hit))
+  expect_equal(hit$source_counts$status, "ok")
+  expect_equal(hit$metadata$retrieved_at, out$metadata$retrieved_at)
+
+  # Same records, but the source stopped part-way: still returned, never cached.
+  partial <- structure(epmc, source_failed = TRUE)
+  out2 <- suppressMessages(finish_extraction("zz test partial", list(EPMC = partial), 50,
+                                             NULL, NULL, NULL, mesh_lookups = 0L))
+  expect_equal(nrow(out2$deduplicated_data), 2)
+  expect_equal(out2$failed_sources, "EPMC")
+  expect_equal(out2$source_counts$status, "partial")
+  expect_null(get_cached_extraction("zz test partial", 50, NULL, NULL, NULL, variant = cache_variant(0L)))
+})

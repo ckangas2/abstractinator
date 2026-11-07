@@ -105,6 +105,20 @@
     active_uspto    <- search_ctx$uspto
     
     rv$initial_extracted_data <- extraction_results$original_combined_data 
+    rv$source_counts <- extraction_results$source_counts
+    rv$retrieved_at  <- extraction_results$metadata$retrieved_at
+    rv$from_cache    <- identical(extraction_results$metadata$source, "CACHE")
+
+    # Say so when a database didn't answer (or stopped part-way): the results
+    # are then incomplete, and weren't cached, so searching again retries it.
+    incomplete <- incomplete_source_labels(extraction_results$source_counts)
+    if (length(incomplete) > 0) {
+      showNotification(
+        paste0(paste(incomplete, collapse = ", "),
+               " didn't respond fully",
+               ", so these results may be incomplete. Searching again will retry."),
+        type = "warning", duration = 10)
+    }
     
     
     if (!is.null(extraction_results$deduplicated_data)) {

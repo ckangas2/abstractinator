@@ -55,6 +55,8 @@ get_openalex_data <- function(search_term, mailto = NULL, per_page = 200, max_re
   next_cursor <- "*"
   total_fetched <- 0
   base_url <- "https://api.openalex.org/works"
+  incomplete <- FALSE      # a later page failed: partial set, not cached
+  total_hits <- NA_real_   # OpenAlex's own count of matching works
   
   # Polite Pool Logic
   is_polite <- !is.null(mailto) && nchar(mailto) > 0
@@ -69,23 +71,31 @@ get_openalex_data <- function(search_term, mailto = NULL, per_page = 200, max_re
     query_params <- list(
       search = search_term,
       filter = "has_abstract:true", 
-      select = "id,doi,title,publication_date,authorships,ids,abstract_inverted_index",
+      # open_access and is_retracted feed IsOpenAccess / IsRetracted below;
+      # without them in the select list both were always empty.
+      select = "id,doi,title,publication_date,authorships,ids,abstract_inverted_index,open_access,is_retracted",
       per_page = this_page_size, 
       cursor = next_cursor
     )
     if (is_polite) query_params$mailto <- mailto
     
     # Fetch
-    resp <- tryCatch({ GET(base_url, query = query_params) }, error = function(e) NULL)
+    resp <- tryCatch({ GET(base_url, query = query_params, httr::timeout(60)) }, error = function(e) NULL)
     
     if (is.null(resp) || status_code(resp) != 200) {
-      if (!is.null(resp)) print(paste("API Error:", status_code(resp)))
+      status <- if (is.null(resp)) "network error" else status_code(resp)
+      # Nothing fetched yet: raise, so safe_source() marks OpenAlex as failed
+      # instead of reporting zero results.
+      if (total_fetched == 0) stop(sprintf("OpenAlex request failed (%s)", status))
+      print(paste("OpenAlex request failed on a later page:", status))
+      incomplete <- TRUE
       break
     }
     
     # Parse
     json_raw <- fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE)
     results <- json_raw$results
+    if (is.na(total_hits)) total_hits <- suppressWarnings(as.numeric(json_raw$meta$count %||% NA))
     if (length(results) == 0) break
     
     # Process Batch
@@ -133,9 +143,8 @@ get_openalex_data <- function(search_term, mailto = NULL, per_page = 200, max_re
   print(paste("\nOpenAlex Done. Total:", total_fetched))
   
   # Final Bind
-  if (length(all_batches) > 0) {
-    return(bind_rows(all_batches))
-  } else {
-    return(tibble())
-  }
+  out <- if (length(all_batches) > 0) bind_rows(all_batches) else tibble()
+  attr(out, "total_hits") <- total_hits
+  if (incomplete) attr(out, "source_failed") <- TRUE
+  out
 }

@@ -37,7 +37,11 @@
     original_article_df = NULL,    
     article_df = reactiveVal(NULL), 
     deduplication_table = NULL,    
-    reading_list = reactiveVal(list()) 
+    reading_list = reactiveVal(list()),
+    # Per-source retrieved/total/status, and when the databases were queried
+    source_counts = NULL,
+    retrieved_at = NULL,
+    from_cache = FALSE
   )
   
   
@@ -130,6 +134,24 @@
     )
   })
   
+  # One line above the results: how many records each database contributed
+  # out of how many it matched, and when. The results are each database's top
+  # matches, not every match, and this keeps that visible.
+  output$sourceCoverage <- renderUI({
+    req(rv$article_df())
+    items <- source_coverage_items(rv$source_counts)
+    if (length(items) == 0) return(NULL)
+    when <- rv$retrieved_at
+    when_txt <- if (inherits(when, "POSIXt")) {
+      paste0(if (isTRUE(rv$from_cache)) "Cached result, retrieved " else "Retrieved ",
+             format(when, "%b %d, %H:%M UTC", tz = "UTC"))
+    }
+    div(class = "source-coverage",
+        span(class = "source-coverage-lead", "Top matches from each database:"),
+        paste(items, collapse = " \u00b7 "),
+        if (!is.null(when_txt)) span(class = "source-coverage-when", when_txt))
+  })
+
   # Click a chip to filter; click the active chip again to show everything
   observeEvent(input$source_chip, {
     picked <- as.character(input$source_chip)

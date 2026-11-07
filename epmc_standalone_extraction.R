@@ -24,6 +24,12 @@ get_epmc_data <- function(search_term, page_size = 1000, result_type = "core", m
   cursor_mark <- "*"
   total_fetched <- 0
   page <- 1
+  # incomplete: a later page failed, so the records are a partial set (marked
+  # source_failed below, so the search is not cached as complete).
+  # total_hits: how many records Europe PMC matched in all, of which we fetch
+  # at most max_results.
+  incomplete <- FALSE
+  total_hits <- NA_real_
   
   while (total_fetched < max_results) {
     # 1. Construct API URL
@@ -38,7 +44,7 @@ get_epmc_data <- function(search_term, page_size = 1000, result_type = "core", m
     
     # 2. Make Request
     response <- tryCatch({ 
-      GET(api_url) 
+      GET(api_url, httr::timeout(60)) 
     }, error = function(e) { 
       print(paste("EPMC API Network Error:", e$message))
       return(NULL) 
@@ -50,6 +56,7 @@ get_epmc_data <- function(search_term, page_size = 1000, result_type = "core", m
       # instead of reporting zero results.
       if (total_fetched == 0) stop(sprintf("Europe PMC request failed (%s)", status))
       print(paste("EPMC API Request Failed on a later page. Status:", status))
+      incomplete <- TRUE
       break
     }
     
@@ -62,6 +69,13 @@ get_epmc_data <- function(search_term, page_size = 1000, result_type = "core", m
       return(NULL) 
     })
     
+    if (is.null(parsed_json)) {
+      if (total_fetched == 0) stop("Europe PMC returned a response that could not be parsed")
+      incomplete <- TRUE
+      break
+    }
+    if (is.na(total_hits)) total_hits <- suppressWarnings(as.numeric(parsed_json$hitCount %||% NA))
+
     # 4. Check for Results
     if (is.null(parsed_json$resultList$result) || length(parsed_json$resultList$result) == 0) {
       print("EPMC API: No more results found.")
@@ -226,9 +240,13 @@ get_epmc_data <- function(search_term, page_size = 1000, result_type = "core", m
     print("Binding all EPMC batches...")
     all_results_df <- bind_rows(all_batches_list)
     print(paste("Total EPMC records fetched:", nrow(all_results_df)))
-    return(head(all_results_df, max_results))
+    out <- head(all_results_df, max_results)
   } else {
     print("No records fetched.")
-    return(data.frame())
+    out <- data.frame()
   }
+  # Set after head(), which drops custom attributes.
+  attr(out, "total_hits") <- total_hits
+  if (incomplete) attr(out, "source_failed") <- TRUE
+  out
 }

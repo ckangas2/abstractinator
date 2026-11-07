@@ -92,6 +92,17 @@ test_that("the Markdown export treats third-party text as text", {
   expect_false(grepl("[Source page]", txt, fixed = TRUE))   # non-http URL dropped
 })
 
+test_that("the Markdown export records where each item came from", {
+  md <- reading_list_markdown(list(list(
+    Title = "Interferon and CD8 T cells", FoundBy = "interferon CD8",
+    RetrievedAt = "2026-11-07 20:15 UTC", MergedFrom = "OpenAlex: 10.1/x; CORE: 10.1/x")),
+    exported = as.Date("2026-11-07"), versions = c(app = "2.2.0", aliases = "abc123def0"))
+  txt <- paste(md, collapse = "\n")
+  expect_match(txt, "Abstractinator 2.2.0 · tag vocabulary abc123def0", fixed = TRUE)
+  expect_match(txt, "Found by the search \u201cinterferon CD8\u201d, databases queried 2026-11-07 20:15 UTC.", fixed = TRUE)
+  expect_match(txt, "*Also found as:* OpenAlex: 10.1/x; CORE: 10.1/x", fixed = TRUE)
+})
+
 test_that("an empty reading list exports a note, not an error", {
   expect_match(paste(reading_list_markdown(list()), collapse = "\n"), "empty", fixed = TRUE)
 })

@@ -18,6 +18,8 @@ get_nih_reporter_data <- function(search_term, desired_results = 300) {
   
   # Initialize an empty list to store page results (more efficient than growing a DF)
   results_accumulator <- list()
+  incomplete <- FALSE        # a later page failed: partial set, not cached
+  total_available <- NA_real_
   
   # Clean search term. NIH's text search returns server errors (500) on some
   # punctuation, so reduce it to plain words: & " ( ) + [ ] { } < > become spaces.
@@ -74,6 +76,7 @@ get_nih_reporter_data <- function(search_term, desired_results = 300) {
       # (so the search isn't cached as if there were no grants). Later pages: keep what we have.
       if (offset == 0) stop(sprintf("NIH RePORTER request failed (%s)", status_txt))
       warning(sprintf("NIH request failed at offset %d (%s); keeping earlier pages.", offset, status_txt))
+      incomplete <- TRUE
       break
     }
     
@@ -115,13 +118,15 @@ get_nih_reporter_data <- function(search_term, desired_results = 300) {
   
   # --- Combine & Return ---
   if (length(results_accumulator) == 0) {
-    return(data.frame()) # Return empty DF if nothing found
+    final_df <- data.frame() # nothing found
+  } else {
+    # logical binding handling mismatched columns automatically
+    final_df <- head(dplyr::bind_rows(results_accumulator), desired_results)
   }
-  
-  # logical binding handling mismatched columns automatically
-  final_df <- head(dplyr::bind_rows(results_accumulator), desired_results) 
-  
-  return(final_df)
+  # Set after head(), which drops custom attributes.
+  attr(final_df, "total_hits") <- suppressWarnings(as.numeric(total_available))
+  if (incomplete) attr(final_df, "source_failed") <- TRUE
+  final_df
 }
 
 # # ==========================================================================

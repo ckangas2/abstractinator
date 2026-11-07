@@ -8,7 +8,53 @@ Development before v2.0.0 was untagged; see the git history for detail.
 
 ## [Unreleased]
 
+### Fixed
+- A database that failed part-way (an error on a later page), or that returned
+  an HTTP error instead of raising one (OpenAlex, NSF, ClinicalTrials.gov, the
+  bioRxiv index), was treated as a complete answer and cached for 7 days. It is
+  now marked partial or failed, shown to the visitor, and not cached.
+- OpenAlex open-access and retraction flags were always empty: the fields were
+  read but never requested.
+- The website and the API shared cache entries even though they tag
+  differently (the API may look up new MeSH descriptors). Cache entries are now
+  keyed by MeSH mode and by a fingerprint of the alias lists, so an alias edit
+  also invalidates stale tags automatically.
+- A cached result reported the time of the visit as its retrieval time; it now
+  keeps the time the databases were actually queried.
+- Tagging false positives found in review: "ad hoc" / "ad libitum" as
+  adenovirus, "Washington, DC" and "DC current" as dendritic cells, vector
+  parts ("CMV promoter", "SV40 NLS", "RSV-LTR") as viruses, negated mentions
+  ("HIV-negative adults"), all-caps titles ("HEARING AIDS" as HIV), and
+  "German measles" as measles (now its own Rubella category). These phrases
+  are blanked before counting; the short aliases themselves stay, since in
+  this field "Ad" and "DC" are overwhelmingly adenovirus and dendritic cells.
+
+- Deduplication gaps found in review: a record without a DOI was compared
+  only with other DOI-less records, by exact title, so it never merged with a
+  DOI'd copy of the same paper; different NIH projects with the same generic
+  title were merged; and titles differing only in hyphens, spacing or markup
+  didn't match. Records now group by DOI, grants by funder project id (never
+  by title), and DOI-less records by a letters-and-digits title key with a
+  compatible year. Covered by new offline tests (`test-dedup.R`).
+
+### Changed
+- The PubTator3 benchmark now leads with tag support and adds 95% confidence
+  intervals, a frozen held-out set of searches that name no organism (figures
+  only, no examples, so it can't be tuned on), and negative controls reported
+  on their own. Disease mentions match as whole words, so "hepatitis C" no
+  longer counts as support for a hepatitis B tag.
+
 ### Added
+- Provenance in reading-list exports: each item records the search that found
+  it, when the databases were queried, and the copies merged into it (CSV
+  columns and Markdown lines); the Markdown header gives the app version and
+  a fingerprint of the tag vocabulary.
+- `MergedFrom` on every deduplicated record: the source and id of each copy
+  folded into it, so merges can be audited.
+- Per-source coverage: how many records each database contributed out of how
+  many it matched ("Europe PMC 50 of 12,431"), shown above the results and
+  returned by the API (`sources`, `retrieved_at`). The Plotinator says its
+  counts are within the retrieved records, not the whole literature.
 - A caption under the title saying what the app is: "A search tool for
   biomedical literature".
 - A **Look** choice in Settings -> Appearance: **Classic** (the default, as

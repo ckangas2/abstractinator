@@ -1852,6 +1852,18 @@ a.landing-card-link:focus-visible .landing-card {
   outline-offset: 3px;
 }
 
+/* --- Per-source coverage line above the results, and the plot caveat --- */
+.source-coverage,
+.plot-caveat {
+  margin: 8px 0 2px;
+  font-size: 0.8em;
+  line-height: 1.5;
+  color: #9aa0a6;
+}
+.source-coverage-lead { color: #c4c7cc; margin-right: 6px; }
+.source-coverage-when { display: block; color: #80868b; }
+.plot-caveat { margin: 0 0 8px; }
+
 /* ==========================================================================
    SOURCE CHIPS (filter results by database)
    ========================================================================== */

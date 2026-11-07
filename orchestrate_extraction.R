@@ -72,7 +72,7 @@ safe_extract <- function(df, col_name) {
 transform_nih_to_schema <- function(nih_df) {
   # Strict null and type validation
   if (is.null(nih_df) || !is.data.frame(nih_df) || nrow(nih_df) == 0) {
-    return(tibble(Title=character(), Abstract=character(), Authors=character(), AuthorAffiliations=character(), PublicationDate=character(), URL=character(), DOI=character(), Source=character()))
+    return(tibble(Title=character(), Abstract=character(), Authors=character(), AuthorAffiliations=character(), PublicationDate=character(), URL=character(), DOI=character(), Source=character(), GrantID=character()))
   }
   
   tibble(
@@ -90,14 +90,17 @@ transform_nih_to_schema <- function(nih_df) {
                     paste0("https://reporter.nih.gov/project-details/", appl), NA_character_))
     },
     DOI = NA_character_, 
-    Source = "NIH"
+    Source = "NIH",
+    # One project spans several fiscal-year records; deduplication merges on
+    # this (never on title, which unrelated projects can share).
+    GrantID = safe_extract(nih_df, "core_project_num")
   )
 }
 
 transform_nsf_to_schema <- function(nsf_df) {
   # Strict null and type validation
   if (is.null(nsf_df) || !is.data.frame(nsf_df) || nrow(nsf_df) == 0) {
-    return(tibble(Title=character(), Abstract=character(), Authors=character(), AuthorAffiliations=character(), PublicationDate=character(), URL=character(), DOI=character(), Source=character()))
+    return(tibble(Title=character(), Abstract=character(), Authors=character(), AuthorAffiliations=character(), PublicationDate=character(), URL=character(), DOI=character(), Source=character(), GrantID=character()))
   }
   
   tibble(
@@ -113,7 +116,8 @@ transform_nsf_to_schema <- function(nsf_df) {
              paste0("https://www.nsf.gov/awardsearch/showAward?AWD_ID=", award_id), NA_character_)
     },
     DOI = NA_character_, 
-    Source = "NSF"
+    Source = "NSF",
+    GrantID = safe_extract(nsf_df, "id")
   )
 }
 
@@ -300,13 +304,49 @@ aliases_to_regex <- function(alias_list) {
   rx
 }
 
-# Occurrences of each category in each text, as a records x categories
-# matrix, after blanking out mentions that belong to a more specific category.
-count_alias_matches <- function(text, regex_list) {
+# Phrases that contain an alias but are not about that organism or cell.
+# They are blanked out before counting, for every axis. Kept as context rules
+# rather than dropping the short aliases: in this field "Ad" and "DC" are
+# overwhelmingly adenovirus and dendritic cells, and removing them would lose
+# far more real tags than these phrases cost.
+ALIAS_CONTEXT_MASKS <- c(
+  # Latin, not adenovirus: "Ad hoc", "ad libitum"
+  latin_ad = "(?<![A-Za-z0-9])(?i:ad[\\s-]+(?:hoc|libitum|lib|infinitum|interim|nauseam|hominem|valorem))(?![A-Za-z0-9])",
+  # Places and physics, not dendritic cells
+  washington_dc = "Washington,?\\s*D\\.?\\s?C\\.?(?![A-Za-z0-9])",
+  direct_current = "(?<![A-Za-z0-9])DC[\\s-]+(?i:current|voltage|power|bias|motor|field)(?![A-Za-z0-9])",
+  # Expression-vector parts named after viruses, used in papers about
+  # something else: "CMV promoter", "SV40 NLS", "RSV-LTR" (Rous sarcoma virus).
+  # "HCMV" and "HIV LTR" are left alone: virologists use those for the virus.
+  vector_parts = "(?<![A-Za-z0-9])(?:CMV|hCMV|SV40|RSV|MoMLV|MMLV|MSCV)(?:[\\s-]*IE)?[\\s-]*(?i:promoters?|enhancers?|LTR|NLS|nuclear localization|ori|origin of replication|poly ?\\(?A\\)?|pA|intron|terminator)(?![A-Za-z0-9])",
+  # Negated or absent: "HIV-negative", "HBV-uninfected", "CD4 negative".
+  # Hyphenated forms are masked whole; with a space, only after a capitalised
+  # term, so "T cell negative selection" still counts its T cell.
+  negated_hyphen = "(?<![A-Za-z0-9])[A-Za-z0-9+]+(?:-[A-Za-z0-9+]+)*-(?i:negative|seronegative|uninfected)(?![A-Za-z0-9])",
+  negated_space  = "(?<![A-Za-z0-9])[A-Z][A-Za-z0-9+]*(?:-[A-Za-z0-9+]+)*\\s+(?i:negative|seronegative|uninfected)(?![A-Za-z0-9])"
+)
+ALIAS_CONTEXT_MASK <- paste0("(?:", paste(ALIAS_CONTEXT_MASKS, collapse = ")|(?:"), ")")
+
+# Text as the matcher should see it: markup removed, context phrases blanked,
+# and all-caps text lowercased. In an all-caps title the case of a short
+# acronym carries no information ("HEARING AIDS" is not AIDS), so exact-case
+# aliases are switched off there; spelled-out names still match.
+prepare_match_text <- function(text) {
   text <- as.character(text)
   text[is.na(text)] <- ""
   # Match on the words, not the markup: "CD8<sup>+</sup> T cells" is "CD8+ T cells".
   text <- gsub("<[^>]+>", "", text)
+  text <- stringr::str_replace_all(text, ALIAS_CONTEXT_MASK, " ")
+  letters_only <- gsub("[^A-Za-z]", "", text)
+  shouting <- nchar(letters_only) >= 12 & !grepl("[a-z]", letters_only)
+  text[shouting] <- tolower(text[shouting])
+  text
+}
+
+# Occurrences of each category in each text, as a records x categories
+# matrix, after blanking out mentions that belong to a more specific category.
+count_alias_matches <- function(text, regex_list) {
+  text <- prepare_match_text(text)
   masks <- attr(regex_list, "masks")
   out <- matrix(0, nrow = length(text), ncol = length(regex_list),
                 dimnames = list(NULL, names(regex_list)))
@@ -603,17 +643,60 @@ timed <- function(label, expr) {
 
 DEEP_SEARCH_LIMIT <- 250L  # per-source cap for "deep search" (standard is 50)
 
+# --- CACHE VARIANT ---
+# Two things change how the same records get tagged, so they are part of the
+# cache key: the MeSH mode (the website uses only already-known descriptors;
+# the API may look up new ones) and the alias lists themselves. Editing an
+# alias list changes ALIAS_VERSION, so stale tags are never served from cache.
+ALIAS_VERSION <- substr(digest::digest(list(
+  if (exists("immune_cell_alias_list")) immune_cell_alias_list,
+  if (exists("virus_alias_expanded")) virus_alias_expanded,
+  if (exists("bacteria_alias_expanded")) bacteria_alias_expanded
+)), 1, 10)
+
+cache_variant <- function(mesh_lookups) {
+  paste0("mesh:", if (mesh_lookups > 0) "live" else "cached", "|aliases:", ALIAS_VERSION)
+}
+
+# --- PER-SOURCE COUNTS ---
+# One row per source that ran: records retrieved (before deduplication), the
+# total the source itself reported matching (NA if it doesn't say), and a
+# status: "ok", "partial" (a later page failed) or "failed" (nothing came
+# back). Results are a ranked sample of each source, not the whole literature,
+# and these numbers say how big the sample is.
+summarise_sources <- function(vals) {
+  if (length(vals) == 0) {
+    return(data.frame(source = character(0), retrieved = integer(0),
+                      total = numeric(0), status = character(0)))
+  }
+  rows <- lapply(names(vals), function(nm) {
+    x <- vals[[nm]]
+    n <- if (is.data.frame(x)) nrow(x) else 0L
+    total <- attr(x, "total_hits")
+    total <- if (is.null(total) || length(total) != 1) NA_real_ else suppressWarnings(as.numeric(total))
+    status <- if (!source_failed(x)) "ok" else if (n > 0) "partial" else "failed"
+    data.frame(source = nm, retrieved = as.integer(n), total = total, status = status)
+  })
+  do.call(rbind, rows)
+}
+
 # --- STEP 1: CACHE ---
-get_cached_extraction <- function(search_term, limit, elsevier_key, core_key, uspto_key) {
+get_cached_extraction <- function(search_term, limit, elsevier_key, core_key, uspto_key,
+                                  variant = NULL) {
   if (check_s3_cache(search_term, elsevier_key = elsevier_key, uspto_key = uspto_key,
-                     core_key = core_key, max_age_days = 7, limit = limit)) {
+                     core_key = core_key, max_age_days = 7, limit = limit, variant = variant)) {
     cached_result <- fetch_from_s3(search_term, elsevier_key = elsevier_key, uspto_key = uspto_key,
-                                   core_key = core_key, limit = limit)
+                                   core_key = core_key, limit = limit, variant = variant)
     if (!is.null(cached_result)) {
+      # The time the sources were actually queried, not the time of this
+      # visit: a cached result can be up to 7 days old.
+      retrieved_at <- attr(cached_result, "retrieved_at") %||% NA
       return(list(
         deduplicated_data = cached_result,
         original_combined_data = cached_result,
-        metadata = list(source = "CACHE", timestamp = Sys.time())
+        metadata = list(source = "CACHE", timestamp = Sys.time(), retrieved_at = retrieved_at),
+        source_counts = attr(cached_result, "source_counts"),
+        failed_sources = character(0)
       ))
     }
   }
@@ -704,6 +787,8 @@ dispatch_source_futures <- function(search_term, limit, elsevier_key, core_key, 
 finish_extraction <- function(search_term, vals, limit, elsevier_key, core_key, uspto_key,
                               mesh_lookups = 60L) {
   failed <- names(vals)[vapply(vals, source_failed, logical(1))]
+  source_counts <- summarise_sources(vals)
+  retrieved_at <- Sys.time()
   public_data <- bind_rows(list(
     EPMC = vals$EPMC, 
     OpenAlex = vals$OpenAlex, 
@@ -725,7 +810,9 @@ finish_extraction <- function(search_term, vals, limit, elsevier_key, core_key, 
   
   if (nrow(combined_data) == 0) {
     print("No results found across any database.")
-    return(list(deduplicated_data = NULL, original_combined_data = NULL, failed_sources = failed))
+    return(list(deduplicated_data = NULL, original_combined_data = NULL, failed_sources = failed,
+                source_counts = source_counts,
+                metadata = list(source = "API", timestamp = retrieved_at, retrieved_at = retrieved_at)))
   }
   
   combined_data <- normalize_records(combined_data)
@@ -760,20 +847,24 @@ finish_extraction <- function(search_term, vals, limit, elsevier_key, core_key, 
   final_data$is_bioinformatics <- flag_bioinformatics(final_data$Title, final_data$Abstract)
   
   final_output <- final_data %>% distinct(DOI, Title, .keep_all = TRUE)
+  # Stored with the result, so a cache hit can still report them.
+  attr(final_output, "source_counts") <- source_counts
+  attr(final_output, "retrieved_at") <- retrieved_at
   
   if (length(failed) > 0) {
     message(sprintf("[Orchestrator] Not caching '%s': %s failed this time, so the next search will retry.",
                     search_term, paste(failed, collapse = ", ")))
   } else {
     save_to_s3(search_term, final_output, elsevier_key = elsevier_key, uspto_key = uspto_key,
-               core_key = core_key, limit = limit)
+               core_key = core_key, limit = limit, variant = cache_variant(mesh_lookups))
   }
   
   list(
     deduplicated_data = final_output, 
     original_combined_data = combined_data,
-    metadata = list(source = "API", timestamp = Sys.time()),
-    failed_sources = failed 
+    metadata = list(source = "API", timestamp = retrieved_at, retrieved_at = retrieved_at),
+    failed_sources = failed,
+    source_counts = source_counts
   )
 }
 
@@ -789,7 +880,8 @@ orchestrate_data_extraction_cached <- function(search_term, limit = 50, elsevier
   if (!ENABLE_SCOPUS) elsevier_key <- NULL
   
   report_status(0.05, "Checking Local Cache...")
-  cached <- get_cached_extraction(search_term, limit, elsevier_key, core_key, uspto_key)
+  cached <- get_cached_extraction(search_term, limit, elsevier_key, core_key, uspto_key,
+                                  variant = cache_variant(60L))
   if (!is.null(cached)) {
     report_status(0.5, "Cache Hit! Loading local binary blob...")
     return(cached)
@@ -813,7 +905,8 @@ orchestrate_data_extraction_cached <- function(search_term, limit = 50, elsevier
 orchestrate_data_extraction_async <- function(search_term, limit = 50, elsevier_key = NULL, core_key = NULL, uspto_key = NULL) {
   if (!ENABLE_SCOPUS) elsevier_key <- NULL
   
-  cached <- get_cached_extraction(search_term, limit, elsevier_key, core_key, uspto_key)
+  cached <- get_cached_extraction(search_term, limit, elsevier_key, core_key, uspto_key,
+                                  variant = cache_variant(0L))
   if (!is.null(cached)) return(promises::promise_resolve(cached))
   
   message(sprintf("[Orchestrator] Cache MISS: Initiating multi-source extraction for '%s' (limit %d)...", search_term, as.integer(limit)))

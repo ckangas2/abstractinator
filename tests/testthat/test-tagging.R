@@ -241,3 +241,51 @@ test_that("a MeSH lookup that fails on the network is queued, not cached", {
   expect_false(e$mesh_is_cached("Some Descriptor Nobody Cached"))
   expect_equal(readLines(e$mesh_pending_path()), "Some Descriptor Nobody Cached")
 })
+
+# --- Context that contains an alias but isn't about the organism -------------
+# Found in review (each was tagged before these rules).
+
+test_that("Latin 'ad hoc' and 'ad libitum' are not adenovirus; real Ad still is", {
+  out <- tag_cells_and_viruses(
+    c("Ad hoc reanalysis of a sepsis cohort", "Mice fed ad libitum on a high-fat diet",
+      "An oncolytic Ad5 armed with GM-CSF"))
+  expect_equal(out$primary_virus, c("Non-descript", "Non-descript", "Adenovirus"))
+})
+
+test_that("Washington, DC and direct current are not dendritic cells; DC vaccines are", {
+  out <- tag_cells_and_viruses(
+    c("Sepsis outcomes in Washington, DC hospitals", "A DC current stimulator for neurons",
+      "DC vaccination with tumour lysate-pulsed DCs"))
+  expect_equal(out$primary_cell, c("Non-descript", "Non-descript", "Dendritic cell"))
+})
+
+test_that("expression-vector parts named after viruses don't tag the virus", {
+  out <- tag_cells_and_viruses(
+    c("GFP expressed from the CMV promoter in macrophages",
+      "A reporter tagged with the SV40 NLS",
+      "An RSV-LTR driven luciferase construct",
+      "HCMV infection of fibroblasts",
+      "RSV infection in infants"))
+  expect_equal(out$primary_virus, c("Non-descript", "Non-descript", "Non-descript",
+                                    "Cytomegalovirus", "Respiratory Syncytial Virus"))
+})
+
+test_that("negated mentions don't count, but other mentions in the same record do", {
+  out <- tag_cells_and_viruses(
+    c("Outcomes in HIV-negative adults with bacterial sepsis",
+      "HIV prevention with PrEP among HIV-negative men"))
+  expect_equal(out$primary_virus, c("Non-descript", "Human Immunodeficiency Virus"))
+})
+
+test_that("all-caps titles don't trigger exact-case acronyms", {
+  out <- tag_cells_and_viruses("HEARING AIDS AND COGNITIVE DECLINE IN OLDER ADULTS")
+  expect_equal(out$primary_virus, "Non-descript")
+  # Spelled-out names still match in capitals
+  out <- tag_cells_and_viruses("HUMAN IMMUNODEFICIENCY VIRUS RESERVOIRS IN LYMPH NODES")
+  expect_equal(out$primary_virus, "Human Immunodeficiency Virus")
+})
+
+test_that("German measles is rubella, not measles", {
+  out <- tag_cells_and_viruses(c("A German measles outbreak in schools", "Measles virus vaccination coverage"))
+  expect_equal(out$primary_virus, c("Rubella Virus", "Measles Virus"))
+})

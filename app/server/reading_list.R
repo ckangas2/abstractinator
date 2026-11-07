@@ -30,7 +30,13 @@
         Source = article_to_add$Source,
         primary_cell = article_to_add$primary_cell, primary_virus = article_to_add$primary_virus,
         primary_bacteria = article_to_add$primary_bacteria,
-        ItemKey = article_to_add$ItemKey
+        ItemKey = article_to_add$ItemKey,
+        # Provenance for exports: the search that found it, when the databases
+        # were queried, and the copies merged into this record.
+        FoundBy = search_ctx$term,
+        RetrievedAt = if (inherits(rv$retrieved_at, "POSIXt"))
+          format(rv$retrieved_at, "%Y-%m-%d %H:%M UTC", tz = "UTC") else NA_character_,
+        MergedFrom = if ("MergedFrom" %in% names(article_to_add)) article_to_add$MergedFrom else NA_character_
       )
       
       is_duplicate <- any(vapply(rv$reading_list(), function(x) identical(x$ItemKey, article_to_add_detailed$ItemKey), logical(1)))
@@ -294,6 +300,9 @@
             URL = if(is.null(x$URL)) NA else x$URL,
             Abstract = if(is.null(x$Abstract)) NA else x$Abstract,
             Affiliations = if(is.null(x$AuthorAffiliations)) NA else x$AuthorAffiliations,
+            FoundBy = if(is.null(x$FoundBy)) NA else x$FoundBy,
+            RetrievedAt = if(is.null(x$RetrievedAt)) NA else x$RetrievedAt,
+            MergedFrom = if(is.null(x$MergedFrom)) NA else x$MergedFrom,
             stringsAsFactors = FALSE
           )
         }))
@@ -308,7 +317,8 @@
   output$downloadReadingListMd <- downloadHandler(
     filename = function() paste0("Abstractinator_List_", Sys.Date(), ".md"),
     content = function(file) {
-      md <- reading_list_markdown(lapply(rv$reading_list(), plain_text_item))
+      md <- reading_list_markdown(lapply(rv$reading_list(), plain_text_item),
+                                  versions = c(app = APP_VERSION, aliases = ALIAS_VERSION))
       writeLines(enc2utf8(md), file, useBytes = TRUE)
     }
   )

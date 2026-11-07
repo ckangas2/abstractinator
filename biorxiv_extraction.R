@@ -45,20 +45,15 @@ get_biorxiv_data <- function(search_term, limit = 500) {
   # Map to the new local partitioned directory structure
   local_db_path <- "biorxiv_local_db"
   
+  # A missing or unreadable local index, or a query error, raises: safe_source()
+  # then marks bioRxiv as failed (so the search isn't cached as complete)
+  # instead of reporting that no preprints matched.
   if (!dir.exists(local_db_path)) {
-    print(paste("    > [bioRxiv] Error: Local database directory '", local_db_path, "' does not exist."))
-    return(NULL)
+    stop(sprintf("bioRxiv local index '%s' not found", local_db_path))
   }
   
   # 1. MOUNT DATASET (Out-of-core memory mapping)
-  ds <- tryCatch({
-    arrow::open_dataset(local_db_path, format = "parquet")
-  }, error = function(e) {
-    print(paste("    > [bioRxiv] Mounting Failed:", e$message))
-    return(NULL)
-  })
-  
-  if (is.null(ds)) return(NULL)
+  ds <- arrow::open_dataset(local_db_path, format = "parquet")
   
   # 2. EXECUTE LAZY QUERY
   # Behave like the other databases: every word must appear (in the title or the
@@ -105,7 +100,6 @@ get_biorxiv_data <- function(search_term, limit = 500) {
     return(final_df)
     
   }, error = function(e) {
-    print(paste("    > [bioRxiv] Stream Error:", e$message))
-    return(NULL)
+    stop(sprintf("bioRxiv query failed: %s", conditionMessage(e)))
   })
 }

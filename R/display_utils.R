@@ -135,12 +135,16 @@ md_field <- function(item, name) {
   if (!nzchar(v)) NA_character_ else v
 }
 
-reading_list_markdown <- function(items, exported = Sys.Date()) {
+# versions: optional c(app = "2.1.0", aliases = "<fingerprint>"), printed so
+# a reader can tell which release and vocabulary produced the tags.
+reading_list_markdown <- function(items, exported = Sys.Date(), versions = NULL) {
   n <- length(items)
   out <- c("# Abstractinator reading list", "",
            sprintf("Exported %s from https://abstractinator.me · %d %s",
                    format(exported), n, if (n == 1) "item" else "items"),
            "",
+           if (length(versions)) c(sprintf("Abstractinator %s · tag vocabulary %s",
+                                           versions[["app"]] %||% "?", versions[["aliases"]] %||% "?"), ""),
            "Abstracts are included for personal reference; copyright remains with the authors and publishers.",
            "")
   if (n == 0) return(c(out, "_The reading list is empty._"))
@@ -165,6 +169,17 @@ reading_list_markdown <- function(items, exported = Sys.Date()) {
       out <- c(out, paste(sprintf("**%s:** %s", names(tags), md_escape(tags)), collapse = " · "), "")
     }
 
+    # Provenance: which search found it, when the databases were queried, and
+    # which copies from other databases were merged into this record.
+    found_by <- md_field(it, "FoundBy")
+    retrieved <- md_field(it, "RetrievedAt")
+    if (!is.na(found_by)) {
+      out <- c(out, paste0("*Found by the search \u201c", md_escape(found_by), "\u201d",
+                           if (!is.na(retrieved)) paste0(", databases queried ", retrieved), ".*"), "")
+    }
+    merged <- md_field(it, "MergedFrom")
+    if (!is.na(merged)) out <- c(out, paste0("*Also found as:* ", md_escape(merged)), "")
+
     abstract <- md_field(it, "Abstract")
     if (!is.na(abstract)) {
       lines <- strsplit(abstract, "\r?\n")[[1]]
@@ -178,4 +193,41 @@ reading_list_markdown <- function(items, exported = Sys.Date()) {
     }
   }
   out
+}
+
+# --- SOURCE COVERAGE -----------------------------------------------------------
+# Turns the per-source counts from summarise_sources() into short labels such as
+# "Europe PMC 50 of 12,431". Each database returns its top matches, not every
+# match, so this says how big a sample each one contributed. Failed sources say
+# so instead of silently showing nothing.
+SOURCE_LABELS <- c(EPMC = "Europe PMC", OpenAlex = "OpenAlex",
+                   `clinicaltrials.gov` = "ClinicalTrials.gov", bioRxiv = "bioRxiv/medRxiv",
+                   NIH = "NIH RePORTER", NSF = "NSF", CORE = "CORE",
+                   Patent = "PatentsView", Scopus = "Scopus")
+
+source_coverage_items <- function(counts) {
+  if (!is.data.frame(counts) || nrow(counts) == 0) return(character(0))
+  fmt <- function(n) format(n, big.mark = ",", scientific = FALSE, trim = TRUE)
+  vapply(seq_len(nrow(counts)), function(i) {
+    src <- counts$source[i]
+    label <- if (src %in% names(SOURCE_LABELS)) SOURCE_LABELS[[src]] else src
+    n <- counts$retrieved[i]
+    total <- counts$total[i]
+    status <- counts$status[i]
+    if (identical(status, "failed")) return(paste0(label, ": no response"))
+    txt <- if (!is.na(total) && total >= n) {
+      paste0(label, " ", fmt(n), " of ", fmt(total))
+    } else {
+      paste0(label, " ", fmt(n))
+    }
+    if (identical(status, "partial")) txt <- paste0(txt, " (stopped early)")
+    txt
+  }, character(1))
+}
+
+# Sources that failed or stopped part-way, as readable names.
+incomplete_source_labels <- function(counts) {
+  if (!is.data.frame(counts) || nrow(counts) == 0) return(character(0))
+  bad <- counts$source[counts$status %in% c("failed", "partial")]
+  unname(ifelse(bad %in% names(SOURCE_LABELS), SOURCE_LABELS[bad], bad))
 }

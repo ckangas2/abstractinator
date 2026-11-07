@@ -74,7 +74,7 @@ clinical trials `trial_status`, `trial_start`, `trial_end` and `phase`. Every re
 
 **`get_fulltext(pmcid, doi, max_chars=20000)`** returns the open-access full text of one article.
 
-Tag agreement with NCBI's PubTator3 is measured in [`benchmark/pubtator.md`](benchmark/pubtator.md).
+Tag agreement with NCBI's PubTator3 is measured in [`benchmark/pubtator.md`](benchmark/pubtator.md), on a held-out set of searches that name no organism as well as on the searches used to tune the alias lists. The figures are agreement with another model, not accuracy.
 
 The AI connector uses open-access sources only (no keys needed or spent) and is rate-limited
 to keep the service available for everyone.
