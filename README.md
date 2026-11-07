@@ -187,7 +187,7 @@ server {
 
 ```bash
 sudo /usr/bin/python3 -m venv /opt/abstractinator-mcp
-sudo /opt/abstractinator-mcp/bin/pip install "mcp[cli]"   # MCP Python SDK 2.x
+sudo /opt/abstractinator-mcp/bin/pip install -r agent/requirements.txt   # pinned, MCP Python SDK 2.x
 sudo cp agent/abstractinator-api.service agent/abstractinator-mcp.service /etc/systemd/system/
 sudo systemctl daemon-reload
 sudo systemctl enable --now abstractinator-api abstractinator-mcp
@@ -252,6 +252,7 @@ sudo -u shiny /usr/bin/Rscript -e 'source("R/log_utils_local.R"); print(summariz
 | :--- | :--- |
 | `app.R` | The Shiny web app |
 | `orchestrate_extraction.R` | The search engine: cache → parallel sources → dedup → hit detection |
+| `R/engine.R` | The list of files that make up the engine, loaded by the app, the API and the tests |
 | `*_extraction.R` | One extractor per source (EPMC, OpenAlex, CORE, ClinicalTrials.gov, bioRxiv, NIH, NSF, PatentsView, Scopus) |
 | `deduplication.R`, `aliases.R` | Cross-source deduplication; immune cell & virus alias lists |
 | `R/db_utils_local.R`, `R/log_utils_local.R` | Search cache and search logging (website and agent searches) |
@@ -261,7 +262,7 @@ sudo -u shiny /usr/bin/Rscript -e 'source("R/log_utils_local.R"); print(summariz
 | `deploy/` | Cron schedule |
 | `write_parquet_bioRxiV.R`, `update_biorxiv_db.R` | Build and refresh the local preprint store |
 | `www/` | Styles, scripts, icons and mascot art |
-| `agent_api.R`, `cli_engine.R`, `abstractinator_bridge.py` | Older local agent interface (knowledge-base functions are being reworked) |
+| `archive/` | Retired earlier generations, kept for reference |
 
 ## 🛣️ Roadmap
 

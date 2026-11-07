@@ -19,25 +19,18 @@ logs/
 *.log
 
 # IDE & Infrastructure
+__pycache__/
+*.pyc
+*.save
 .Rproj.user/
 # Static web assets are not data dumps
 !www/*.json
 
 # Shiny/bslib runtime cache
 app_cache/
+# Editing backups (file.R.bak, file.R.phasebak, ...)
 *.bak
-*.absbak
-*.absbak
-*.ftbak
-*.ft2bak
-*.typebak
-*.patchbak*
-*.probebak
-*.dtbak
-*.oabak
-*.quickbak
-*.subrowbak
-*.phasebak
+*.*bak*
 
 # renv is used to RECORD versions (renv.lock), not to activate a project
 # library. An .Rprofile here would auto-activate renv on the live server,
