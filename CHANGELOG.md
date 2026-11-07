@@ -9,6 +9,17 @@ Development before v2.0.0 was untagged; see the git history for detail.
 ## [Unreleased]
 
 ### Fixed
+- Tags missed when a title carried markup ("CD8<sup>+</sup> T cells") or named
+  the disease rather than the organism ("influenza", "tuberculosis",
+  "COVID-19", "Lyme disease"). Markup is ignored when matching, and common
+  disease names now tag their organism.
+- `is_bioinformatics` matched generic words anywhere ("database",
+  "annotation", "simulation"), flagging clinical studies. It now needs a
+  specific computational phrase, matched as whole words.
+- A MeSH lookup that failed on a network error was cached as "not an
+  organism" for good. Failures are no longer cached, and are retried nightly.
+- The website no longer waits on NLM: it reads MeSH from the local cache, and
+  new descriptors are looked up by a nightly job (`deploy/warm_mesh.R --pending`).
 - MeSH subjects replaced a correct regex tag with a vaguer or non-organism
   descriptor (Measles Virus became "Oncolytic Viruses", SARS-CoV-2 became
   "Betacoronavirus"). MeSH now replaces a tag only with one of our categories;
@@ -33,6 +44,8 @@ Development before v2.0.0 was untagged; see the git history for detail.
   not only 429 and 503.
 
 ### Added
+- `is_retracted` on search results, from Europe PMC publication types,
+  OpenAlex, or a "Retracted:"/"Withdrawn" title. Cache schema 9.
 - `pmid` on search results (PubMed ID, from Europe PMC), kept through
   deduplication. Cached results are refreshed (cache schema 7).
 - `deploy/benchmark_pubtator.py`: compares the virus and bacterium tags with

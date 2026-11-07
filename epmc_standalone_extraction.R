@@ -76,6 +76,8 @@ get_epmc_data <- function(search_term, page_size = 1000, result_type = "core", m
       # --- Metadata Extraction ---
       epmc_id  <- results_df$id[i] %||% NA_character_
       pmid     <- as.character(results_df$pmid[i] %||% NA_character_)
+      pub_types <- if ("pubTypeList.pubType" %in% names(results_df)) unlist(results_df$pubTypeList.pubType[[i]]) else character(0)
+      is_retracted <- any(tolower(pub_types) == "retracted publication")
       doi      <- results_df$doi[i] %||% NA_character_
       title    <- results_df$title[i] %||% NA_character_
       abstract <- results_df$abstractText[i] %||% NA_character_
@@ -183,6 +185,7 @@ get_epmc_data <- function(search_term, page_size = 1000, result_type = "core", m
         EPMC_ID = epmc_id,
         PMCID = pmcid,
         PMID = pmid,
+        IsRetracted = is_retracted,
         IsOpenAccess = is_oa,
         MeSH_Major = mesh_major,
         MeSH_All = mesh_all,

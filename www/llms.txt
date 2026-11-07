@@ -47,9 +47,10 @@ and a results list. total_found is the whole deduplicated pool; available is
 what is pageable after any sources= filter, so page against available or
 has_more, never total_found. Each record
 carries title, abstract, authors, publication_date, doi, url, source,
-primary_cell, primary_virus, primary_bacteria, is_bioinformatics, and - for
-open-access articles in Europe PMC - pmcid and is_open_access. A record with a
-pmcid can be read in full with get_fulltext.
+primary_cell, primary_virus, primary_bacteria, is_bioinformatics, is_retracted,
+pmid (when the record is in PubMed), and - for open-access articles in Europe
+PMC - pmcid and is_open_access. A record with a pmcid can be read in full with
+get_fulltext. A retracted record is still returned, flagged; say so if you cite it.
 
 Records with no abstract are kept rather than dropped: a grant award or a trial
 registration with no abstract is still a real result, and removing them would

@@ -63,12 +63,17 @@ https://mcp.abstractinator.me/mcp
 **No sign-in** for authentication. Then just ask, e.g. *"Search the Abstractinator for oncolytic
 virus trials in melanoma."* Any MCP client that supports remote (streamable HTTP) servers works too.
 
-The server exposes one tool:
+The server exposes two tools:
 
-**`search_literature(query, max_results=25, abstract_chars=1500, deep=False)`**
-returns `total_found`, `source_counts`, and a source-balanced list of records with `title`,
-`abstract`, `authors`, `publication_date`, `doi`, `url`, `source`, `primary_cell`,
-`primary_virus` and `is_bioinformatics`.
+**`search_literature(query, max_results=25, abstract_chars=1500, deep=False, offset=0, sources="")`**
+returns `total_found`, `available`, `has_more`, `source_counts`, `unavailable_sources`, and a
+source-balanced list of records with `title`, `abstract`, `authors`, `publication_date`, `doi`,
+`pmid`, `url`, `source`, `primary_cell`, `primary_virus`, `primary_bacteria`,
+`is_bioinformatics`, `is_retracted`, and for open-access articles `pmcid` and `is_open_access`.
+
+**`get_fulltext(pmcid, doi, max_chars=20000)`** returns the open-access full text of one article.
+
+Tag agreement with NCBI's PubTator3 is measured in [`benchmark/pubtator.md`](benchmark/pubtator.md).
 
 The AI connector uses open-access sources only (no keys needed or spent) and is rate-limited
 to keep the service available for everyone.

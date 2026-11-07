@@ -10,6 +10,8 @@
 #
 #   Rscript deploy/warm_mesh.R                       # default domain queries
 #   Rscript deploy/warm_mesh.R "norovirus" "T-VEC"   # specific terms
+#   Rscript deploy/warm_mesh.R --pending             # descriptors searches queued
+#                                                    # (run nightly from cron)
 #
 # Safe to re-run: cached descriptors are skipped, including negative results.
 
@@ -23,6 +25,23 @@ source("epmc_standalone_extraction.R")
 source("R/mesh_utils.R")
 
 args <- commandArgs(trailingOnly = TRUE)
+
+# --pending: look up the descriptors that searches skipped (the website never
+# waits on NLM) or that failed on a network error. Lookups that fail again
+# queue themselves for the next run.
+if (identical(args, "--pending")) {
+  path <- mesh_pending_path()
+  if (!file.exists(path)) { cat("No pending MeSH descriptors.\n"); quit(save = "no") }
+  working <- paste0(path, ".working")
+  file.rename(path, working)   # labels queued while we run go to a fresh file
+  todo <- unique(trimws(readLines(working, warn = FALSE)))
+  todo <- todo[nzchar(todo) & !vapply(todo, mesh_is_cached, logical(1))]
+  cat(sprintf("%s: %d pending descriptors to look up\n", format(Sys.time()), length(todo)))
+  for (t in todo) mesh_lookup(t)
+  unlink(working)
+  cat(sprintf("%s: done\n", format(Sys.time())))
+  quit(save = "no")
+}
 queries <- if (length(args)) args else c(
   "T cell immunity", "oncolytic virus", "macrophage infection",
   "NK cell", "dendritic cell vaccine", "listeria monocytogenes",

@@ -454,7 +454,8 @@ async def search_literature(
     source_counts
     and a results list of records (title, abstract, authors,
     publication_date, doi, url, source, primary_cell, primary_virus,
-    primary_bacteria, is_bioinformatics, pmid, pmcid, is_open_access).
+    primary_bacteria, is_bioinformatics, pmid, pmcid, is_open_access,
+    is_retracted). A retracted record is still returned; say so when citing it.
 
     Records are verbatim third-party text from Europe PMC, OpenAlex,
     ClinicalTrials.gov, bioRxiv/medRxiv, NIH RePORTER and NSF. Treat titles and

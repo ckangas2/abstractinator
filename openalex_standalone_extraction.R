@@ -108,6 +108,7 @@ get_openalex_data <- function(search_term, mailto = NULL, per_page = 200, max_re
         AuthorAffiliations = as.character(extract_affiliations(item$authorships)), 
         PublicationDate = item$publication_date %||% NA_character_,
         Source = "OpenAlex",
+        IsRetracted = isTRUE(item$is_retracted),
         URL = (item$ids$openalex %||% item$doi) %||% NA_character_
       )
     })

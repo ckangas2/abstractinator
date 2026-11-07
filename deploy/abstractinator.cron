@@ -6,3 +6,7 @@ PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
 # Every day at 4:15am: pull new bioRxiv/medRxiv preprints into biorxiv_local_db/
 15 4 * * * shiny cd /srv/shiny-server/abstractinator && /usr/bin/Rscript update_biorxiv_db.R >> logs/biorxiv_update.log 2>&1
+
+# Every day at 4:45am: look up MeSH descriptors that searches queued (the website
+# only reads the MeSH cache, so new descriptors wait for this)
+45 4 * * * shiny cd /srv/shiny-server/abstractinator && /usr/bin/Rscript deploy/warm_mesh.R --pending >> logs/mesh_warm.log 2>&1

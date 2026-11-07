@@ -191,3 +191,53 @@ test_that("MeSH replaces a regex tag only with one of our categories", {
                  "Bluetongue virus",   # an unlisted organism fills in when regex found none
                  "Non-descript"))      # "Viruses" is too broad to be a tag
 })
+
+# --- Regressions from the second review (2026-11-07) -------------------------
+
+test_that("markup in titles doesn't hide a tag", {
+  expect_equal(tag_cells_and_viruses("GPR82 drives CD8<sup>+</sup> T cell dysfunction")$primary_cell,
+               "CD8+ T cell")
+})
+
+test_that("disease names tag the organism that causes them", {
+  out <- tag_cells_and_viruses(c("Tissue-resident monocytes following influenza infection",
+                                 "COVID-19 vaccine T cell responses",
+                                 "Haemophilus influenzae colonisation",
+                                 "Hearing aids in older adults"))
+  expect_equal(out$primary_virus, c("Influenza", "SARS-CoV-2", "Non-descript", "Non-descript"))
+  df <- data.frame(Title = c("HIV and tuberculosis co-infection trial", "Lyme disease in children"),
+                   Abstract = "", stringsAsFactors = FALSE)
+  expect_equal(tag_with_alias_list(df, bacteria_alias_expanded, "bacteria")$primary_bacteria,
+               c("Mycobacterium tuberculosis", "Borrelia burgdorferi"))
+})
+
+test_that("the bioinformatics flag needs a specific computational phrase", {
+  expect_equal(
+    flag_bioinformatics(c("Palivizumab adherence: a claims database study", "Misalignment of care",
+                          "Single-cell RNA-seq of tumour-infiltrating T cells", "An R package for flow cytometry",
+                          "In silico epitope prediction", NA),
+                        c("", "", "", "", "", "Molecular docking of inhibitors")),
+    c(FALSE, FALSE, TRUE, TRUE, TRUE, TRUE))
+})
+
+test_that("retracted records are flagged by source or by title", {
+  df <- data.frame(Title = c("Retracted: CD8+ T cell exhaustion in HBV", "A normal paper",
+                             "[WITHDRAWN] Another", "Retraction rates in immunology"),
+                   IsRetracted = c(NA, TRUE, FALSE, FALSE), stringsAsFactors = FALSE)
+  expect_equal(normalize_records(df)$IsRetracted, c(TRUE, TRUE, TRUE, FALSE))
+  expect_equal(normalize_records(data.frame(Title = "Retracted: x"))$IsRetracted, TRUE)
+})
+
+test_that("a MeSH lookup that fails on the network is queued, not cached", {
+  skip_if_not(exists("local_mocked_bindings", envir = asNamespace("testthat")))
+  e <- new.env()
+  sys.source(file.path(repo_root, "R", "mesh_utils.R"), envir = e)
+  unlink(e$mesh_pending_path())
+  withr::defer(unlink(e$mesh_pending_path()))
+  local_mocked_bindings(GET = function(...) stop("NLM is down"), .package = "httr")
+
+  rec <- e$mesh_lookup("Some Descriptor Nobody Cached")
+  expect_length(rec$trees, 0)
+  expect_false(e$mesh_is_cached("Some Descriptor Nobody Cached"))
+  expect_equal(readLines(e$mesh_pending_path()), "Some Descriptor Nobody Cached")
+})

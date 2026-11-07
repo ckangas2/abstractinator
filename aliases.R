@@ -82,7 +82,7 @@ bacteria_alias_expanded <- list(
   "Lactococcus" = c("lactococcus", "lactococcus lactis", "l. lactis"),
 
   # --- Mycobacteria ---
-  "Mycobacterium tuberculosis" = c("mycobacterium tuberculosis", "m. tuberculosis", "Mtb", "tubercle bacillus"),
+  "Mycobacterium tuberculosis" = c("mycobacterium tuberculosis", "m. tuberculosis", "Mtb", "tubercle bacillus", "tuberculosis"),
   "Mycobacterium leprae" = c("mycobacterium leprae", "m. leprae"),
 
   # --- Common human pathogens ---
@@ -142,7 +142,7 @@ virus_alias_expanded <- c(virus_alias_expanded, list(
   "Bacteriophage" = c("bacteriophage", "bacteriophages", "phage", "phages",
                       "phix174", "phi x 174"),
   "Sapovirus"  = c("sapovirus", "sapoviruses", "sapporo virus"),
-  "Influenza"  = c("influenza virus", "influenza viruses", "influenza a virus",
+  "Influenza"  = c("influenza", "influenza virus", "influenza viruses", "influenza a virus",
                    "influenza b virus", "influenza a", "influenza b",
                    "h1n1", "h3n2", "h5n1", "h7n9", "fluav", "flubv",
                    "orthomyxovirus", "orthomyxoviruses")
@@ -209,4 +209,41 @@ immune_cell_alias_list <- c(immune_cell_alias_list, list(
                                     "plasmacytoid dendritic cells", "pDC", "pDCs"),
   "Myeloid-derived suppressor cell" = c("myeloid-derived suppressor cell",
                                         "myeloid-derived suppressor cells", "MDSC", "MDSCs")
+))
+
+# ---- Disease names, added 2026-11-07 ------------------------------------------
+# Papers often name the disease rather than the organism ("influenza",
+# "tuberculosis", "COVID-19"), and reviewers found those records untagged.
+# Each disease is added to the organism that causes it. "TB" is left out: in
+# immunology it also means tumour burden.
+add_aliases <- function(lst, extra) {
+  for (nm in names(extra)) {
+    stopifnot(nm %in% names(lst))
+    lst[[nm]] <- unique(c(lst[[nm]], extra[[nm]]))
+  }
+  lst
+}
+
+virus_alias_expanded <- add_aliases(virus_alias_expanded, list(
+  "SARS-CoV-2" = c("covid-19", "covid19", "covid"),
+  "Human Immunodeficiency Virus" = c("AIDS", "HIV-2"),
+  "Measles Virus" = c("measles"),
+  "Varicella-Zoster Virus" = c("chickenpox", "chicken pox"),
+  "Rabies Virus" = c("rabies"),
+  "Poliovirus" = c("polio", "poliomyelitis")
+))
+
+bacteria_alias_expanded <- add_aliases(bacteria_alias_expanded, list(
+  "Vibrio cholerae" = c("cholera"),
+  "Listeria" = c("listeriosis"),
+  "Salmonella" = c("salmonellosis", "typhoid"),
+  "Borrelia burgdorferi" = c("lyme disease", "lyme borreliosis"),
+  "Neisseria gonorrhoeae" = c("gonorrhea", "gonorrhoea"),
+  "Treponema pallidum" = c("syphilis"),
+  "Bacillus anthracis" = c("anthrax"),
+  "Francisella tularensis" = c("tularemia", "tularaemia"),
+  "Legionella pneumophila" = c("legionellosis", "legionnaires' disease", "legionnaires disease"),
+  "Mycobacterium leprae" = c("leprosy"),
+  "Shigella" = c("shigellosis"),
+  "Campylobacter jejuni" = c("campylobacteriosis")
 ))

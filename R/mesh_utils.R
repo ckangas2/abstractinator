@@ -63,31 +63,41 @@ mesh_lookup <- function(label, use_cache = TRUE) {
     r <- httr::GET("https://id.nlm.nih.gov/mesh/lookup/descriptor",
                    query = list(label = label, match = "exact", limit = 1),
                    httr::user_agent(MESH_UA), httr::timeout(15))
-    if (httr::http_error(r)) stop("lookup failed")
+    if (httr::http_error(r)) stop("MeSH lookup returned HTTP ", httr::status_code(r))
     hits <- jsonlite::fromJSON(httr::content(r, "text", encoding = "UTF-8"))
-    if (length(hits) == 0 || is.null(hits$resource)) stop("no descriptor")
-    did <- sub("^.*/", "", hits$resource[1])
+    if (length(hits) == 0 || is.null(hits$resource)) {
+      # A real answer: not a MeSH descriptor. Safe to cache.
+      list(trees = character(0), terms = label, fetched = Sys.Date())
+    } else {
+      did <- sub("^.*/", "", hits$resource[1])
 
-    r2 <- httr::GET(sprintf("https://id.nlm.nih.gov/mesh/%s.json", did),
-                    httr::user_agent(MESH_UA), httr::timeout(15))
-    trees <- if (httr::http_error(r2)) character(0) else {
+      r2 <- httr::GET(sprintf("https://id.nlm.nih.gov/mesh/%s.json", did),
+                      httr::user_agent(MESH_UA), httr::timeout(15))
+      if (httr::http_error(r2)) stop("MeSH descriptor returned HTTP ", httr::status_code(r2))
       j <- jsonlite::fromJSON(httr::content(r2, "text", encoding = "UTF-8"),
                               simplifyVector = FALSE)
-      if (is.null(j$treeNumber)) character(0) else sub("^.*/", "", unlist(j$treeNumber, use.names = FALSE))
-    }
+      trees <- if (is.null(j$treeNumber)) character(0) else sub("^.*/", "", unlist(j$treeNumber, use.names = FALSE))
 
-    r3 <- httr::GET("https://id.nlm.nih.gov/mesh/lookup/details",
-                    query = list(descriptor = did),
-                    httr::user_agent(MESH_UA), httr::timeout(15))
-    terms <- if (httr::http_error(r3)) character(0) else {
+      r3 <- httr::GET("https://id.nlm.nih.gov/mesh/lookup/details",
+                      query = list(descriptor = did),
+                      httr::user_agent(MESH_UA), httr::timeout(15))
+      if (httr::http_error(r3)) stop("MeSH details returned HTTP ", httr::status_code(r3))
       j3 <- jsonlite::fromJSON(httr::content(r3, "text", encoding = "UTF-8"),
                                simplifyVector = FALSE)
       tl <- vapply(j3$terms %||% list(), function(t) t$label %||% NA_character_, character(1))
-      tl[!is.na(tl) & nzchar(tl)]
-    }
+      terms <- tl[!is.na(tl) & nzchar(tl)]
 
-    list(trees = trees, terms = unique(c(label, terms)), fetched = Sys.Date())
-  }, error = function(e) list(trees = character(0), terms = label, fetched = Sys.Date()))
+      list(trees = trees, terms = unique(c(label, terms)), fetched = Sys.Date())
+    }
+  }, error = function(e) NULL)
+
+  # Network or server error: answer "unknown" for now but cache nothing, so a
+  # later search (or the nightly warm-up) tries again. Caching it would turn
+  # one NLM outage into a permanent "not an organism" for this descriptor.
+  if (is.null(rec)) {
+    if (exists("mesh_queue_pending")) mesh_queue_pending(label)
+    return(list(trees = character(0), terms = label, fetched = Sys.Date()))
+  }
 
   d <- mesh_cache_dir()
   if (!dir.exists(d)) dir.create(d, recursive = TRUE, showWarnings = FALSE)
@@ -152,4 +162,23 @@ mesh_to_category <- function(descriptor, regex_list, rec = NULL) {
   }
   if (!is.na(best)) return(best)
   descriptor
+}
+
+# --- Descriptors waiting for a lookup ----------------------------------------
+# Searches that may not touch the network (the website's) or that hit an NLM
+# error add descriptors here; deploy/warm_mesh.R --pending looks them up
+# nightly. One label per line; several processes may append at once, which is
+# safe for short lines.
+mesh_pending_path <- function() file.path(mesh_cache_dir(), "pending.txt")
+
+mesh_queue_pending <- function(labels) {
+  labels <- unique(labels[!is.na(labels) & nzchar(labels)])
+  if (!length(labels)) return(invisible(NULL))
+  tryCatch({
+    d <- mesh_cache_dir()
+    if (!dir.exists(d)) dir.create(d, recursive = TRUE, showWarnings = FALSE)
+    cat(paste0(gsub("[\r\n]+", " ", labels), "\n"), file = mesh_pending_path(),
+        sep = "", append = TRUE)
+  }, error = function(e) invisible(NULL))
+  invisible(NULL)
 }

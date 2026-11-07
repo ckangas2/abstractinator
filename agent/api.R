@@ -295,7 +295,8 @@ function(req, res, q = "", limit = 25, abstract_chars = 1500, deep = "false",
             # pmcid tells an agent which articles /fulltext can actually serve;
             # is_open_access says so explicitly. primary_bacteria was already
             # promised by the tool description and llms.txt but never returned.
-            pmcid = "PMCID", pmid = "PMID", is_open_access = "IsOpenAccess")
+            pmcid = "PMCID", pmid = "PMID", is_open_access = "IsOpenAccess",
+            is_retracted = "IsRetracted")
   cols <- cols[cols %in% names(df)]
   slim <- df[, unname(cols), drop = FALSE]
   names(slim) <- names(cols)

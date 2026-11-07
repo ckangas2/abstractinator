@@ -18,16 +18,29 @@ ENABLE_SCOPUS <- Sys.getenv("ENABLE_SCOPUS", "0") == "1"
 # ==============================================================================
 
 # --- HELPER 1: KEYWORD DETECTION ---
+# Matched as whole words or phrases (alias_union), so "alignment" inside
+# "misalignment" or "database" in a claims-database study no longer counts.
+# Generic words that also describe clinical or wet-lab work ("database",
+# "annotation", "simulation", "alignment", "docking", "biostatistics") were
+# replaced by the specific phrases below after reviewers found false positives.
 bioinformatics_keywords_lower <- c(
-  "bioinformatics", "computational biology", "genomics", "proteomics",
-  "transcriptomics", "phylogenetic", "sequence analysis", "alignment",
-  "database", "algorithm", "statistical genetics", "systems biology",
-  "machine learning", "deep learning", "artificial intelligence", "r package",
-  "bioconductor", "galaxy platform", "nextflow", "snakemake", "rna-seq",
-  "chip-seq", "mass spectrometry", "network analysis", "pathway analysis",
-  "structural bioinformatics", "molecular modeling", "docking",
-  "simulation", "variant calling", "annotation", "biostatistics"
+  "bioinformatics", "bioinformatic", "computational biology", "genomics", "proteomics",
+  "transcriptomics", "metagenomics", "phylogenetic", "phylogenetics", "sequence analysis",
+  "sequence alignment", "multiple sequence alignment", "genome annotation",
+  "statistical genetics", "systems biology", "machine learning", "deep learning",
+  "neural network", "artificial intelligence", "r package", "bioconductor",
+  "galaxy platform", "nextflow", "snakemake", "rna-seq", "scrna-seq", "single-cell rna sequencing",
+  "chip-seq", "atac-seq", "whole-genome sequencing", "mass spectrometry", "network analysis",
+  "pathway analysis", "gene set enrichment", "structural bioinformatics", "molecular modeling",
+  "molecular modelling", "molecular docking", "molecular dynamics", "variant calling",
+  "in silico"
 )
+
+# Is a record computational work? Whole-word match on title + abstract.
+flag_bioinformatics <- function(title, abstract) {
+  text <- gsub("<[^>]+>", "", paste(ifelse(is.na(title), "", title), ifelse(is.na(abstract), "", abstract)))
+  stringr::str_detect(text, alias_union(bioinformatics_keywords_lower))
+}
 
 contains_keyword <- function(text_vector, keywords) {
   if (is.null(text_vector) || all(is.na(text_vector))) {
@@ -218,6 +231,11 @@ normalize_authors <- function(x) {
 
 normalize_records <- function(df) {
   if (is.null(df) || nrow(df) == 0) return(df)
+  # Retracted: flagged by the source (Europe PMC publication type, OpenAlex),
+  # or a title the publisher prefixed with "Retracted"/"Withdrawn".
+  flagged <- if ("IsRetracted" %in% names(df)) as.logical(df$IsRetracted) else rep(NA, nrow(df))
+  by_title <- if ("Title" %in% names(df)) grepl("^\\W*(retracted|withdrawn)\\b", df$Title, ignore.case = TRUE, perl = TRUE) else FALSE
+  df$IsRetracted <- (!is.na(flagged) & flagged) | by_title
   if ("DOI" %in% names(df))      df$DOI      <- normalize_doi(df$DOI)
   if ("Title" %in% names(df))    df$Title    <- decode_html_entities(df$Title)
   if ("Abstract" %in% names(df)) df$Abstract <- decode_html_entities(df$Abstract)
@@ -279,6 +297,8 @@ aliases_to_regex <- function(alias_list) {
 count_alias_matches <- function(text, regex_list) {
   text <- as.character(text)
   text[is.na(text)] <- ""
+  # Match on the words, not the markup: "CD8<sup>+</sup> T cells" is "CD8+ T cells".
+  text <- gsub("<[^>]+>", "", text)
   masks <- attr(regex_list, "masks")
   out <- matrix(0, nrow = length(text), ncol = length(regex_list),
                 dimnames = list(NULL, names(regex_list)))
@@ -348,6 +368,7 @@ MESH_NOT_SUBJECTS <- c("Viruses", "Bacteria", "Oncolytic Viruses", "Arboviruses"
                        "Gram-Positive Bacteria", "Bacteria, Anaerobic", "Bacteria, Aerobic")
 
 apply_mesh_tags <- function(df, max_new_lookups = 60L) {
+  skipped <- character(0)   # uncached descriptors left for the nightly warm-up
   if (is.null(df) || nrow(df) == 0) return(df)
   if (!exists("mesh_lookup")) return(df)
   if (!any(c("MeSH_Major", "MeSH_All") %in% names(df))) return(df)
@@ -389,7 +410,7 @@ apply_mesh_tags <- function(df, max_new_lookups = 60L) {
     found <- list(); fallback <- list()
     for (t in terms) {
       if (!mesh_is_cached(t)) {
-        if (budget <= 0L) next
+        if (budget <= 0L) { skipped <- c(skipped, t); next }
         budget <- budget - 1L
       }
       rec <- mesh_lookup(t)
@@ -417,6 +438,7 @@ apply_mesh_tags <- function(df, max_new_lookups = 60L) {
 
   message(sprintf("[MeSH] Curated subjects applied to %d of %d records (%d lookups left in budget).",
                   n_mesh, nrow(df), budget))
+  if (length(skipped) && exists("mesh_queue_pending")) mesh_queue_pending(unique(skipped))
   df
 }
 
@@ -668,7 +690,11 @@ dispatch_source_futures <- function(search_term, limit, elsevier_key, core_key, 
 
 # --- STEP 3: COMBINE, DEDUPLICATE, TAG, CACHE ---
 # 'vals' is the named list of source results (same names as dispatch_source_futures).
-finish_extraction <- function(search_term, vals, limit, elsevier_key, core_key, uspto_key) {
+# mesh_lookups: how many uncached MeSH descriptors this search may look up over
+# the network. The website passes 0 (its finish step runs on the Shiny process
+# every visitor shares); anything skipped is queued for deploy/warm_mesh.R.
+finish_extraction <- function(search_term, vals, limit, elsevier_key, core_key, uspto_key,
+                              mesh_lookups = 60L) {
   failed <- names(vals)[vapply(vals, source_failed, logical(1))]
   public_data <- bind_rows(list(
     EPMC = vals$EPMC, 
@@ -719,17 +745,11 @@ finish_extraction <- function(search_term, vals, limit, elsevier_key, core_key, 
     final_data <- tag_with_alias_list(final_data, bacteria_alias_expanded, "bacteria")
 
     # Curated MeSH subjects override the regex guess where Europe PMC has them.
-    final_data <- apply_mesh_tags(final_data)
+    final_data <- apply_mesh_tags(final_data, max_new_lookups = mesh_lookups)
   }
   
   # Bioinformatics flag (vectorized)
-  bio_regex <- paste(bioinformatics_keywords_lower, collapse = "|")
-  final_data <- final_data %>%
-    mutate(
-      combined_text = paste(tolower(Title), tolower(Abstract)),
-      is_bioinformatics = grepl(bio_regex, combined_text)
-    ) %>%
-    select(-combined_text)
+  final_data$is_bioinformatics <- flag_bioinformatics(final_data$Title, final_data$Abstract)
   
   final_output <- final_data %>% distinct(DOI, Title, .keep_all = TRUE)
   
@@ -780,7 +800,8 @@ orchestrate_data_extraction_cached <- function(search_term, limit = 50, elsevier
 
 # --- ENTRY POINT B: ASYNCHRONOUS (website, via shiny::ExtendedTask) ---
 # Returns a promise. The main R process is free while the sources are queried;
-# only the quick combine/dedup step runs on it when all results are back.
+# only the quick combine/dedup step runs on it when all results are back
+# (MeSH from the local cache only; see finish_extraction).
 orchestrate_data_extraction_async <- function(search_term, limit = 50, elsevier_key = NULL, core_key = NULL, uspto_key = NULL) {
   if (!ENABLE_SCOPUS) elsevier_key <- NULL
   
@@ -792,6 +813,7 @@ orchestrate_data_extraction_async <- function(search_term, limit = 50, elsevier_
   
   promises::then(
     promises::promise_all(.list = lapply(futures, promises::as.promise)),
-    onFulfilled = function(vals) finish_extraction(search_term, vals, limit, elsevier_key, core_key, uspto_key)
+    onFulfilled = function(vals) finish_extraction(search_term, vals, limit, elsevier_key, core_key, uspto_key,
+                                                   mesh_lookups = 0L)
   )
 }
