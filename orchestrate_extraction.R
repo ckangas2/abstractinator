@@ -171,6 +171,60 @@ score_hits_combined <- function(hit_location_pairs, weight_title, weight_abstrac
   if (nrow(top_hit) > 0) return(pull(top_hit, hit)) else return("Non-descript")
 }
 
+# --- HELPER 3b: ONE RECORD FORMAT ACROSS SOURCES ---------------------------
+# Each database formats a few fields its own way. These run on the combined
+# results, so every record leaves the engine looking the same.
+
+# "&lt;sup&gt;2&lt;/sup&gt;" -> "<sup>2</sup>", "&#946;" -> "β". One pass, so
+# "&amp;lt;" correctly becomes the literal text "&lt;". The app sanitises
+# titles and abstracts before display, so decoded tags are safe there.
+decode_html_entities <- function(x) {
+  if (!is.character(x)) return(x)
+  todo <- !is.na(x) & grepl("&", x, fixed = TRUE)
+  if (!any(todo)) return(x)
+  x[todo] <- vapply(x[todo], function(s) {
+    named <- c(lt = "<", gt = ">", quot = "\"", apos = "'", nbsp = " ", amp = "&")
+    m <- gregexpr("&(#[0-9]+|#[xX][0-9a-fA-F]+|[a-zA-Z]+);", s)
+    regmatches(s, m) <- list(vapply(regmatches(s, m)[[1]], function(ent) {
+      body <- substr(ent, 2, nchar(ent) - 1)
+      if (startsWith(body, "#")) {
+        code <- if (grepl("^#[xX]", body)) strtoi(substring(body, 3), 16L)
+                else strtoi(substring(body, 2), 10L)
+        if (is.na(code) || code <= 0 || code > 0x10FFFF) ent else intToUtf8(code)
+      } else if (body %in% names(named)) named[[body]] else ent
+    }, ""))
+    s
+  }, "", USE.NAMES = FALSE)
+  x
+}
+
+# "https://doi.org/10.1/ABC" and "doi:10.1/ABC" -> "10.1/ABC". Case is kept:
+# DOIs are case-insensitive, and deduplication lowercases its own copy.
+normalize_doi <- function(x) {
+  x <- trimws(as.character(x))
+  x <- sub("^(https?://(dx\\.)?doi\\.org/|doi:\\s*)", "", x, ignore.case = TRUE)
+  x[!is.na(x) & !nzchar(x)] <- NA_character_
+  x
+}
+
+# Authors are always "A; B; C".
+normalize_authors <- function(x) {
+  x <- as.character(x)
+  x <- gsub("\\s*;\\s*", "; ", x)
+  x <- sub("^(;\\s*)+", "", sub("(;\\s*)+$", "", trimws(x)))
+  x[!is.na(x) & !nzchar(x)] <- NA_character_
+  x
+}
+
+normalize_records <- function(df) {
+  if (is.null(df) || nrow(df) == 0) return(df)
+  if ("DOI" %in% names(df))      df$DOI      <- normalize_doi(df$DOI)
+  if ("Title" %in% names(df))    df$Title    <- decode_html_entities(df$Title)
+  if ("Abstract" %in% names(df)) df$Abstract <- decode_html_entities(df$Abstract)
+  if ("Authors" %in% names(df))  df$Authors  <- normalize_authors(df$Authors)
+  df
+}
+
 # --- HELPER 4: UNIFIED HIT DETECTION ---
 
 # Turn a named list of aliases into one pattern per category. Patterns are
@@ -619,6 +673,8 @@ finish_extraction <- function(search_term, vals, limit, elsevier_key, core_key, 
     return(list(deduplicated_data = NULL, original_combined_data = NULL, failed_sources = failed))
   }
   
+  combined_data <- normalize_records(combined_data)
+
   # Deduplicate
   dedup_results <- deduplicate_data(combined_data)
   final_data <- dedup_results$deduplicated

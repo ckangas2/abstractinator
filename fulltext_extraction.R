@@ -78,6 +78,9 @@ fulltext_cache_dir <- function() {
   }, error = function(e) FALSE)
 }
 
+# HTTP statuses worth one more try: rate limiting and server-side hiccups.
+ft_is_transient <- function(resp) httr2::resp_status(resp) %in% c(429, 500, 502, 503, 504)
+
 #' Look up a PMCID from a DOI via the EPMC search endpoint.
 #' Returns NA_character_ when the article is not in Europe PMC.
 resolve_pmcid_from_doi <- function(doi) {
@@ -92,9 +95,12 @@ resolve_pmcid_from_doi <- function(doi) {
   )
   out <- tryCatch({
     resp <- httr2::req_perform(
-      httr2::req_user_agent(
-        httr2::req_timeout(httr2::request(url), 20),
-        FULLTEXT_UA
+      httr2::req_retry(
+        httr2::req_user_agent(
+          httr2::req_timeout(httr2::request(url), 20),
+          FULLTEXT_UA
+        ),
+        max_tries = 2, backoff = function(i) 2, is_transient = ft_is_transient
       )
     )
     jsonlite::fromJSON(httr2::resp_body_string(resp), flatten = TRUE)
@@ -172,9 +178,10 @@ fetch_epmc_fulltext <- function(pmcid,
   req <- httr2::request(url)
   req <- httr2::req_timeout(req, 60)
   req <- httr2::req_user_agent(req, FULLTEXT_UA)
-  # req_retry's default only treats 429/503 as transient, so a 404 (article not
-  # in the OA subset) fails immediately instead of being retried three times.
-  req <- httr2::req_retry(req, max_tries = 3, backoff = function(i) 2^i)
+  # Retry only on statuses that mean "try again" (Europe PMC returns the odd
+  # 500 under load). A 404 (article not in the OA subset) fails immediately.
+  req <- httr2::req_retry(req, max_tries = 3, backoff = function(i) 2^i,
+                          is_transient = ft_is_transient)
   req <- httr2::req_error(req, is_error = function(resp) FALSE)  # inspect status ourselves
 
   resp <- tryCatch(httr2::req_perform(req),

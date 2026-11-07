@@ -19,6 +19,11 @@ Development before v2.0.0 was untagged; see the git history for detail.
   tagged as herpes simplex.
 - Europe PMC outages are reported in `unavailable_sources` and are not
   cached, instead of looking like zero results.
+- Preprint search matched words inside other words ("NK" in "unknown"), which
+  let unrelated preprints through. Terms must now start a word, and preprints
+  are returned newest first instead of in storage order.
+- Full text retries once more on transient Europe PMC errors (500, 502, 504),
+  not only 429 and 503.
 
 ### Added
 - Virus tags for the major human pathogens and immunology model viruses (HBV,
@@ -29,6 +34,10 @@ Development before v2.0.0 was untagged; see the git history for detail.
 
 ### Changed
 - Spaces and hyphens in aliases are interchangeable ("T cell" = "T-cell").
+- Records are normalised across sources: DOIs are bare (`10.…`, not
+  `https://doi.org/10.…`), HTML entities in titles and abstracts are decoded,
+  and authors are always separated by `; `. Cached results are refreshed
+  (cache schema 6).
 - API errors no longer include internal details; they are logged instead.
 - Retired code moved to `archive/`; line endings normalised to LF.
 

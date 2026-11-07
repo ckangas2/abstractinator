@@ -64,3 +64,34 @@ test_that("empty or failed grant sources merge to zero rows without error", {
   expect_equal(nrow(merged), 0)
   expect_true(all(c("Title", "URL", "Source") %in% names(merged)))
 })
+
+# --- One record format across sources (normalize_records) -------------------
+
+test_that("HTML entities in titles and abstracts are decoded once", {
+  expect_equal(decode_html_entities("IL&lt;sup&gt;2&lt;/sup&gt; &amp; TGF-&#946; / &#x3B2;"),
+               "IL<sup>2</sup> & TGF-β / β")
+  # a double-encoded entity becomes the literal text it stood for
+  expect_equal(decode_html_entities("p &amp;lt; 0.05"), "p &lt; 0.05")
+  expect_equal(decode_html_entities(c("A & B", NA, "&bogus;")), c("A & B", NA, "&bogus;"))
+})
+
+test_that("DOIs are bare, whatever the source sent", {
+  expect_equal(normalize_doi(c("https://doi.org/10.1/ABC", "http://dx.doi.org/10.1/x",
+                               "doi: 10.1/y", " 10.1/z ", "", NA)),
+               c("10.1/ABC", "10.1/x", "10.1/y", "10.1/z", NA, NA))
+})
+
+test_that("authors are separated by '; '", {
+  expect_equal(normalize_authors(c("A;B", "A ;  B;", "A; B", "", NA)),
+               c("A; B", "A; B", "A; B", NA, NA))
+})
+
+test_that("preprint search terms must start a word", {
+  nk <- biorxiv_term_pattern("NK")
+  expect_true(grepl(nk, "Exhausted NK cells", ignore.case = TRUE, perl = TRUE))
+  expect_true(grepl(nk, "NKG2D ligands", ignore.case = TRUE, perl = TRUE))
+  expect_false(grepl(nk, "an unknown link", ignore.case = TRUE, perl = TRUE))
+  cd8 <- biorxiv_term_pattern("CD8+")
+  expect_true(grepl(cd8, "CD8+ T cells", perl = TRUE))
+  expect_false(grepl(cd8, "CD88 expression", perl = TRUE))
+})

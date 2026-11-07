@@ -24,6 +24,14 @@ biorxiv_query_terms <- function(search_term) {
   head(terms[nzchar(terms)], 8)
 }
 
+# A search word must start a word in the text: "NK" matches "NK cells" and
+# "NKG2D" but not "unknown" or "link". The end is left open so "cell" still
+# matches "cells". Arrow evaluates this with RE2, so regex characters in the
+# term are escaped.
+biorxiv_term_pattern <- function(term) {
+  paste0("(^|[^A-Za-z0-9])", gsub("([][{}()+*^$|\\\\?.])", "\\\\\\1", term))
+}
+
 get_biorxiv_data <- function(search_term, limit = 500) {
   
   # Defensive Input Validation
@@ -55,8 +63,9 @@ get_biorxiv_data <- function(search_term, limit = 500) {
   # 2. EXECUTE LAZY QUERY
   # Behave like the other databases: every word must appear (in the title or the
   # abstract), "quoted phrases" stay together, and AND/OR/NOT and brackets are
-  # ignored. Matching is literal (fixed = TRUE), so ( ) + ? never act as syntax.
-  # Arrow runs these filters natively in C++, so the data stays out of RAM.
+  # ignored. Each term must start a word (biorxiv_term_pattern), and the newest
+  # preprints come first. Arrow runs this natively in C++, so the data stays
+  # out of RAM.
   terms <- biorxiv_query_terms(search_term)
   if (length(terms) == 0) return(NULL)
   
@@ -64,12 +73,14 @@ get_biorxiv_data <- function(search_term, limit = 500) {
     q <- ds %>%
       select(DOI, Title, Abstract, Authors, Affiliations, PublicationDate, Source, URL, Published_DOI)
     for (term in terms) {
+      pat <- biorxiv_term_pattern(term)
       q <- q %>% filter(
-        grepl(term, Title, ignore.case = TRUE, fixed = TRUE) |
-          grepl(term, Abstract, ignore.case = TRUE, fixed = TRUE)
+        grepl(pat, Title, ignore.case = TRUE) |
+          grepl(pat, Abstract, ignore.case = TRUE)
       )
     }
     hits_df <- q %>%
+      arrange(desc(PublicationDate)) %>%
       head(limit) %>% 
       collect() # <--- Data enters active RAM only here
     
