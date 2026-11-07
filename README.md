@@ -250,7 +250,9 @@ sudo -u shiny /usr/bin/Rscript -e 'source("R/log_utils_local.R"); print(summariz
 
 | Path | What it is |
 | :--- | :--- |
-| `app.R` | The Shiny web app |
+| `app.R` | The Shiny web app: setup, and the order its parts load in |
+| `app/ui.R`, `app/dt_options.R` | The page layout and the results table's options |
+| `app/server/*.R` | The app's server, one file per area (search, plot, reading list, ...) |
 | `orchestrate_extraction.R` | The search engine: cache → parallel sources → dedup → hit detection |
 | `R/engine.R` | The list of files that make up the engine, loaded by the app, the API and the tests |
 | `*_extraction.R` | One extractor per source (EPMC, OpenAlex, CORE, ClinicalTrials.gov, bioRxiv, NIH, NSF, PatentsView, Scopus) |

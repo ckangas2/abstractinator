@@ -39,6 +39,9 @@ Development before v2.0.0 was untagged; see the git history for detail.
   results are refreshed (cache schema 5).
 
 ### Changed
+- `app.R` (2,600 lines) is split into `app/ui.R`, `app/dt_options.R` and
+  seven `app/server/*.R` parts, moved verbatim. Unused code was removed. A
+  test now checks that the server starts.
 - The REST API runs as three processes, and the MCP server sends each request
   to the least busy one, so one slow search no longer blocks the others.
   Cache writes are atomic, since the processes share the cache.

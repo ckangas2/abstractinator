@@ -26,7 +26,7 @@ reflect the most current version held by each source.
 | Dinosaur | imaginationlol | https://www.flaticon.com/free-icon/dinosaur_4574325 | `dino_*` animation frames, `dinosaur.ico` |
 | Frog prince | Magnific | https://www.flaticon.com/free-icon/frog-prince_1587055 | `frog_*` animation frames, `frog-prince.ico` |
 
-Attribution is displayed on the landing page (see "Icon credits" in `app.R`).
+Attribution is displayed on the landing page (see "Icon credits" in `app/ui.R`).
 A Flaticon Premium subscription would remove the attribution requirement.
 
 ## Line-art animations

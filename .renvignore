@@ -1,6 +1,6 @@
 # Paths renv::dependencies() should skip when building renv.lock.
 #
-# The lockfile describes what the DEPLOYED SERVICE needs: app.R, agent/api.R,
+# The lockfile describes what the DEPLOYED SERVICE needs: app.R and app/, agent/api.R,
 # their source chains, and the daily preprint refresh in /etc/cron.d/abstractinator.
 # archive/ holds retired generations kept for reference, and including them pulled ~8 packages the service never loads into the lockfile --
 # one of which (igraph, via tidygraph) needs a system library that broke the
