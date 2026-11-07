@@ -6,6 +6,32 @@ Notable changes to The Abstractinator. Format follows
 
 Development before v2.0.0 was untagged; see the git history for detail.
 
+## [Unreleased]
+
+### Fixed
+- Tags for "CD8+ T cell" and "CD4+ T cell" never matched: the `+` in each
+  alias was read as a regex operator. Aliases are now literal text.
+- Short acronyms matched in any case, so Alzheimer's disease ("AD") was tagged
+  as adenovirus ("Ad"). Acronyms with a capital letter now match only in that
+  case, and ones common in other fields (RV, MV, LV, CV, VV, AV) are removed.
+- A specific category now beats the general one it contains: "CD8+ T cells"
+  no longer also counts toward "T cell", and herpes zoster is no longer
+  tagged as herpes simplex.
+- Europe PMC outages are reported in `unavailable_sources` and are not
+  cached, instead of looking like zero results.
+
+### Added
+- Virus tags for the major human pathogens and immunology model viruses (HBV,
+  HCV, CMV, EBV, VZV, KSHV, RSV, hMPV, HPV, MERS-CoV, SIV, LCMV, dengue, Zika,
+  yellow fever, chikungunya, Ebola, mpox, enteroviruses) and immune cell tags
+  for microglia, gamma delta T, NKT, MAIT, Tfh, Th17, pDC and MDSC. Cached
+  results are refreshed (cache schema 5).
+
+### Changed
+- Spaces and hyphens in aliases are interchangeable ("T cell" = "T-cell").
+- API errors no longer include internal details; they are logged instead.
+- Retired code moved to `archive/`; line endings normalised to LF.
+
 ## [2.0.0] - 2026-10-21
 
 First tagged release. Searches Europe PMC, OpenAlex, ClinicalTrials.gov,
