@@ -64,6 +64,11 @@ Development before v2.0.0 was untagged; see the git history for detail.
   results are refreshed (cache schema 5).
 
 ### Changed
+- Settings button and menu restyled to match the app: a round frosted-glass
+  button, and a menu with the search card's glass, pill tabs, a list of
+  connected sources (now including NIH and NSF), and a teal Save pill.
+- The loading screen's glow is denser, and sized to the smaller narwhal on
+  phones, so the line art reads clearly.
 - **API record format.** Clinical-trial titles are plain text (they were a
   Markdown link), `publication_date` is the trial's start date (it was a
   "Start: … | End: … | Status: …" label), and trials carry `trial_status`,

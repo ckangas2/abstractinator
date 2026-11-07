@@ -2077,19 +2077,21 @@ a.landing-card-link:focus-visible .landing-card {
  * ------------------------------------------------------------------ */
 :root { --accent-primary-rgb: 0, 188, 212; }
 
+/* Denser than first tuned: on phones in particular the line art sat on a
+   glow too faint to read against. */
 .loading-icon-container::before {
   background: radial-gradient(circle at 50% 45%,
-      rgba(var(--accent-primary-rgb), 0.38) 0%,
-      rgba(var(--accent-primary-rgb), 0.30) 34%,
-      rgba(var(--accent-primary-rgb), 0.18) 58%,
-      rgba(var(--accent-primary-rgb), 0.06) 74%,
+      rgba(var(--accent-primary-rgb), 0.72) 0%,
+      rgba(var(--accent-primary-rgb), 0.60) 34%,
+      rgba(var(--accent-primary-rgb), 0.38) 58%,
+      rgba(var(--accent-primary-rgb), 0.12) 74%,
       rgba(var(--accent-primary-rgb), 0) 84%);
 }
 
 .loading-icon-container::after {
   background: radial-gradient(ellipse at 50% 50%,
-      rgba(var(--accent-primary-rgb), 0.20) 0%,
-      rgba(var(--accent-primary-rgb), 0.09) 55%,
+      rgba(var(--accent-primary-rgb), 0.34) 0%,
+      rgba(var(--accent-primary-rgb), 0.16) 55%,
       rgba(var(--accent-primary-rgb), 0) 76%);
 }
 
@@ -2113,6 +2115,139 @@ a.landing-card-link:focus-visible .landing-card {
   content: "";
   display: inline-block;
   width: 1.9em;
+}
+
+/* ==========================================================================
+   SETTINGS MENU (opened from the round settings button)
+   The same frosted glass as the search card, tabs like the main app tabs,
+   a status list for connected sources, and a teal pill to save.
+   Scoped to .settings-modal so the other pop-ups keep their own styling.
+   ========================================================================== */
+.modal-content:has(.settings-modal) {
+    background: rgba(30, 31, 35, 0.92) !important;
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+    border: 1px solid rgba(255, 255, 255, 0.10) !important;
+    border-radius: 20px !important;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+}
+.modal-content:has(.settings-modal) .modal-header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+    padding: 18px 24px;
+}
+.modal-content:has(.settings-modal) .modal-title {
+    font-family: 'Montserrat', sans-serif !important;
+    font-weight: 600;
+    letter-spacing: -0.3px;
+}
+.modal-content:has(.settings-modal) .modal-body { padding: 18px 24px 8px; }
+.modal-content:has(.settings-modal) .modal-footer {
+    border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
+    padding: 12px 24px 18px;
+}
+.modal-content:has(.settings-modal) .modal-footer .btn {
+    background: transparent !important;
+    border: 1px solid #555 !important;
+    color: #ccc !important;
+    border-radius: 50px !important;
+    padding: 6px 20px !important;
+    transition: border-color 0.2s ease, color 0.2s ease;
+}
+.modal-content:has(.settings-modal) .modal-footer .btn:hover {
+    border-color: var(--accent-primary) !important;
+    color: var(--accent-primary) !important;
+}
+
+/* Tabs: the main app's pill style */
+#settings_tabs.nav-pills { gap: 8px; }
+#settings_tabs.nav-pills .nav-link {
+    background-color: #222 !important;
+    border: 1px solid #555 !important;
+    color: #eee !important;
+    border-radius: 20px !important;
+    padding: 6px 18px;
+    font-size: 0.92em;
+    transition: all 0.2s ease-in-out;
+}
+#settings_tabs.nav-pills .nav-link:hover { border-color: #777 !important; }
+#settings_tabs.nav-pills .nav-link.active {
+    border-color: var(--accent-primary) !important;
+    color: var(--accent-primary) !important;
+    box-shadow: 0 0 10px var(--glow-medium), inset 0 0 5px var(--glow-subtle) !important;
+}
+
+.settings-modal .settings-lead { color: #aaa; font-size: 0.9em; margin-bottom: 18px; }
+.settings-modal .settings-section {
+    font-family: 'Montserrat', sans-serif !important;
+    font-size: 0.78em;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: var(--accent-primary) !important;
+    margin: 6px 0 10px;
+}
+
+/* Connected sources: one row each, with a status pill */
+.settings-modal .source-status-list {
+    background: rgba(0, 0, 0, 0.22);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 14px;
+    padding: 4px 14px;
+    margin-bottom: 24px;
+}
+.settings-modal .source-status {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 9px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    font-size: 0.92em;
+    color: #e6e6e6;
+}
+.settings-modal .source-status:last-child { border-bottom: none; }
+.settings-modal .status-pill {
+    font-size: 0.78em;
+    color: #00e676;
+    border: 1px solid rgba(0, 230, 118, 0.45);
+    background: rgba(0, 230, 118, 0.08);
+    border-radius: 50px;
+    padding: 2px 10px;
+    white-space: nowrap;
+}
+.settings-modal .status-pill i { margin-right: 4px; }
+
+/* Privacy note */
+.settings-modal .settings-note {
+    background: color-mix(in srgb, var(--accent-primary) 10%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent-primary) 30%, transparent);
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-bottom: 20px;
+}
+.settings-modal .settings-note p { margin: 0; color: #ccc; font-size: 0.85em; }
+.settings-modal .settings-note p:first-child { color: var(--accent-primary); font-size: 0.92em; margin-bottom: 4px; }
+
+/* Key fields: labels a touch quieter than the inputs */
+.settings-modal .control-label,
+.settings-modal label { color: #ddd; font-weight: 500; }
+.settings-modal hr { border-color: rgba(255, 255, 255, 0.08); opacity: 1; }
+
+/* Save: the teal pill of the Search button */
+.btn.settings-save {
+    background-color: var(--accent-primary) !important;
+    color: var(--search-btn-text, #111) !important;
+    border: none !important;
+    border-radius: 50px !important;
+    padding: 11px 20px !important;
+    font-weight: 600;
+    box-shadow: 0 0 8px var(--glow-color);
+    transition: all 0.2s ease;
+}
+.btn.settings-save:hover {
+    background-color: #fff !important;
+    color: var(--accent-primary) !important;
+    transform: translateY(-1px);
 }
 
 /* ==========================================================================
@@ -2241,6 +2376,10 @@ a.landing-card-link:focus-visible .landing-card {
     right: 12px !important;
   }
   #loadingIcon { width: 220px; height: 220px; }
+  /* The bloom behind it is sized for the 300px desktop narwhal; scale and
+     re-centre it to the 220px one (the icon's centre is 110px down). */
+  .loading-icon-container::before { width: 250px; height: 250px; top: 110px; }
+  .loading-icon-container::after  { width: 340px; height: 310px; top: 104px; }
 
   /* --- Plotinator: hide plotly's toolbar, which overlaps the title on a phone --- */
   #allArticlesPlotOutput .modebar-container { display: none !important; }

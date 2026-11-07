@@ -54,6 +54,8 @@
       size = "m", 
       easyClose = TRUE,
       
+      # Wrapper class scopes the menu's styling (styles.css, "SETTINGS MENU").
+      div(class = "settings-modal",
       bslib::navset_pill(
         id = "settings_tabs",
         
@@ -61,71 +63,29 @@
         bslib::nav_panel(
           title = "API Connections",
           br(),
-          p("Manage your database connections below.", style = "color: #aaa; font-size: 0.9em; margin-bottom: 20px;"),
-          
+          p("Manage your database connections below.", class = "settings-lead"),
+
           # --- SECTION 1: OPEN ACCESS SERVICES ---
-          h5("Open Access Services", style = "color: #ddd; border-bottom: 1px solid #444; padding-bottom: 5px; margin-bottom: 15px;"),
-          
-          # Europe PMC
-          div(style = "display: flex; align-items: flex-end; margin-bottom: 15px;",
-              div(style="flex-grow: 1;",
-                  shinyjs::disabled(
-                    textInput("epmc_status_opt", 
-                              label = tagList("Europe PMC", icon("check-circle", style="color: #00e676; margin-left: 5px;")), 
-                              value = "Integrated (Open Access)", 
-                              width = "100%")
-                  )
-              )
+          h5("Open Access Services", class = "settings-section"),
+          div(class = "source-status-list",
+              lapply(c("Europe PMC", "OpenAlex", "ClinicalTrials.gov", "bioRxiv / medRxiv",
+                       "NIH RePORTER", "NSF Awards"), function(nm) {
+                div(class = "source-status",
+                    span(class = "source-name", nm),
+                    span(class = "status-pill", icon("circle-check"), "Connected"))
+              })
           ),
-          
-          # OpenAlex
-          div(style = "display: flex; align-items: flex-end; margin-bottom: 15px;",
-              div(style="flex-grow: 1;",
-                  shinyjs::disabled(
-                    textInput("OpenAlex_status_opt", 
-                              label = tagList("OpenAlex", icon("check-circle", style="color: #00e676; margin-left: 5px;")), 
-                              value = "Integrated (Open Access)", 
-                              width = "100%")
-                  )
-              )
-          ),
-          
-          # ClinicalTrials.gov
-          div(style = "display: flex; align-items: flex-end; margin-bottom: 15px;",
-              div(style="flex-grow: 1;",
-                  shinyjs::disabled(
-                    textInput("ct_status_opt", 
-                              label = tagList("ClinicalTrials.gov", icon("check-circle", style="color: #00e676; margin-left: 5px;")), 
-                              value = "Integrated (Open Access)", 
-                              width = "100%")
-                  )
-              )
-          ),
-          
-          # Biorxiv/medrxiv
-          div(style = "display: flex; align-items: flex-end; margin-bottom: 25px;",
-              div(style="flex-grow: 1;",
-                  shinyjs::disabled(
-                    textInput("bx_status_opt", 
-                              label = tagList("bioRxiv/medRxiv", icon("check-circle", style="color: #00e676; margin-left: 5px;")), 
-                              value = "Integrated (Open Access)", 
-                              width = "100%")
-                  )
-              )
-          ),
-          
+
           # --- SECTION 2: AUTHENTICATED SERVICES ---
-          h5("Authenticated Services", style = "color: #ddd; border-bottom: 1px solid #444; padding-bottom: 5px; margin-bottom: 15px;"),
-          
+          h5("Authenticated Services", class = "settings-section"),
+
           # --- PRIVACY HANDSHAKE ---
-          div(
-            style = "background-color: rgba(var(--accent-rgb), 0.1); border-left: 3px solid var(--accent-primary); padding: 10px; margin-bottom: 20px; border-radius: 0 5px 5px 0;",
-            p(icon("user-shield"), strong(" API keys are only held in your current session."), style = "color: var(--accent-primary); margin: 0;"),
+          div(class = "settings-note",
+            p(icon("user-shield"), strong(" API keys are only held in your current session.")),
             p("They are never logged, saved or written to disk. Input keys prior to search for full results. ",
-              "(Search terms themselves are logged anonymously, without any account or IP address, to help improve the tool.)", 
-              style = "color: #ccc; font-size: 0.85em; margin: 5px 0 0 0;")
+              "(Search terms themselves are logged anonymously, without any account or IP address, to help improve the tool.)")
           ),
-          
+
           # Scopus field only appears when ENABLE_SCOPUS=1 (see orchestrate_extraction.R)
           if (ENABLE_SCOPUS) tagList(
             passwordInput("key_elsevier", "Elsevier (Scopus/Embase):", value = current_elsevier, placeholder = "Enter Elsevier API Key"),
@@ -144,7 +104,7 @@
           # --- SAVE BUTTON SECTION ---
           hr(),
           
-          actionButton("saveKeys", "Save Configuration", class = "btn-success", width = "100%"),
+          actionButton("saveKeys", "Save Configuration", class = "settings-save", width = "100%"),
           
           div(id = "key_save_msg", style = "margin-top: 15px; color: var(--accent-primary); font-weight: bold; text-align: center; display: none;", 
               icon("check"), " Keys saved for this session.")
@@ -212,6 +172,7 @@
           
         )
       ) # End navset_pill
+      ) # End settings-modal
     )) # End modalDialog and showModal
   })
   
