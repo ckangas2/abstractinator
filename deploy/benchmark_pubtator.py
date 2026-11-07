@@ -172,9 +172,13 @@ def run_searches():
 
 # --- 2. PubTator3 species ---------------------------------------------------
 def pubtator_species(pmids):
-    """pmid -> list of (taxid, mention text, weight). Title mentions weigh 20,
-    abstract mentions 3, the same weighting our own tagger uses."""
+    """pmid -> list of (taxid, mention text, weight), plus pmid -> lowercased
+    Disease mention texts. Title mentions weigh 20, abstract mentions 3, the
+    same weighting our own tagger uses. Disease mentions are kept because
+    PubTator3 often labels a virus as a disease ("SARS-CoV-2", "oncolytic
+    measles virus") and then annotates no species for it."""
     out = collections.defaultdict(list)
+    diseases = collections.defaultdict(list)
     pmids = list(pmids)
     for i in range(0, len(pmids), 100):
         batch = pmids[i:i + 100]
@@ -193,12 +197,15 @@ def pubtator_species(pmids):
                 w = 20 if ptype.startswith("title") else 3
                 for a in p.get("annotations", []):
                     inf = a.get("infons", {})
-                    if str(inf.get("type", "")).lower() != "species":
+                    kind = str(inf.get("type", "")).lower()
+                    if kind == "disease":
+                        diseases[pmid].append(str(a.get("text", "")).lower())
+                    if kind != "species":
                         continue
                     for tid in re.findall(r"\d+", str(inf.get("identifier", ""))):
                         out[pmid].append((tid, a.get("text", ""), w))
         time.sleep(2.5)   # PubTator3 asks for ~30 requests/minute at most
-    return out
+    return out, diseases
 
 
 # --- 3. NCBI Taxonomy -------------------------------------------------------
@@ -254,7 +261,16 @@ def classify(taxid, anchors):
 
 
 # --- 4. Compare and report --------------------------------------------------
-def compare(records, species, anchors, kingdom, field):
+def named_as_disease(category, disease_texts):
+    """Does a Disease mention name this category? ("Herpes zoster" for
+    Varicella-Zoster Virus, "SARS-CoV-2 infection" for SARS-CoV-2.)"""
+    tokens = re.findall(r"[a-z0-9-]+", category.lower())
+    tokens += [part for t in tokens for part in t.split("-")]   # "varicella-zoster" -> "zoster" too
+    words = [w for w in set(tokens) if len(w) >= 4 and w not in ("virus", "viruses", "human")]
+    return any(w in t for w in words for t in disease_texts)
+
+
+def compare(records, species, anchors, kingdom, field, diseases):
     rows, gaps, missed = [], collections.Counter(), collections.Counter()
     stats = collections.Counter()
     for pmid, rec in records.items():
@@ -278,6 +294,8 @@ def compare(records, species, anchors, kingdom, field):
                 outcome = "agree" if ours == pt_top else "supported (not PubTator's top)"
             elif score or gap_score:
                 stats["conflict"] += 1; outcome = "conflict"
+            elif named_as_disease(ours, diseases.get(pmid, [])):
+                stats["as_disease"] += 1; outcome = "PubTator called it a disease"
             else:
                 stats["unsupported"] += 1; outcome = "PubTator found none"
         else:
@@ -309,13 +327,13 @@ def main():
     out_dir = Path("benchmark"); out_dir.mkdir(exist_ok=True)
     records = run_searches()
     print(f"{len(records)} unique PubMed records")
-    species = pubtator_species(records.keys())
+    species, diseases = pubtator_species(records.keys())
     fetch_lineages({t for v in species.values() for t, _, _ in v})
     v_anchors, v_unres = resolve_anchors(VIRUS_ANCHORS, VIRUSES)
     b_anchors, b_unres = resolve_anchors(BACTERIA_ANCHORS, BACTERIA)
 
-    results = {"Virus": compare(records, species, v_anchors, VIRUSES, "virus"),
-               "Bacterium": compare(records, species, b_anchors, BACTERIA, "bacterium")}
+    results = {"Virus": compare(records, species, v_anchors, VIRUSES, "virus", diseases),
+               "Bacterium": compare(records, species, b_anchors, BACTERIA, "bacterium", diseases)}
 
     today = datetime.date.today().isoformat()
     L = [f"# Tag agreement with PubTator3 ({today})", "",
@@ -333,14 +351,19 @@ def main():
     row("We tagged one", lambda s: s["tagged"])
     row("…and PubTator3 found it too (**tag support**)", lambda s: f"{s['supported']} ({pct(s['supported'], s['tagged'])})")
     row("…PubTator3 found a different one", lambda s: s["conflict"])
+    row("…PubTator3 named it as a disease, not a species", lambda s: s["as_disease"])
     row("…PubTator3 found none of this kind", lambda s: s["unsupported"])
+    row("**Agreement** where PubTator3 annotated one of this kind", lambda s: f"{s['supported']} of {s['supported'] + s['conflict']} ({pct(s['supported'], s['supported'] + s['conflict'])})")
     row("PubTator3's main one is a category we have", lambda s: s["pt_top"])
     row("…and we tagged that same one (**coverage**)", lambda s: f"{s['pt_top_matched']} ({pct(s['pt_top_matched'], s['pt_top'])})")
     row("…we tagged nothing (missed)", lambda s: s["missed"])
     row("PubTator3 found one we have no category for", lambda s: s["gap"])
-    L += ["", "**Tag support** is how often a tag we assign is backed by PubTator3. "
-          "**Coverage** is how often PubTator3's most-mentioned organism, when we have a "
-          "category for it, is also our tag.", ""]
+    L += ["", "**Tag support** is how often a tag we assign is backed by a PubTator3 species "
+          "annotation. **Agreement** narrows that to records where PubTator3 annotated an "
+          "organism of that kind at all: it often labels a virus as a disease (\"SARS-CoV-2\", "
+          "\"oncolytic measles virus\") and then annotates no species, which is not evidence "
+          "of a wrong tag. **Coverage** is how often PubTator3's most-mentioned organism, when "
+          "we have a category for it, is also our tag.", ""]
 
     for axis, (stats, rows, gaps, missed) in results.items():
         L += [f"## {axis}", ""]
@@ -350,7 +373,7 @@ def main():
         if gaps:
             L += ["Organisms PubTator3 found that have no category (candidates for the alias lists):", ""]
             L += [f"- {n}: {c} records" for n, c in gaps.most_common(15)] + [""]
-        for outcome in ("conflict", "PubTator found none"):
+        for outcome in ("conflict", "PubTator found none", "PubTator called it a disease"):
             ex = [r for r in rows if r["outcome"] == outcome][:12]
             if ex:
                 L += [f"Examples, {outcome}:", "", "| PMID | Ours | PubTator3 | Title |", "|---|---|---|---|"]
