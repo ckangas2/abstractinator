@@ -2122,18 +2122,19 @@ a.landing-card-link:focus-visible .landing-card {
      the card's edges, so they sit on top of the page rather than in a slot. --- */
   #completionIconLeft,
   #completionIconRight {
-    height: 76px !important;
+    height: 92px !important;
     width: auto !important;
   }
   .completion-icon-left,
   .completion-icon-right {
     top: auto !important;
-    bottom: -24px !important;
+    bottom: -32px !important;
     transform: none !important;
     z-index: 20 !important;
+    pointer-events: none;           /* decorative: taps reach the toggle and chips beneath */
   }
-  .completion-icon-left  { left: -4% !important; }
-  .completion-icon-right { right: -4% !important; }
+  .completion-icon-left  { left: -7% !important; }
+  .completion-icon-right { right: -7% !important; }
 
   /* --- Tabs: one swipeable row instead of a stack --- */
   ul#main_app_tabs.nav-pills {
