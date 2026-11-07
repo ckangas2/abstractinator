@@ -2185,6 +2185,8 @@ server <- function(input, output, session) {
           URL = article_row$URL,
           DOI = article_row$DOI,
           Source = article_row$Source,
+        primary_cell = article_row$primary_cell, primary_virus = article_row$primary_virus,
+        primary_bacteria = article_row$primary_bacteria,
           ItemKey = article_row$ItemKey
         )
         
@@ -2221,6 +2223,8 @@ server <- function(input, output, session) {
         URL = article_to_add$URL,
         DOI = article_to_add$DOI,
         Source = article_to_add$Source,
+        primary_cell = article_to_add$primary_cell, primary_virus = article_to_add$primary_virus,
+        primary_bacteria = article_to_add$primary_bacteria,
         ItemKey = article_to_add$ItemKey
       )
       
@@ -2426,7 +2430,7 @@ server <- function(input, output, session) {
     showModal(modalDialog(
       title = div(icon("download"), " Download Reading List"),
       
-      p("Select a format compatible with your reference manager.", style = "color: #ccc; margin-bottom: 25px;"),
+      p("Select a format for your reference manager, a spreadsheet, or your notes.", style = "color: #ccc; margin-bottom: 25px;"),
       
       # --- CSV BUTTON ---
       downloadButton("downloadReadingListCsv", 
@@ -2442,6 +2446,13 @@ server <- function(input, output, session) {
                      icon = icon("book")
       ),
       
+      # --- MARKDOWN BUTTON ---
+      downloadButton("downloadReadingListMd",
+                     label = " Download as Markdown (.md)",
+                     class = "btn-download-pill md",
+                     icon = icon("markdown")
+      ),
+
       # --- ENDNOTE BUTTON ---
       downloadButton("downloadEndnoteENW", 
                      label = " Download for EndNote (.enw)", 
@@ -2488,6 +2499,15 @@ server <- function(input, output, session) {
     }
   )
   
+  # --- MARKDOWN HANDLER ---
+  output$downloadReadingListMd <- downloadHandler(
+    filename = function() paste0("Abstractinator_List_", Sys.Date(), ".md"),
+    content = function(file) {
+      md <- reading_list_markdown(lapply(rv$reading_list(), plain_text_item))
+      writeLines(enc2utf8(md), file, useBytes = TRUE)
+    }
+  )
+
   # --- ZOTERO HANDLER ---
   output$downloadZoteroRIS <- downloadHandler(
     filename = function() {

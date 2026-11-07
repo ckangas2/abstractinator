@@ -26,6 +26,8 @@ Development before v2.0.0 was untagged; see the git history for detail.
   not only 429 and 503.
 
 ### Added
+- Markdown export of the reading list, for notes apps, GitHub and AI chats:
+  title, authors, date, source, DOI link, tags and the full abstract.
 - Virus tags for the major human pathogens and immunology model viruses (HBV,
   HCV, CMV, EBV, VZV, KSHV, RSV, hMPV, HPV, MERS-CoV, SIV, LCMV, dengue, Zika,
   yellow fever, chikungunya, Ebola, mpox, enteroviruses) and immune cell tags

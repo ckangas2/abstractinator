@@ -1354,6 +1354,20 @@ html body .modal-content a.btn-download-pill.ris:focus {
     text-decoration: none !important;
 }
 
+/* Markdown Variant (Lavender) */
+html body .modal-content a.btn-download-pill.md {
+    color: #b388ff !important;
+    border: 1px solid #b388ff !important;
+    box-shadow: 0 0 5px rgba(179, 136, 255, 0.2) !important;
+}
+html body .modal-content a.btn-download-pill.md:hover,
+html body .modal-content a.btn-download-pill.md:focus {
+    background-color: #b388ff !important;
+    color: #fff !important;
+    box-shadow: 0 0 20px rgba(179, 136, 255, 0.6) !important;
+    transform: translateY(-2px) !important;
+}
+
 /* 4. EndNote Variant (Deep Blue) */
 html body .modal-content a.btn-download-pill.enw {
     color: #448aff !important;              /* Deep Blue (Brightened slightly for Dark Mode) */

@@ -98,3 +98,72 @@ make_item_key <- function(doi, url, title) {
   vapply(paste(doi, url, title, sep = "|"), digest::digest, character(1),
          algo = "md5", serialize = FALSE, USE.NAMES = FALSE)
 }
+
+# --- Markdown export of the reading list ------------------------------------
+# For notes apps, GitHub and AI chats. Items are reading-list entries already
+# passed through plain_text_item(). Third-party text is escaped so it reads as
+# text in any Markdown renderer, never as links, emphasis or raw HTML.
+md_escape <- function(x) gsub("([\\\\`*_\\[\\]<>])", "\\\\\\1", x, perl = TRUE)
+
+# Percent-encode the characters that would end or break a Markdown link target.
+# DOIs can legitimately contain parentheses, e.g. 10.1016/S0140-6736(20)30183-5.
+md_link_target <- function(x) {
+  x <- gsub("%", "%25", x, fixed = TRUE)
+  x <- gsub(" ", "%20", x, fixed = TRUE)
+  x <- gsub("(", "%28", x, fixed = TRUE)
+  x <- gsub(")", "%29", x, fixed = TRUE)
+  x <- gsub("<", "%3C", x, fixed = TRUE)
+  gsub(">", "%3E", x, fixed = TRUE)
+}
+
+md_field <- function(item, name) {
+  v <- item[[name]]
+  if (is.null(v) || length(v) == 0 || is.na(v[1])) return(NA_character_)
+  v <- trimws(as.character(v[1]))
+  if (!nzchar(v)) NA_character_ else v
+}
+
+reading_list_markdown <- function(items, exported = Sys.Date()) {
+  n <- length(items)
+  out <- c("# Abstractinator reading list", "",
+           sprintf("Exported %s from https://abstractinator.me · %d %s",
+                   format(exported), n, if (n == 1) "item" else "items"),
+           "",
+           "Abstracts are included for personal reference; copyright remains with the authors and publishers.",
+           "")
+  if (n == 0) return(c(out, "_The reading list is empty._"))
+
+  for (i in seq_len(n)) {
+    it <- items[[i]]
+    title <- md_field(it, "Title")
+    out <- c(out, "---", "", sprintf("## %d. %s", i, md_escape(if (is.na(title)) "Untitled" else title)), "")
+
+    doi <- md_field(it, "DOI")
+    url <- md_field(it, "URL")
+    meta <- c(md_escape(md_field(it, "Authors")), md_field(it, "PublicationDate"),
+              md_escape(md_field(it, "Source")),
+              if (!is.na(doi)) sprintf("[doi:%s](https://doi.org/%s)", md_escape(doi), md_link_target(doi)))
+    meta <- meta[!is.na(meta) & nzchar(meta)]
+    if (length(meta)) out <- c(out, paste(meta, collapse = " · "), "")
+
+    tags <- c(Cell = md_field(it, "primary_cell"), Virus = md_field(it, "primary_virus"),
+              Bacterium = md_field(it, "primary_bacteria"))
+    tags <- tags[!is.na(tags) & tags != "Non-descript"]
+    if (length(tags)) {
+      out <- c(out, paste(sprintf("**%s:** %s", names(tags), md_escape(tags)), collapse = " · "), "")
+    }
+
+    abstract <- md_field(it, "Abstract")
+    if (!is.na(abstract)) {
+      lines <- strsplit(abstract, "\r?\n")[[1]]
+      out <- c(out, paste0(">", ifelse(nzchar(trimws(lines)), paste0(" ", md_escape(lines)), "")), "")
+    }
+    # The record's own page, when it adds something to the DOI link (trials,
+    # grants, preprints). Only http(s) links, so a bad URL can't become a script.
+    if (!is.na(url) && grepl("^https?://", url, ignore.case = TRUE) &&
+        (is.na(doi) || !grepl(doi, url, fixed = TRUE))) {
+      out <- c(out, sprintf("[Source page](%s)", md_link_target(url)), "")
+    }
+  }
+  out
+}
