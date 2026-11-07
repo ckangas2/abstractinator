@@ -39,6 +39,8 @@ jobs:
             any::forcats
             any::ggbeeswarm
             any::tidyverse
+            any::httr2
+            any::uuid
 
       - name: Run tests
         run: Rscript -e 'testthat::test_dir("tests/testthat", stop_on_failure = TRUE)'
