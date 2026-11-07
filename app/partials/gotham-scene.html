@@ -238,11 +238,6 @@
            x="458" y="38" width="84" height="84" preserveAspectRatio="xMidYMid meet"></image>
 
     <!-- Sky (not reflected) -->
-    <g class="g-season g-halloween g-silhouette">
-      <path transform="translate(372,40) scale(0.9)" d="M0,2 C2,-2 5,-2 6,1 C7,-1 8,-1 9,1 C10,-1 11,-1 12,1 C13,-2 16,-2 18,2 C15,1 13,2 12,4 C11,2 10,2 9,4 C8,2 7,2 6,4 C5,2 3,1 0,2 Z"></path>
-      <path transform="translate(600,30) scale(0.7)" d="M0,2 C2,-2 5,-2 6,1 C7,-1 8,-1 9,1 C10,-1 11,-1 12,1 C13,-2 16,-2 18,2 C15,1 13,2 12,4 C11,2 10,2 9,4 C8,2 7,2 6,4 C5,2 3,1 0,2 Z"></path>
-      <path transform="translate(548,66) scale(0.55)" d="M0,2 C2,-2 5,-2 6,1 C7,-1 8,-1 9,1 C10,-1 11,-1 12,1 C13,-2 16,-2 18,2 C15,1 13,2 12,4 C11,2 10,2 9,4 C8,2 7,2 6,4 C5,2 3,1 0,2 Z"></path>
-    </g>
     <g class="g-season g-thanksgiving g-geese">
       <path transform="translate(352,46)" d="M0,0 L5,2.5 L10,0"></path>
       <path transform="translate(340,40)" d="M0,0 L5,2.5 L10,0"></path>
@@ -269,6 +264,16 @@
     <rect x="0" y="138" width="1000" height="28" fill="url(#gMist)" filter="url(#gBlur)"></rect>
     <rect class="g-waterline" x="0" y="149.4" width="1000" height="1.2"></rect>
   </svg>
+
+  <!-- Bats (halloween): each one flies across (span), bobs (i) and flaps (b).
+       Transform-only animations, so the graphics chip does the work. -->
+  <div class="g-bats g-season g-halloween" aria-hidden="true">
+      <span style="--y:9%;--s:40px;--t:17s;--d:-2s;--f:0.22s;--rest:38%"><i><b></b></i></span>
+      <span class="r" style="--y:18%;--s:31px;--t:22s;--d:-9s;--f:0.19s;--rest:62%"><i><b></b></i></span>
+      <span style="--y:27%;--s:24px;--t:26s;--d:-15s;--f:0.17s;--rest:20%"><i><b></b></i></span>
+      <span class="r" style="--y:6%;--s:19px;--t:30s;--d:-4s;--f:0.15s;--rest:80%"><i><b></b></i></span>
+      <span style="--y:14%;--s:28px;--t:20s;--d:-12s;--f:0.2s;--rest:50%"><i><b></b></i></span>
+  </div>
 
   <!-- Falling leaves (thanksgiving) and snow (christmas). Still when the
        visitor's system asks for reduced motion. -->
