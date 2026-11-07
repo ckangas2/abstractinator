@@ -9,6 +9,11 @@ Development before v2.0.0 was untagged; see the git history for detail.
 ## [Unreleased]
 
 ### Added
+- A **Look** choice in Settings -> Appearance: **Classic** (the default, as
+  before: the mascot sets the colours) or **Gotham** (the season sets the
+  colours and the mascot rides the moon), with a season picker (Auto by date,
+  Everyday, Halloween, Thanksgiving, Christmas). Remembered in the visitor's
+  browser.
 - A "Welcome to Gotham" look for the home page, after the 1996 Batman
   Forever site: a glowing stencil title over a city reflected in water, a moon
   carrying the mascot's silhouette, and a neon skyline line over the feature

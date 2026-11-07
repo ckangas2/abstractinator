@@ -1412,7 +1412,7 @@ html body .modal-content a.btn-download-pill.enw:focus {
    ========================================================================== */
 
 /* 1. The Container: Add gaps between the buttons */
-#theme_selector .btn-group {
+#theme_selector .btn-group , #look_selector .btn-group , #season_selector .btn-group  {
     display: flex;
     gap: 10px;               /* Space between the pills */
     width: 100%;
@@ -1420,7 +1420,7 @@ html body .modal-content a.btn-download-pill.enw:focus {
 }
 
 /* 2. The Buttons (The "Dark Pill" Base) */
-#theme_selector .btn {
+#theme_selector .btn , #look_selector .btn , #season_selector .btn  {
     /* --- MATCHING YOUR DATATABLES TOOLBAR STYLE --- */
     background-color: #222 !important;      /* Dark Background */
     border: 1px solid #555 !important;      /* Subtle Border */
@@ -1442,7 +1442,7 @@ html body .modal-content a.btn-download-pill.enw:focus {
 }
 
 /* 3. Hover State (Lighten + Subtle Glow) */
-#theme_selector .btn:hover {
+#theme_selector .btn:hover , #look_selector .btn:hover , #season_selector .btn:hover  {
     background-color: #333 !important;
     border-color: #777 !important;
     color: #fff !important;
@@ -1452,7 +1452,7 @@ html body .modal-content a.btn-download-pill.enw:focus {
 
 /* 4. Active/Selected State (The "Ignition") */
 /* When selected, it takes on the color of the CURRENT theme */
-#theme_selector .btn.active {
+#theme_selector .btn.active , #look_selector .btn.active , #season_selector .btn.active  {
     background-color: #222 !important;      /* Keep dark base */
     border-color: var(--accent-primary) !important;       /* Theme Border */
     color: var(--accent-primary) !important;              /* Theme Text */
@@ -1465,7 +1465,7 @@ html body .modal-content a.btn-download-pill.enw:focus {
 }
 
 /* 5. Specific Tweaks for Icon alignment */
-#theme_selector .btn i {
+#theme_selector .btn i , #look_selector .btn i , #season_selector .btn i  {
     margin-right: 6px;
     font-size: 1.1em;
     vertical-align: middle;
@@ -2253,6 +2253,10 @@ a.landing-card-link:focus-visible .landing-card {
     color: var(--accent-primary) !important;
     transform: translateY(-1px);
 }
+
+/* The season row has five choices: let it wrap, and keep the pills small. */
+#season_selector .btn-group { flex-wrap: wrap; }
+#season_selector .btn { flex-grow: 0; padding: 5px 14px !important; font-size: 0.8rem; }
 
 /* ==========================================================================
    PHONES (screens narrower than 640px)

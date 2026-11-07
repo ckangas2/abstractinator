@@ -47,11 +47,11 @@ fluidPage(
               href = paste0("styles.css?v=", as.integer(file.mtime("www/styles.css")))),
     tags$script(src = paste0("script.js?v=", as.integer(file.mtime("www/script.js")))),
 
-    # "Welcome to Gotham" look + seasonal decorations. gotham.css overrides
-    # styles.css, so it comes after it; gotham.js sets the season in <head>,
-    # before the first paint. Delete these two lines to switch the look off
-    # (the skyline partials below then stay hidden). Preview a season with
-    # ?season=none|halloween|thanksgiving|christmas -- see www/gotham.js.
+    # "Welcome to Gotham" look + seasonal decorations, opt-in from Settings ->
+    # Appearance -> Look (Classic is the default). gotham.css overrides
+    # styles.css, so it comes after it; gotham.js applies the visitor's saved
+    # look and season in <head>, before the first paint. Preview without
+    # saving: ?look=gotham, or ?season=none|halloween|thanksgiving|christmas.
     tags$link(rel = "stylesheet", type = "text/css",
               href = paste0("gotham.css?v=", as.integer(file.mtime("www/gotham.css")))),
     tags$script(src = paste0("gotham.js?v=", as.integer(file.mtime("www/gotham.js"))))

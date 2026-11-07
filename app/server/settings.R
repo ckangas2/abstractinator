@@ -115,7 +115,44 @@
         bslib::nav_panel(
           title = "Appearance",
           br(),
-          
+
+          # 0. Look: Classic (the mascot sets the colours) or Gotham (the
+          # season sets them; the mascot rides the moon). Applied and
+          # remembered in the browser by www/gotham.js.
+          div(style = "text-align: center; margin-bottom: 14px;",
+              h4("Choose Your Look", style = "font-weight: 700; letter-spacing: 1px; color: #fff;"),
+              p("Classic colours follow your companion. In Gotham the season sets the colours and your companion rides the moon.",
+                style = "color: #aaa; font-size: 0.9em;")
+          ),
+          div(style = "display: flex; justify-content: center; margin-bottom: 12px;",
+              shinyWidgets::radioGroupButtons(
+                inputId = "look_selector",
+                label = NULL,
+                choiceNames = list(tagList(icon("droplet"), " Classic"),
+                                   tagList(icon("city"), " Gotham")),
+                choiceValues = c("classic", "gotham"),
+                selected = (input$client_look$look %||% "classic"),
+                justified = TRUE, status = "primary", size = "lg",
+                checkIcon = list(yes = icon("check-circle"), no = icon("circle", style = "opacity: 0.2;"))
+              )
+          ),
+          conditionalPanel(
+            "input.look_selector == 'gotham'",
+            div(style = "display: flex; justify-content: center; margin-bottom: 10px;",
+                shinyWidgets::radioGroupButtons(
+                  inputId = "season_selector",
+                  label = NULL,
+                  choiceNames = list("Auto", "Everyday", "Halloween", "Thanksgiving", "Christmas"),
+                  choiceValues = c("auto", "none", "halloween", "thanksgiving", "christmas"),
+                  selected = (input$client_look$season %||% "auto"),
+                  size = "sm"
+                )
+            ),
+            p("Auto follows the calendar.", style = "text-align: center; color: #888; font-size: 0.8em;")
+          ),
+
+          hr(style = "border-top: 1px solid #444; margin: 26px 0;"),
+
           # 1. Header
           div(style = "text-align: center; margin-bottom: 20px;",
               h4("Choose Your Companion", style = "font-weight: 700; letter-spacing: 1px; color: #fff;"),
@@ -177,6 +214,20 @@
   })
   
   
+  # ========================================================================
+  # LOOK (Classic / Gotham) AND SEASON
+  # ========================================================================
+  # The browser holds the choice (www/gotham.js): it reports it as
+  # input$client_look when the session connects, and applies changes sent
+  # here as "set_look".
+  observeEvent(list(input$look_selector, input$season_selector), {
+    req(input$look_selector)
+    session$sendCustomMessage("set_look", list(
+      look   = input$look_selector,
+      season = input$season_selector %||% (input$client_look$season %||% "auto")
+    ))
+  }, ignoreInit = TRUE)
+
   # ========================================================================
   # THEME ENGINE
   # ========================================================================
