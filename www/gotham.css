@@ -274,7 +274,9 @@ html.gotham body:has(#landing_container[style*="display: none"]) .gotham-scene {
 .gotham .g-win-b { fill: var(--g-win-b); opacity: 0.7; }
 
 /* The mascot in the moon, as a black silhouette. */
-.gotham .g-mascot { filter: brightness(0); opacity: 0.86; }
+/* Silhouette comes from the SVG filter #gSilhouette in gotham-scene.html; a CSS
+   filter here would override it, and WebKit ignores CSS filters on SVG images. */
+.gotham .g-mascot { opacity: 0.86; }
 
 /* Lab gear */
 .gotham .g-rung     { fill: none; stroke: var(--g-glow); stroke-width: 1.8; opacity: 0.85; }

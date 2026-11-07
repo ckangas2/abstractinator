@@ -23,6 +23,12 @@
   <svg viewBox="0 0 1000 300" preserveAspectRatio="xMidYMax slice"
        role="img" aria-label="A city skyline at night, reflected in water, under a moon">
     <defs>
+      <!-- The mascot's silhouette: every pixel black, outline transparency kept.
+           An SVG filter rather than CSS filter: brightness(0), because iPhone
+           browsers (WebKit) don't apply CSS filters to images inside an SVG. -->
+      <filter id="gSilhouette" color-interpolation-filters="sRGB">
+        <feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0"></feColorMatrix>
+      </filter>
       <linearGradient id="gCity" x1="0" y1="0" x2="0" y2="1">
         <stop offset="0" class="g-city-top"></stop>
         <stop offset="1" class="g-city-bottom"></stop>
@@ -228,7 +234,7 @@
     <!-- Moon with the mascot silhouette -->
     <circle cx="500" cy="80" r="78" fill="url(#gMoonHalo)"></circle>
     <circle cx="500" cy="80" r="54" fill="url(#gMoonDisc)"></circle>
-    <image id="gothamMoonMascot" class="g-mascot" href="search_complete.png"
+    <image id="gothamMoonMascot" class="g-mascot" filter="url(#gSilhouette)" href="search_complete.png"
            x="458" y="38" width="84" height="84" preserveAspectRatio="xMidYMid meet"></image>
 
     <!-- Sky (not reflected) -->
