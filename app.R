@@ -263,7 +263,6 @@ ui <- fluidPage(
   theme = bslib::bs_theme(bootswatch = "darkly"),
   
   tags$head(
-    tags$title("The Abstractinator"),
     
     # --- Icons (tab, bookmarks, phone home screens) ---
     tags$link(rel = "icon", type = "image/x-icon", href = "favicon.ico"),
@@ -281,6 +280,7 @@ ui <- fluidPage(
     tags$meta(property = "og:image", content = "https://abstractinator.me/og-image.png"),
     tags$meta(property = "og:image:width", content = "1200"),
     tags$meta(property = "og:image:height", content = "630"),
+    tags$meta(name = "twitter:card", content = "summary_large_image"),
     tags$meta(name = "twitter:card", content = "summary_large_image"),
     
     # --- Hints for AI agents that fetch this page ---
@@ -328,7 +328,7 @@ ui <- fluidPage(
     div(class = "loading-icon-container",
         # width/height match the CSS so the box does not jump from 50px to
         # 300px between first paint and stylesheet application.
-        img(src = "loading1.png", id = "loadingIcon", width = "300px", height = "300px"),
+        img(src = "loading1.png", id = "loadingIcon", alt = "", width = "300px", height = "300px"),
         div(id = "loadingMessage", style = "color: white; margin-top: 20px; text-align: center;",
             # One HTML string rather than two tags$span() children:
             # htmltools separates children with a newline, and a newline
@@ -367,7 +367,7 @@ ui <- fluidPage(
       # Left Icon (Floating absolutely on the left)
       div(class = "completion-icon-left", 
           style = "position: absolute; left: 10px; top: 50%; transform: translateY(-50%); z-index: 10;",
-          tags$img(id = "completionIconLeft", 
+          tags$img(id = "completionIconLeft", alt = "", 
                    src = "search_complete.png", 
                    height = "150px", # Adjusted size for floating look
                    width = "auto", 
@@ -387,7 +387,7 @@ ui <- fluidPage(
       # Right Icon (Floating absolutely on the right)
       div(class = "completion-icon-right", 
           style = "position: absolute; right: 10px; top: 50%; transform: translateY(-50%); z-index: 10;",
-          tags$img(id = "completionIconRight", 
+          tags$img(id = "completionIconRight", alt = "", 
                    src = "search_complete.png", 
                    height = "150px", 
                    width = "auto", 
@@ -653,10 +653,15 @@ ui <- fluidPage(
       # Using actionLink so it can trigger a Shiny Modal
       actionLink("footer_help_btn", " Help & Documentation", icon = icon("question-circle")),
       "|",
-      # Deliberately keeps the footer_help_btn2 id: stylesheet rules left over
-      # from the old floating button still target #btc_donate and take it out
-      # of flow, which is what broke the footer layout.
-      actionLink("footer_donate_btn", "Donate")
+      # Not #btc_donate: stylesheet rules left over from the old floating
+      # button still target that id and take it out of flow, which is what
+      # broke the footer layout.
+      actionLink("footer_donate_btn", "Donate"),
+      "|",
+      # A plain link rather than an actionLink: it navigates to a static page
+      # and needs no server round trip. .thin-footer a styles it like the
+      # others. New tab, so following it does not discard a search.
+      tags$a(href = "privacy.html", target = "_blank", rel = "noopener", "Privacy")
   ),
   tags$div(style = "height: 25px; display: block; clear: both;") 
 

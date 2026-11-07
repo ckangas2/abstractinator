@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy — The Abstractinator</title>
+<meta name="description" content="What The Abstractinator records when you search, and what it does not.">
+<link rel="icon" href="favicon-32.png">
+<style>
+  :root { --bg:#16181d; --fg:#e6e8eb; --muted:#9aa3ad; --accent:#00bcd4; --rule:#2a2e35; }
+  @media (prefers-color-scheme: light) {
+    :root { --bg:#fbfbfc; --fg:#1d2127; --muted:#5a636e; --accent:#00838f; --rule:#e2e5e9; }
+  }
+  html { background: var(--bg); }
+  body { margin:0; color:var(--fg); background:var(--bg);
+         font: 16px/1.65 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 680px; margin: 0 auto; padding: 48px 16px 64px; }
+  h1 { font-size: 1.8rem; margin: 0 0 4px; }
+  h2 { font-size: 1.1rem; margin: 36px 0 8px; padding-top: 20px; border-top: 1px solid var(--rule); }
+  p, li { color: var(--fg); }
+  .muted { color: var(--muted); font-size: .92rem; }
+  a { color: var(--accent); }
+  ul { padding-left: 1.2em; }
+  li { margin: 4px 0; }
+  .lede { font-size: 1.05rem; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Privacy</h1>
+  <p class="muted">The Abstractinator · last updated 7 November 2026</p>
+
+  <p class="lede">No accounts, no advertising, no tracking cookies, and no IP
+  addresses recorded. Nothing is sold or shared. The rest of this page is the
+  detail.</p>
+
+  <h2>What is recorded when you search</h2>
+  <ul>
+    <li>The words you searched for, and the time.</li>
+    <li>Whether the search came from the website or from an AI assistant.</li>
+    <li>How long it took, how many results each database returned, whether the
+        answer came from the cache, and the settings used (such as deep search).</li>
+    <li>For searches made by an AI assistant: the name the assistant reports for
+        itself, and a one-way hash of the connection's session id. The hash only
+        groups requests from one conversation together; it cannot be traced back
+        to a person.</li>
+  </ul>
+  <p>This is used to see how the tool is used and where it falls short.</p>
+
+  <h2>What is not recorded</h2>
+  <ul>
+    <li>Your IP address.</li>
+    <li>Your name, email, or any account — there are no accounts.</li>
+    <li>Any browser fingerprint.</li>
+    <li>API keys. If you enter a CORE or USPTO key, it stays in your browser
+        session, is sent only to that provider, and is never written to disk or
+        logged.</li>
+  </ul>
+
+  <h2>Where your search goes</h2>
+  <p>To answer a search, the words are sent to Europe PMC, OpenAlex,
+  ClinicalTrials.gov, NIH RePORTER and NSF Awards. Each of those services has
+  its own privacy policy covering those requests. Preprints from bioRxiv and
+  medRxiv are searched from a copy held on this server, so those searches never
+  leave it.</p>
+
+  <h2>Cloudflare</h2>
+  <p>Traffic reaches the site through Cloudflare, which handles IP addresses in
+  order to deliver and protect it, under
+  <a href="https://www.cloudflare.com/privacypolicy/">Cloudflare's privacy policy</a>.
+  The site uses Cloudflare's aggregate traffic statistics, which involve no
+  cookies. Cloudflare may set a short-lived security cookie to tell people
+  apart from bots.</p>
+
+  <h2>How long things are kept</h2>
+  <ul>
+    <li>Search results are cached for 7 days so a repeat search is instant.</li>
+    <li>Open-access articles read in full are cached for up to 30 days. These are
+        published papers, not information about you.</li>
+    <li>The search log described above is kept until it is deleted by hand.</li>
+  </ul>
+
+  <h2>Questions</h2>
+  <p>Open an issue at
+  <a href="https://github.com/ckangas2/abstractinator/issues">github.com/ckangas2/abstractinator</a>.
+  The full source is public, so everything on this page can be checked against
+  the code.</p>
+
+  <p class="muted"><a href="/">← Back to The Abstractinator</a></p>
+</main>
+</body>
+</html>

@@ -6,8 +6,12 @@ tunnel, with no inbound ports open on the origin.
 
 ## What the service stores
 
-- **Search terms**, logged anonymously, with a channel label (`website` or
-  `agent`) and a timestamp. No IP address, no account, no session identity.
+- **Search terms**, with a timestamp, a channel label (`website` or `agent`),
+  timings and per-source result counts. For AI-agent searches, also the client
+  name the agent reports and a one-way hash of the MCP session id, which groups
+  one conversation's requests without identifying anyone. No IP address, no
+  account. The visitor-facing version is at
+  <https://abstractinator.me/privacy.html>.
 - **A result cache**, keyed by search term, retained 7 days.
 - Nothing else.
 
