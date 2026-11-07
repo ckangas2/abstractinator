@@ -128,11 +128,7 @@ fluidPage(
 
     # One line on what this is, for first-time visitors. Folds away with the
     # landing content once a search runs.
-    p(class = "app-tagline",
-      "Biomedical literature search for immunology & virology",
-      span(class = "tagline-more",
-           ": papers, preprints, trials and grants from six databases at once"),
-      "."),
+    p(class = "app-tagline", "A search tool for biomedical literature"),
 
     # 1. Search Bar Row (Container becomes the anchor)
     div(

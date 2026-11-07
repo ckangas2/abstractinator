@@ -9,8 +9,8 @@ Development before v2.0.0 was untagged; see the git history for detail.
 ## [Unreleased]
 
 ### Added
-- A one-line caption under the title saying what the app is (biomedical
-  literature search for immunology and virology); phones show the short form.
+- A caption under the title saying what the app is: "A search tool for
+  biomedical literature".
 - A **Look** choice in Settings -> Appearance: **Classic** (the default, as
   before: the mascot sets the colours) or **Gotham** (the season sets the
   colours and the mascot rides the moon), with a season picker (Auto by date,
