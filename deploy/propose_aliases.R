@@ -25,8 +25,8 @@ source("epmc_standalone_extraction.R")
 source("aliases.R")
 source("R/mesh_utils.R")
 
-aliases_to_regex <- function(al) lapply(lapply(al, tolower), function(a)
-  paste0("\\b", gsub("\\s+", "\\\\s+", a), "\\b", collapse = "|"))
+# Same matcher the search uses, so "already covered" means the same thing here.
+source("orchestrate_extraction.R")
 rx <- list(virus = aliases_to_regex(virus_alias_expanded),
            bacteria = aliases_to_regex(bacteria_alias_expanded),
            cell = aliases_to_regex(immune_cell_alias_list))

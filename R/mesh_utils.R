@@ -130,7 +130,9 @@ mesh_to_category <- function(descriptor, regex_list, rec = NULL) {
   }
   if (is.null(rec)) rec <- mesh_lookup(descriptor)
   cands <- unique(c(descriptor, rec$terms))
-  cands <- gsub("[-/]+", " ", tolower(trimws(cands)))
+  # Case is left alone: the patterns handle it, and short acronyms are
+  # case-sensitive.
+  cands <- gsub("[-/]+", " ", trimws(cands))
 
   # Most specific match wins, not the first found: iteration order would
   # otherwise decide between "T cell" and "CD8+ T cell". Matched-alias length

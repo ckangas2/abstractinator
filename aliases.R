@@ -3,8 +3,8 @@
 # --- Define Immune Cell Aliases for Extraction ---
 immune_cell_alias_list <- list(
   "T cell" = c("T cell", "T cells", "T-cell", "T-cells", "T lymphocyte", "T lymphocytes"),
-  "CD4+ T cell" = c("CD4+ T cell", "CD4+ T cells", "CD4+ T-cell", "CD4+ T-cells", "helper T cell", "helper T cells", "Th cell", "Th cells"),
-  "CD8+ T cell" = c("CD8+ T cell", "CD8+ T cells", "CD8+ T-cell", "CD8+ T-cells", "cytotoxic T cell", "cytotoxic T cells", "CTL", "CTLs"),
+  "CD4+ T cell" = c("CD4+ T cell", "CD4+ T cells", "CD4 T cell", "CD4 T cells", "CD4+ T lymphocyte", "CD4+ T lymphocytes", "helper T cell", "helper T cells", "Th cell", "Th cells"),
+  "CD8+ T cell" = c("CD8+ T cell", "CD8+ T cells", "CD8 T cell", "CD8 T cells", "CD8+ T lymphocyte", "CD8+ T lymphocytes", "cytotoxic T cell", "cytotoxic T cells", "CTL", "CTLs"),
   "Regulatory T cell" = c("regulatory T cell", "regulatory T cells", "Treg", "Tregs"),
   "B cell" = c("B cell", "B cells", "B-cell", "B-cells", "B lymphocyte", "B lymphocytes"),
   "Natural killer cell" = c("natural killer cell", "natural killer cells", "NK cell", "NK cells"),
@@ -44,16 +44,16 @@ virus_alias_expanded <- list(
   "Simian virus 40" = c("Simian virus 40", "SV40"),
   "Rabies Virus" = c("Rabies Virus"),
   "Human Immunodeficiency Virus" = c("human immunodeficiency virus", "HIV", "HIV-1"),
-  "Herpes Simplex Virus" = c("talimogene laherparepvec", "TVEC", "T-VEC", "herpes simplex virus type 1", "HSV-1", "HSV1", "oHSV", "herpes simplex virus", "HSVs", "HSV", "herpes"),
+  "Herpes Simplex Virus" = c("talimogene laherparepvec", "TVEC", "T-VEC", "herpes simplex virus type 1", "HSV-1", "HSV1", "oHSV", "herpes simplex virus", "HSVs", "HSV"),
   "Herpes Simplex Virus 2" = c("HSV-2", "HSV2"),
-  "Vaccinia Virus" = c("vaccinia virus", "VV", "VACV"),
-  "Measles Virus" = c("measles virus", "MV", "rubeola"),
-  "Lentivirus" = c("lentivirus", "LVs", "LV", "LVV", "lentiviral vectors"),
-  "Retrovirus" = c("retrovirus", "RVs", "RV", "retroviral vectors", "gamma-retroviruses"),
-  "Adenovirus" = c("adenovirus", "Ads", "Ad", "AV", "adenoviruses", "hAdV", "HAdV-5"),
+  "Vaccinia Virus" = c("vaccinia virus", "VACV"),
+  "Measles Virus" = c("measles virus", "rubeola"),
+  "Lentivirus" = c("lentivirus", "lentiviruses", "LVV", "lentiviral vector", "lentiviral vectors"),
+  "Retrovirus" = c("retrovirus", "retroviruses", "retroviral vector", "retroviral vectors", "gamma-retroviruses"),
+  "Adenovirus" = c("adenovirus", "Ads", "Ad", "Ad5", "Ad26", "adenoviruses", "hAdV", "HAdV-5"),
   "Reovirus" = c("reovirus"),
   "Poliovirus" = c("poliovirus"),
-  "Coxsackievirus" = c("coxsackievirus", "CV"),
+  "Coxsackievirus" = c("coxsackievirus", "coxsackieviruses", "CVA21", "CVB3"),
   "Parvovirus" = c("parvovirus", "rat parvovirus H-1PV"),
   "Baculovirus" = c("baculovirus"),
   "Foamy Virus" = c("foamy virus", "FVV", "spumavirus"),
@@ -67,8 +67,9 @@ virus_alias_expanded <- list(
 # Genera and species used in bacterial cancer therapy, plus common pathogens
 # that appear in immunology and virology literature. Same format as the lists
 # above: "Display name" = c(alias, alias, ...). Aliases are matched as whole
-# words, case-insensitively, so short ones (e.g. "BCG") are safe but should be
-# distinctive. Contributions welcome: add a genus or species and open a PR.
+# words. Short acronyms with a capital (e.g. "BCG") match only in that exact
+# case; everything else is case-insensitive. Acronyms that are common in other
+# fields (RV = right ventricle, MV = mechanical ventilation) are left out. Contributions welcome: add a genus or species and open a PR.
 bacteria_alias_expanded <- list(
   # --- Bacterial cancer therapy ---
   "Salmonella" = c("salmonella", "salmonella typhimurium", "s. typhimurium", "VNP20009", "Salmonella enterica"),

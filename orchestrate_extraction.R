@@ -173,12 +173,68 @@ score_hits_combined <- function(hit_location_pairs, weight_title, weight_abstrac
 
 # --- HELPER 4: UNIFIED HIT DETECTION ---
 
-# Turn a named list of aliases into whole-word, case-insensitive patterns
-# ("T cell" matches "T  cell" too, but never inside another word).
+# Turn a named list of aliases into one pattern per category. Patterns are
+# matched against the original text, not a lowercased copy.
+#   - Regex characters in an alias are literal: "CD8+" means a plus sign.
+#   - Spaces and hyphens are interchangeable: "T cell" also matches "T-cell"
+#     and "T  cell".
+#   - An alias never matches inside a longer word. The boundary is "not next
+#     to a letter or digit" rather than \b, because \b cannot match between
+#     two symbols (after "CD8+" and before a space).
+#   - Short acronyms with a capital letter (DC, CTL, Ad, HIV) match only in
+#     that exact case, so Alzheimer's "AD" is not adenovirus "Ad". Everything
+#     else is case-insensitive.
+# The result also carries, for each category, a pattern for the aliases of
+# MORE SPECIFIC categories that contain it ("CD8+ T cells" contains
+# "T cells"). count_alias_matches() blanks those out before counting, so the
+# generic category does not score every mention of the specific one.
+SHORT_ALIAS_MAX <- 5L
+
+alias_pattern <- function(alias) {
+  alias <- trimws(alias)
+  parts <- strsplit(alias, "[[:space:]-]+")[[1]]
+  parts <- gsub("([][{}()+*^$|\\\\?.])", "\\\\\\1", parts[nzchar(parts)])
+  core <- paste(parts, collapse = "[\\s\\-]+")
+  exact_case <- nchar(alias) <= SHORT_ALIAS_MAX && grepl("[A-Z]", alias) &&
+    !grepl("[[:space:]]", alias)
+  paste0(if (exact_case) "(?-i:" else "(?i:", core, ")")
+}
+
+alias_union <- function(aliases) {
+  aliases <- unique(aliases[order(-nchar(aliases))])  # longest first
+  paste0("(?<![A-Za-z0-9])(?:",
+         paste(vapply(aliases, alias_pattern, ""), collapse = "|"),
+         ")(?![A-Za-z0-9])")
+}
+
 aliases_to_regex <- function(alias_list) {
-  lapply(lapply(alias_list, tolower), function(aliases) {
-    paste0("\\b", gsub("\\s+", "\\\\s+", aliases), "\\b", collapse = "|")
-  })
+  rx <- lapply(alias_list, alias_union)
+  cats <- names(rx)
+  attr(rx, "masks") <- setNames(lapply(cats, function(parent) {
+    nested <- unlist(lapply(setdiff(cats, parent), function(child) {
+      a <- alias_list[[child]]
+      a[stringr::str_detect(a, rx[[parent]])]
+    }), use.names = FALSE)
+    if (length(nested)) alias_union(nested) else NULL
+  }), cats)
+  rx
+}
+
+# Occurrences of each category in each text, as a records x categories
+# matrix, after blanking out mentions that belong to a more specific category.
+count_alias_matches <- function(text, regex_list) {
+  text <- as.character(text)
+  text[is.na(text)] <- ""
+  masks <- attr(regex_list, "masks")
+  out <- matrix(0, nrow = length(text), ncol = length(regex_list),
+                dimnames = list(NULL, names(regex_list)))
+  if (length(text) == 0) return(out)
+  for (nm in names(regex_list)) {
+    t <- text
+    if (!is.null(masks[[nm]])) t <- stringr::str_replace_all(t, masks[[nm]], " ")
+    out[, nm] <- stringr::str_count(t, regex_list[[nm]])
+  }
+  out
 }
 
 # Tag records with any category list (bacteria, drug classes, a lab's own
@@ -188,14 +244,8 @@ tag_with_alias_list <- function(df, alias_list, prefix, weight_title = 20, weigh
   if (is.null(df) || nrow(df) == 0 || length(alias_list) == 0) return(df)
   regex_list <- aliases_to_regex(alias_list)
   
-  title <- tolower(ifelse(is.na(df$Title), "", df$Title))
-  abstract <- tolower(ifelse(is.na(df$Abstract), "", df$Abstract))
-  
-  score <- vapply(regex_list, function(rx) {
-    stringr::str_count(title, rx) * weight_title +
-      stringr::str_count(abstract, rx) * weight_abstract
-  }, numeric(nrow(df)))
-  if (is.null(dim(score))) score <- matrix(score, nrow = nrow(df), dimnames = list(NULL, names(regex_list)))
+  score <- count_alias_matches(df$Title, regex_list) * weight_title +
+    count_alias_matches(df$Abstract, regex_list) * weight_abstract
   
   # lapply over rows (not apply), so the result is always one entry per record:
   # apply() returns an empty list when nothing matches anywhere, and a matrix
@@ -302,10 +352,9 @@ perform_hit_detection <- function(df, immune_regex_list, virus_regex_list, weigh
   df$Title <- df$Title %||% ""
   df$Abstract <- df$Abstract %||% ""
   
-  # Pre-compute lowercase vectors (Huge speedup)
-  title_vec <- stringr::str_to_lower(df$Title)
-  abst_vec  <- stringr::str_to_lower(df$Abstract)
-  
+  # One numeric vector per category, the shape the scoring below expects.
+  as_count_list <- function(m) setNames(lapply(seq_len(ncol(m)), function(j) m[, j]), colnames(m))
+
   # --- INTERNAL HELPER: DETECT & SCORE ---
   get_best_hit_and_list <- function(regex_list, w_title, w_abst) {
     
@@ -314,11 +363,11 @@ perform_hit_detection <- function(df, immune_regex_list, virus_regex_list, weigh
     # str_count, not str_detect: presence made one passing mention score
     # the same as twenty, so an aside ("as in the movement of HIV into
     # humans from chimpanzees") could outrank the record's real subject.
-    counts_title_by_hit <- purrr::map(regex_list, ~ stringr::str_count(title_vec, .x))
+    counts_title_by_hit <- as_count_list(count_alias_matches(df$Title, regex_list))
     matches_title <- purrr::map(counts_title_by_hit, ~ which(.x > 0))
     
     # 2. SCAN ABSTRACTS (Vectorized)
-    counts_abst_by_hit <- purrr::map(regex_list, ~ stringr::str_count(abst_vec, .x))
+    counts_abst_by_hit <- as_count_list(count_alias_matches(df$Abstract, regex_list))
     matches_abst  <- purrr::map(counts_abst_by_hit, ~ which(.x > 0))
     
     # 3. BUILD "LONG" SCORING TABLE (The Magic Step)
