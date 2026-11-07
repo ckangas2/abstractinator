@@ -26,6 +26,10 @@ Development before v2.0.0 was untagged; see the git history for detail.
   not only 429 and 503.
 
 ### Added
+- `pmid` on search results (PubMed ID, from Europe PMC), kept through
+  deduplication. Cached results are refreshed (cache schema 7).
+- `deploy/benchmark_pubtator.py`: compares the virus and bacterium tags with
+  PubTator3's species annotations and writes `benchmark/pubtator.md`.
 - Markdown export of the reading list, for notes apps, GitHub and AI chats:
   title, authors, date, source, DOI link, tags and the full abstract.
 - Virus tags for the major human pathogens and immunology model viruses (HBV,

@@ -71,7 +71,7 @@ deduplicate_data <- function(df) {
       ungroup()
   }
 
-  fill_cols <- c("Abstract", "PMCID", "IsOpenAccess")
+  fill_cols <- c("Abstract", "PMCID", "PMID", "IsOpenAccess")
   is_doi <- !is.na(df$DOI_clean) & df$DOI_clean != ""
   if (any(is_doi))  df[is_doi, ]  <- fill_within(df[is_doi, ],  "DOI_clean",   fill_cols)
   if (any(!is_doi)) df[!is_doi, ] <- fill_within(df[!is_doi, ], "clean_title", fill_cols)

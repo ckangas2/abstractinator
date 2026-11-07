@@ -75,6 +75,7 @@ get_epmc_data <- function(search_term, page_size = 1000, result_type = "core", m
     for (i in 1:nrow(results_df)) {
       # --- Metadata Extraction ---
       epmc_id  <- results_df$id[i] %||% NA_character_
+      pmid     <- as.character(results_df$pmid[i] %||% NA_character_)
       doi      <- results_df$doi[i] %||% NA_character_
       title    <- results_df$title[i] %||% NA_character_
       abstract <- results_df$abstractText[i] %||% NA_character_
@@ -181,6 +182,7 @@ get_epmc_data <- function(search_term, page_size = 1000, result_type = "core", m
       epmc_results_list[[length(epmc_results_list) + 1]] <- data.frame(
         EPMC_ID = epmc_id,
         PMCID = pmcid,
+        PMID = pmid,
         IsOpenAccess = is_oa,
         MeSH_Major = mesh_major,
         MeSH_All = mesh_all,
