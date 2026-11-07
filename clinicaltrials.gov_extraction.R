@@ -113,7 +113,6 @@ get_clinical_trials_data <- function(search_term, limit = 10000) {
       
       # Title
       title_raw <- if (!is.null(official_titles[i])) as.character(official_titles[i]) else "Untitled Study"
-      title_linked <- paste0("[", title_raw, "](", url_val, ")")
       
       # Abstract
       bs <- if (!is.null(brief_summaries[i])) brief_summaries[i] else ""
@@ -152,24 +151,19 @@ get_clinical_trials_data <- function(search_term, limit = 10000) {
         tryCatch(phases_list[[i]], error = function(e) NULL)
       )
       
-      # Format Status String
-      is_active <- grepl("Active|Recruiting|Enrolling", stat, ignore.case = TRUE)
-      end_text <- if (isTRUE(is_active)) "End: Ongoing" else paste0("End: ", c_date)
-      
-      pub_date_str <- paste(
-        ifelse(is.na(s_date), "", paste0("Start: ", s_date)),
-        ifelse(is.na(end_text), "", end_text),
-        ifelse(is.na(stat), "", paste0("Status: ", stat)),
-        sep = " | "
-      )
-      
+      # Data stays plain: the start date is the record's date, and status and
+      # end date get their own fields. The website builds its
+      # "Start: ... | End: ... | Status: ..." label from these (trial_date_label).
       # Build Tibble
       tibble(
-        Title = title_linked,
+        Title = title_raw,
         Abstract = abs_text,
         Authors = as.character(final_authors),
         Affiliations = NA_character_, # Difficult to extract consistently from CT.gov
-        PublicationDate = pub_date_str,
+        PublicationDate = as.character(s_date),
+        TrialStart = as.character(s_date),
+        TrialEnd = as.character(c_date),
+        TrialStatus = as.character(stat),
         URL = url_val,
         NCTId = id_val,
         Phase = phase_val,

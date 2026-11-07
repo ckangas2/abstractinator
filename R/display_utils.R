@@ -99,6 +99,18 @@ make_item_key <- function(doi, url, title) {
          algo = "md5", serialize = FALSE, USE.NAMES = FALSE)
 }
 
+# The website's date label for a clinical trial, e.g.
+# "Start: 2024-01-12 | End: Ongoing | Status: RECRUITING". Trial records carry
+# the parts as separate fields; this puts them back together for display.
+trial_date_label <- function(start, end, status) {
+  active <- !is.na(status) & grepl("Active|Recruiting|Enrolling", status, ignore.case = TRUE)
+  end <- ifelse(active, "Ongoing", end)
+  parts <- cbind(ifelse(is.na(start) | start == "", NA, paste0("Start: ", start)),
+                 ifelse(is.na(end) | end == "", NA, paste0("End: ", end)),
+                 ifelse(is.na(status) | status == "", NA, paste0("Status: ", status)))
+  apply(parts, 1, function(p) paste(p[!is.na(p)], collapse = " | "))
+}
+
 # --- Markdown export of the reading list ------------------------------------
 # For notes apps, GitHub and AI chats. Items are reading-list entries already
 # passed through plain_text_item(). Third-party text is escaped so it reads as

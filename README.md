@@ -69,7 +69,8 @@ The server exposes two tools:
 returns `total_found`, `available`, `has_more`, `source_counts`, `unavailable_sources`, and a
 source-balanced list of records with `title`, `abstract`, `authors`, `publication_date`, `doi`,
 `pmid`, `url`, `source`, `primary_cell`, `primary_virus`, `primary_bacteria`,
-`is_bioinformatics`, `is_retracted`, and for open-access articles `pmcid` and `is_open_access`.
+`is_bioinformatics`, `is_retracted`, for open-access articles `pmcid` and `is_open_access`, and for
+clinical trials `trial_status`, `trial_start`, `trial_end` and `phase`. Every record has every key.
 
 **`get_fulltext(pmcid, doi, max_chars=20000)`** returns the open-access full text of one article.
 

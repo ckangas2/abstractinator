@@ -59,6 +59,12 @@ Development before v2.0.0 was untagged; see the git history for detail.
   results are refreshed (cache schema 5).
 
 ### Changed
+- **API record format.** Clinical-trial titles are plain text (they were a
+  Markdown link), `publication_date` is the trial's start date (it was a
+  "Start: … | End: … | Status: …" label), and trials carry `trial_status`,
+  `trial_start`, `trial_end` and `phase`. Every record now has every key, with
+  `null` for missing values, and an empty result carries the paging fields.
+  The website shows trials as before. Cache schema 10.
 - `app.R` (2,600 lines) is split into `app/ui.R`, `app/dt_options.R` and
   seven `app/server/*.R` parts, moved verbatim. Unused code was removed. A
   test now checks that the server starts.

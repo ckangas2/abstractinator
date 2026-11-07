@@ -179,7 +179,7 @@ function(req, res, pmcid = "", doi = "", max_chars = 20000) {
 #* @param abstract_chars Truncate each abstract to this many characters; 0 omits abstracts (default 1500)
 #* @param deep "true" for a deep search: up to 250 results per source instead of 50 (slower)
 #* @get /search
-#* @serializer unboxedJSON
+#* @serializer unboxedJSON list(na = "null")
 function(req, res, q = "", limit = 25, abstract_chars = 1500, deep = "false",
          offset = 0, sources = "") {
   q <- trimws(as.character(q))
@@ -284,7 +284,9 @@ function(req, res, q = "", limit = 25, abstract_chars = 1500, deep = "false",
   )
   if (is.null(df) || nrow(df) == 0) {
     log_this_search(0L, 0L, NULL, if (length(failed_src)) "partial" else "empty")
-    return(c(base, list(total_found = 0, returned = 0, results = list())))
+    return(c(base, list(total_found = 0, returned = 0, offset = offset, available = 0,
+                        has_more = FALSE, source_counts = setNames(list(), character(0)),
+                        results = list())))
   }
 
   cols <- c(title = "Title", abstract = "Abstract", authors = "Authors",
@@ -296,8 +298,13 @@ function(req, res, q = "", limit = 25, abstract_chars = 1500, deep = "false",
             # is_open_access says so explicitly. primary_bacteria was already
             # promised by the tool description and llms.txt but never returned.
             pmcid = "PMCID", pmid = "PMID", is_open_access = "IsOpenAccess",
-            is_retracted = "IsRetracted")
-  cols <- cols[cols %in% names(df)]
+            is_retracted = "IsRetracted",
+            # Clinical trials only; null on every other record.
+            trial_status = "TrialStatus", trial_start = "TrialStart", trial_end = "TrialEnd",
+            phase = "Phase")
+  # Every record carries every key, with null where a source has no value, so
+  # clients can rely on the shape rather than checking for missing fields.
+  for (cl in setdiff(unname(cols), names(df))) df[[cl]] <- NA
   slim <- df[, unname(cols), drop = FALSE]
   names(slim) <- names(cols)
   slim <- as.data.frame(lapply(slim, function(x) strip_invisible(if (is.list(x)) vapply(x, function(v) paste(unlist(v), collapse = "; "), "") else x)),

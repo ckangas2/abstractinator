@@ -238,6 +238,15 @@
             bacteria_hits_combined = if ("bacteria_hits_combined" %in% names(.)) bacteria_hits_combined else vector("list", n())
           ) %>%
           
+          # Trials carry start, end and status as separate fields; the table
+          # shows them as one label, which SortDate and the Plotinator parse.
+          mutate(
+            PublicationDate = if ("TrialStatus" %in% names(.)) {
+              ifelse(Source == "clinicaltrials.gov",
+                     trial_date_label(TrialStart, TrialEnd, TrialStatus), PublicationDate)
+            } else PublicationDate
+          ) %>%
+
           # --- FIX: WRAP THIS IN MUTATE() ---
           mutate( 
             # Parse each date on its own: sources use different formats

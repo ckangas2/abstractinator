@@ -95,3 +95,14 @@ test_that("the Markdown export treats third-party text as text", {
 test_that("an empty reading list exports a note, not an error", {
   expect_match(paste(reading_list_markdown(list()), collapse = "\n"), "empty", fixed = TRUE)
 })
+
+test_that("the website's trial date label is rebuilt from the separate fields", {
+  expect_equal(
+    trial_date_label(start  = c("2024-01-12", "2019-03", NA,         "2022-05-01"),
+                     end    = c("2027-06-30", "2021-11", "2025-01",  NA),
+                     status = c("RECRUITING", "COMPLETED", "WITHDRAWN", NA)),
+    c("Start: 2024-01-12 | End: Ongoing | Status: RECRUITING",
+      "Start: 2019-03 | End: 2021-11 | Status: COMPLETED",
+      "End: 2025-01 | Status: WITHDRAWN",
+      "Start: 2022-05-01"))
+})

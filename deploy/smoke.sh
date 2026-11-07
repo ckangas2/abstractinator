@@ -71,6 +71,7 @@ else
   jqcheck "/search returns records"        "$S" "d.get('returned', 0) > 0"
   jqcheck "/search records carry fields"   "$S" "all(k in d['results'][0] for k in ('title','url','source','primary_virus'))"
   jqcheck "/search reports paging state"   "$S" "'available' in d and 'has_more' in d"
+  jqcheck "/search records have every key" "$S" "all(k in r for r in d['results'] for k in ('pmid','trial_status','is_retracted'))"
 fi
 
 # 3. full text -- the check that would have caught the strip_invisible bug
