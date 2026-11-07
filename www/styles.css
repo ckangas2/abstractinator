@@ -2079,20 +2079,24 @@ a.landing-card-link:focus-visible .landing-card {
 
 /* Denser than first tuned: on phones in particular the line art sat on a
    glow too faint to read against. */
+/* "closest-side" sizes the gradient to the circle's own edge, so it reaches
+   zero exactly where the round element ends. Sized to the corners (the
+   default), it was still faintly coloured at the edge, which browsers drew as
+   a visible rim. */
 .loading-icon-container::before {
-  background: radial-gradient(circle at 50% 45%,
+  background: radial-gradient(circle closest-side at 50% 50%,
       rgba(var(--accent-primary-rgb), 0.72) 0%,
-      rgba(var(--accent-primary-rgb), 0.60) 34%,
-      rgba(var(--accent-primary-rgb), 0.38) 58%,
-      rgba(var(--accent-primary-rgb), 0.12) 74%,
-      rgba(var(--accent-primary-rgb), 0) 84%);
+      rgba(var(--accent-primary-rgb), 0.60) 45%,
+      rgba(var(--accent-primary-rgb), 0.36) 72%,
+      rgba(var(--accent-primary-rgb), 0.10) 90%,
+      rgba(var(--accent-primary-rgb), 0) 100%);
 }
 
 .loading-icon-container::after {
-  background: radial-gradient(ellipse at 50% 50%,
+  background: radial-gradient(ellipse closest-side at 50% 50%,
       rgba(var(--accent-primary-rgb), 0.34) 0%,
-      rgba(var(--accent-primary-rgb), 0.16) 55%,
-      rgba(var(--accent-primary-rgb), 0) 76%);
+      rgba(var(--accent-primary-rgb), 0.16) 70%,
+      rgba(var(--accent-primary-rgb), 0) 100%);
 }
 
 /* The overlay must paint above the floating controls, or the donate button
@@ -2385,19 +2389,19 @@ a.landing-card-link:focus-visible .landing-card {
      on phones the core drops the blur and carries the colour itself. */
   .loading-icon-container::before {
     filter: none;
-    background: radial-gradient(circle at 50% 46%,
+    background: radial-gradient(circle closest-side at 50% 50%,
         rgba(var(--accent-primary-rgb), 0.90) 0%,
-        rgba(var(--accent-primary-rgb), 0.74) 26%,
-        rgba(var(--accent-primary-rgb), 0.44) 46%,
-        rgba(var(--accent-primary-rgb), 0.14) 60%,
-        rgba(var(--accent-primary-rgb), 0) 68%);   /* fully faded inside the round edge */
+        rgba(var(--accent-primary-rgb), 0.74) 37%,
+        rgba(var(--accent-primary-rgb), 0.44) 65%,
+        rgba(var(--accent-primary-rgb), 0.14) 85%,
+        rgba(var(--accent-primary-rgb), 0) 100%);   /* zero exactly at the round edge */
   }
   .loading-icon-container::after {
     filter: blur(12px);
-    background: radial-gradient(ellipse at 50% 50%,
+    background: radial-gradient(ellipse closest-side at 50% 50%,
         rgba(var(--accent-primary-rgb), 0.40) 0%,
-        rgba(var(--accent-primary-rgb), 0.20) 50%,
-        rgba(var(--accent-primary-rgb), 0) 72%);
+        rgba(var(--accent-primary-rgb), 0.20) 68%,
+        rgba(var(--accent-primary-rgb), 0) 100%);
   }
 
   /* --- Plotinator: hide plotly's toolbar, which overlaps the title on a phone --- */

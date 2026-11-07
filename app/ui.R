@@ -13,6 +13,9 @@ fluidPage(
   theme = bslib::bs_theme(bootswatch = "darkly"),
   
   tags$head(
+    # The site is dark by design. Saying so stops browsers' forced-dark modes
+    # (e.g. Firefox's "Website Dark Appearance") from recolouring it.
+    tags$meta(name = "color-scheme", content = "dark"),
     
     # --- Icons (tab, bookmarks, phone home screens) ---
     tags$link(rel = "icon", type = "image/x-icon", href = "favicon.ico"),
