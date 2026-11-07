@@ -162,3 +162,26 @@ test_that("a partial source result is shown but not cached; a clean one is cache
   expect_equal(out2$source_counts$status, "partial")
   expect_null(get_cached_extraction("zz test partial", 50, NULL, NULL, NULL, variant = cache_variant(0L)))
 })
+
+test_that("the search report counts retrieved, kept and merged per database", {
+  counts <- data.frame(source = c("EPMC", "OpenAlex", "bioRxiv", "NIH", "NSF"),
+                       retrieved = c(50L, 0L, 50L, 50L, 1L),
+                       total = c(21378, NA, NA, 1446, 1),
+                       status = c("ok", "failed", "ok", "ok", "ok"), stringsAsFactors = FALSE)
+  dedup <- data.frame(Source = c(rep("EPMC", 48), rep("Preprint (biorxiv)", 40),
+                                 rep("Preprint (medrxiv)", 7), rep("NIH", 45), "NSF"))
+  st <- dedup_source_stats(counts, dedup)
+  expect_equal(st$Source, c("bioRxiv/medRxiv", "Europe PMC", "NIH RePORTER", "NSF", "OpenAlex"))
+  row <- function(nm) st[st$Source == nm, ]
+  expect_equal(c(row("Europe PMC")$Unique, row("Europe PMC")$Merged), c(48L, 2L))
+  expect_equal(c(row("bioRxiv/medRxiv")$Unique, row("bioRxiv/medRxiv")$Merged), c(47L, 3L))
+  expect_equal(row("OpenAlex")$Status, "No response")
+
+  flow <- dedup_flow(st, nrow(dedup))
+  expect_equal(flow$retrieved, 151L)
+  expect_equal(flow$unique, 141L)
+  expect_equal(flow$merged, 10L)
+  expect_equal(flow$matched, 21378 + 1446 + 1)
+  expect_false(flow$matched_complete)   # bioRxiv has no total and OpenAlex failed
+  expect_equal(nrow(dedup_source_stats(NULL, dedup)), 0)
+})

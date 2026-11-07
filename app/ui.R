@@ -329,6 +329,21 @@ fluidPage(
         uiOutput("deduplicationSummaryContent") 
       ),
       
+      # Tab: Therapinator -- what's been tried, and how far it got
+      bslib::nav_panel(
+        title = "Therapinator",
+        div(class = "landscape-tab",
+            h4("What's been tried", style = "margin: 0 0 4px;"),
+            p(class = "plot-caveat",
+              "Each record counted once, under its main therapy, from grant to trial phase. Counts are within the retrieved records (each database's top matches), not the full literature."),
+            DT::dataTableOutput("landscapeTable"),
+            div(style = "display: flex; align-items: flex-end; gap: 16px; flex-wrap: wrap; margin-top: 18px;",
+                h4("Trials", style = "margin: 0 0 8px;"),
+                selectInput("landscape_modality", NULL, choices = c("All therapies" = "All"), width = "260px")),
+            uiOutput("trialsEmptyNote"),
+            DT::dataTableOutput("trialsTriedTable"))
+      ),
+
       # Tab 3: Plotinator
       bslib::nav_panel(
         title = "Plotinator",

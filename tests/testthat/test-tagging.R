@@ -117,7 +117,8 @@ test_that("herpes zoster is not tagged as herpes simplex", {
 })
 
 test_that("no alias is claimed by two categories", {
-  for (lst in list(immune_cell_alias_list, virus_alias_expanded, bacteria_alias_expanded)) {
+  for (lst in list(immune_cell_alias_list, virus_alias_expanded, bacteria_alias_expanded,
+                   modality_alias_list)) {
     a <- tolower(unlist(lst, use.names = FALSE))
     owner <- rep(names(lst), lengths(lst))
     shared <- unique(a[duplicated(a)])
@@ -127,7 +128,8 @@ test_that("no alias is claimed by two categories", {
 })
 
 test_that("aliases of three characters or fewer contain a capital, so they match case-sensitively", {
-  all_aliases <- unlist(c(immune_cell_alias_list, virus_alias_expanded, bacteria_alias_expanded),
+  all_aliases <- unlist(c(immune_cell_alias_list, virus_alias_expanded, bacteria_alias_expanded,
+                         modality_alias_list),
                         use.names = FALSE)
   short <- all_aliases[nchar(all_aliases) <= 3]
   expect_true(all(grepl("[A-Z]", short)), info = paste(short[!grepl("[A-Z]", short)], collapse = ", "))

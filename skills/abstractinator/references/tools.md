@@ -25,7 +25,7 @@ Page against `available` or `has_more`. `total_found` does not shrink under a
 `sources` filter, so paging against it overruns.
 
 Each record: `title`, `abstract`, `authors`, `publication_date`, `doi`, `url`,
-`source`, `primary_cell`, `primary_virus`, `primary_bacteria`,
+`source`, `primary_cell`, `primary_virus`, `primary_bacteria`, `primary_modality`,
 `is_bioinformatics`, and for open-access Europe PMC articles, `pmcid` and
 `is_open_access`. Records without an abstract are kept and listed last.
 

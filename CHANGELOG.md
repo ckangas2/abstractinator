@@ -45,6 +45,26 @@ Development before v2.0.0 was untagged; see the git history for detail.
   longer counts as support for a hepatitis B tag.
 
 ### Added
+- The Deduplicatinator is now a search report: headline numbers (matched in
+  the databases, retrieved, duplicates merged, unique works), one table per
+  database (retrieved, matched, kept, merged, status, with trial phases), and
+  a log of merged records. It reads the per-source counts stored with each
+  result, so a cached search reports the same numbers. Above the results,
+  only a short warning remains, shown when a database didn't respond fully.
+- **Therapinator** tab, "what's been tried": for the current results, a table
+  of therapy x stage (grant, preprint, paper, trial phase 1 / 2 / 3+) with
+  recruiting trials counted, and the trials themselves with their
+  interventions, phase, status and conditions, most advanced first. Click a
+  therapy to list its trials.
+- A therapy-modality tag axis, `primary_modality` (oncolytic virus, CAR-T,
+  other adoptive cell therapy, checkpoint inhibitor, cancer vaccine, vaccine,
+  bispecific, antibody-drug conjugate, monoclonal antibody, cytokine,
+  targeted small molecule, chemotherapy, radiotherapy, gene therapy (with
+  viral-vector gene therapy, gene editing and RNA therapeutics split out),
+  antiviral, antibiotic, microbiome). A trial's registered interventions
+  count like its title.
+- Clinical trials now carry `Interventions` and `Conditions` from the
+  registry, in the API, MCP tool and exports.
 - Provenance in reading-list exports: each item records the search that found
   it, when the databases were queried, and the copies merged into it (CSV
   columns and Markdown lines); the Markdown header gives the app version and

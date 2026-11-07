@@ -30,6 +30,8 @@
         Source = article_to_add$Source,
         primary_cell = article_to_add$primary_cell, primary_virus = article_to_add$primary_virus,
         primary_bacteria = article_to_add$primary_bacteria,
+        primary_modality = if ("primary_modality" %in% names(article_to_add)) article_to_add$primary_modality else NA_character_,
+        Interventions = if ("Interventions" %in% names(article_to_add)) article_to_add$Interventions else NA_character_,
         ItemKey = article_to_add$ItemKey,
         # Provenance for exports: the search that found it, when the databases
         # were queried, and the copies merged into this record.

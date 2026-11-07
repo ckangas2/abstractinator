@@ -311,6 +311,7 @@ function(req, res, q = "", limit = 25, abstract_chars = 1500, deep = "false",
             publication_date = "PublicationDate", doi = "DOI", url = "URL",
             source = "Source", primary_cell = "primary_cell",
             primary_virus = "primary_virus", primary_bacteria = "primary_bacteria",
+            primary_modality = "primary_modality",
             is_bioinformatics = "is_bioinformatics",
             # pmcid tells an agent which articles /fulltext can actually serve;
             # is_open_access says so explicitly. primary_bacteria was already
@@ -319,7 +320,7 @@ function(req, res, q = "", limit = 25, abstract_chars = 1500, deep = "false",
             is_retracted = "IsRetracted",
             # Clinical trials only; null on every other record.
             trial_status = "TrialStatus", trial_start = "TrialStart", trial_end = "TrialEnd",
-            phase = "Phase")
+            phase = "Phase", interventions = "Interventions", conditions = "Conditions")
   # Every record carries every key, with null where a source has no value, so
   # clients can rely on the shape rather than checking for missing fields.
   for (cl in setdiff(unname(cols), names(df))) df[[cl]] <- NA

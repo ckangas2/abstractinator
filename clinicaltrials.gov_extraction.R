@@ -3,6 +3,27 @@ library(jsonlite)
 library(dplyr)
 library(purrr)
 
+# --- Interventions and conditions ---------------------------------------------
+# What a trial tests, as "Pembrolizumab (Drug); SBRT (Radiation)". The registry
+# sends a table of interventions per study (jsonlite turns it into a data
+# frame); the type says drug, biological, radiation, procedure and so on.
+format_ctgov_interventions <- function(x) {
+  if (is.null(x) || !is.data.frame(x) || nrow(x) == 0 || !"name" %in% names(x)) return(NA_character_)
+  nm <- trimws(as.character(x$name))
+  type <- if ("type" %in% names(x)) as.character(x$type) else rep(NA_character_, length(nm))
+  type <- ifelse(is.na(type) | !nzchar(type), "",
+                 paste0(" (", sub("^(.)", "\\U\\1", tolower(gsub("_", " ", type)), perl = TRUE), ")"))
+  out <- unique(paste0(nm, type)[!is.na(nm) & nzchar(nm)])
+  if (length(out)) paste(out, collapse = "; ") else NA_character_
+}
+
+# The conditions a trial studies, as "Pancreatic Cancer; Metastatic Disease".
+format_ctgov_conditions <- function(x) {
+  x <- trimws(as.character(unlist(x)))
+  x <- unique(x[!is.na(x) & nzchar(x)])
+  if (length(x)) paste(x, collapse = "; ") else NA_character_
+}
+
 get_clinical_trials_data <- function(search_term, limit = 10000) {
   
   api_url <- "https://clinicaltrials.gov/api/v2/studies"
@@ -94,6 +115,11 @@ get_clinical_trials_data <- function(search_term, limit = 10000) {
     # studies legitimately carry no phase at all.
     phases_list <- studies_chunk$protocolSection$designModule$phases
     if (is.null(phases_list)) phases_list <- vector("list", nrow(studies_chunk))
+    # What each trial tests and in which conditions (same response, no extra request)
+    interventions_list <- studies_chunk$protocolSection$armsInterventionsModule$interventions
+    if (is.null(interventions_list)) interventions_list <- vector("list", nrow(studies_chunk))
+    conditions_list <- studies_chunk$protocolSection$conditionsModule$conditions
+    if (is.null(conditions_list)) conditions_list <- vector("list", nrow(studies_chunk))
     
     # "PHASE2" -> "Phase 2"; "EARLY_PHASE1" -> "Early Phase 1"; a registration
     # of c("PHASE1","PHASE2") -> "Phase 1/Phase 2". CT.gov also uses the literal
@@ -158,6 +184,10 @@ get_clinical_trials_data <- function(search_term, limit = 10000) {
       phase_val <- format_ctgov_phase(
         tryCatch(phases_list[[i]], error = function(e) NULL)
       )
+      interventions_val <- format_ctgov_interventions(
+        tryCatch(interventions_list[[i]], error = function(e) NULL))
+      conditions_val <- format_ctgov_conditions(
+        tryCatch(conditions_list[[i]], error = function(e) NULL))
       
       # Data stays plain: the start date is the record's date, and status and
       # end date get their own fields. The website builds its
@@ -175,6 +205,8 @@ get_clinical_trials_data <- function(search_term, limit = 10000) {
         URL = url_val,
         NCTId = id_val,
         Phase = phase_val,
+        Interventions = interventions_val,
+        Conditions = conditions_val,
         AdverseEvents = NA_character_, # Keeping simple for speed
         SeriousAdverseEvents = NA_character_,
         Source = "clinicaltrials.gov"

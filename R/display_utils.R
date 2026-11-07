@@ -163,7 +163,7 @@ reading_list_markdown <- function(items, exported = Sys.Date(), versions = NULL)
     if (length(meta)) out <- c(out, paste(meta, collapse = " · "), "")
 
     tags <- c(Cell = md_field(it, "primary_cell"), Virus = md_field(it, "primary_virus"),
-              Bacterium = md_field(it, "primary_bacteria"))
+              Bacterium = md_field(it, "primary_bacteria"), Therapy = md_field(it, "primary_modality"))
     tags <- tags[!is.na(tags) & tags != "Non-descript"]
     if (length(tags)) {
       out <- c(out, paste(sprintf("**%s:** %s", names(tags), md_escape(tags)), collapse = " · "), "")
@@ -177,6 +177,8 @@ reading_list_markdown <- function(items, exported = Sys.Date(), versions = NULL)
       out <- c(out, paste0("*Found by the search \u201c", md_escape(found_by), "\u201d",
                            if (!is.na(retrieved)) paste0(", databases queried ", retrieved), ".*"), "")
     }
+    interventions <- md_field(it, "Interventions")
+    if (!is.na(interventions)) out <- c(out, paste0("*Tests:* ", md_escape(interventions)), "")
     merged <- md_field(it, "MergedFrom")
     if (!is.na(merged)) out <- c(out, paste0("*Also found as:* ", md_escape(merged)), "")
 
@@ -230,4 +232,145 @@ incomplete_source_labels <- function(counts) {
   if (!is.data.frame(counts) || nrow(counts) == 0) return(character(0))
   bad <- counts$source[counts$status %in% c("failed", "partial")]
   unname(ifelse(bad %in% names(SOURCE_LABELS), SOURCE_LABELS[bad], bad))
+}
+
+# --- THERAPEUTIC LANDSCAPE ("what's been tried") ------------------------------
+# Every record is placed on the path from idea to clinic: a funded grant, a
+# preprint, a paper, or a trial by phase. Combined with its therapy modality
+# this answers "what has been tried for X, and how far has it got?" within the
+# retrieved records.
+LANDSCAPE_STAGES <- c("Grant", "Preprint", "Paper", "Trial: phase 1", "Trial: phase 2",
+                      "Trial: phase 3+", "Trial: no phase")
+RECRUITING_STATUSES <- c("RECRUITING", "NOT_YET_RECRUITING", "ENROLLING_BY_INVITATION")
+
+evidence_stage <- function(source, phase) {
+  src <- as.character(source)
+  src[is.na(src)] <- ""
+  out <- rep("Paper", length(src))
+  out[src %in% c("NIH", "NSF")] <- "Grant"
+  out[grepl("^(preprint|biorxiv|medrxiv)", src, ignore.case = TRUE)] <- "Preprint"
+  out[src == "Patent"] <- "Patent"
+  trial <- src == "clinicaltrials.gov"
+  # The highest phase named: "Phase 1/Phase 2" is phase 2, "Early Phase 1" is 1.
+  top <- vapply(regmatches(as.character(phase), gregexpr("[0-9]", as.character(phase))),
+                function(d) if (length(d)) max(as.integer(d)) else NA_integer_, integer(1))
+  out[trial] <- ifelse(is.na(top[trial]), "Trial: no phase",
+                ifelse(top[trial] <= 1, "Trial: phase 1",
+                ifelse(top[trial] == 2, "Trial: phase 2", "Trial: phase 3+")))
+  out
+}
+
+# One row per therapy modality: how many records sit at each stage, how many
+# trials are recruiting, and the total. Records count under their main
+# modality (primary_modality), so each record is counted once.
+therapy_landscape <- function(df) {
+  empty <- data.frame(Therapy = character(0), Total = integer(0))
+  if (is.null(df) || !is.data.frame(df) || nrow(df) == 0 || !"primary_modality" %in% names(df)) return(empty)
+  col <- function(nm) if (nm %in% names(df)) df[[nm]] else rep(NA_character_, nrow(df))
+  d <- data.frame(modality = as.character(df$primary_modality),
+                  stage = evidence_stage(col("Source"), col("Phase")),
+                  recruiting = toupper(as.character(col("TrialStatus"))) %in% RECRUITING_STATUSES &
+                    col("Source") %in% "clinicaltrials.gov",
+                  stringsAsFactors = FALSE)
+  d <- d[!is.na(d$modality) & d$modality != "Non-descript", , drop = FALSE]
+  if (nrow(d) == 0) return(empty)
+  stages <- c(LANDSCAPE_STAGES, setdiff(unique(d$stage), LANDSCAPE_STAGES))
+  stages <- stages[stages %in% d$stage]
+  tab <- table(factor(d$modality), factor(d$stage, levels = stages))
+  out <- data.frame(Therapy = rownames(tab), stringsAsFactors = FALSE, check.names = FALSE)
+  for (st in stages) out[[st]] <- as.integer(tab[, st])
+  out$Recruiting <- as.integer(tapply(d$recruiting, factor(d$modality), sum)[out$Therapy])
+  out$Total <- as.integer(rowSums(tab))
+  out <- out[order(-out$Total, tolower(out$Therapy), method = "radix"), , drop = FALSE]
+  rownames(out) <- NULL
+  out
+}
+
+# The trials in a result set, most advanced first: what each one tests, its
+# phase and status, and the conditions studied. 'modality' narrows the list
+# to trials whose interventions or text match that therapy (main or not).
+trials_tried <- function(df, modality = NULL) {
+  cols <- c("Trial", "Interventions", "Phase", "Status", "Conditions", "Therapy", "Start")
+  empty <- setNames(data.frame(matrix(character(0), ncol = length(cols))), cols)
+  if (is.null(df) || !is.data.frame(df) || nrow(df) == 0 || !"Source" %in% names(df)) return(empty)
+  t <- df[df$Source %in% "clinicaltrials.gov", , drop = FALSE]
+  if (nrow(t) == 0) return(empty)
+  col <- function(nm) if (nm %in% names(t)) as.character(t[[nm]]) else rep(NA_character_, nrow(t))
+  if (!is.null(modality) && nzchar(modality) && modality != "All") {
+    hits <- if ("modality_hits_combined" %in% names(t)) t$modality_hits_combined else vector("list", nrow(t))
+    keep <- col("primary_modality") %in% modality |
+      vapply(hits, function(h) modality %in% unlist(h), logical(1))
+    t <- t[keep, , drop = FALSE]
+    if (nrow(t) == 0) return(empty)
+  }
+  col <- function(nm) if (nm %in% names(t)) as.character(t[[nm]]) else rep(NA_character_, nrow(t))
+  phase_rank <- vapply(regmatches(col("Phase"), gregexpr("[0-9]", col("Phase"))),
+                       function(d) if (length(d)) max(as.integer(d)) else 0L, integer(1))
+  status <- col("TrialStatus")
+  status <- ifelse(is.na(status), NA_character_,
+                   sub("^(.)", "\\U\\1", tolower(gsub("_", " ", status)), perl = TRUE))
+  out <- data.frame(
+    Trial = gsub("[^A-Za-z0-9]", "", col("NCTId")),
+    Interventions = col("Interventions"),
+    Phase = col("Phase"),
+    Status = status,
+    Conditions = col("Conditions"),
+    Therapy = col("primary_modality"),
+    Start = col("TrialStart"),
+    stringsAsFactors = FALSE
+  )
+  out <- out[order(-phase_rank, -xtfrm(ifelse(is.na(out$Start), "", out$Start))), , drop = FALSE]
+  rownames(out) <- NULL
+  out
+}
+
+# --- SEARCH REPORT (Deduplicatinator) ------------------------------------------
+# Per database: how many records it matched in total, how many were retrieved
+# (its top N), how many survived deduplication as that database's copy, how
+# many were merged into another copy, and whether it answered. 'counts' is
+# summarise_sources() output (stored with cached results, so this stays right
+# on a cache hit); 'dedup' is the deduplicated result.
+source_key <- function(source) {
+  s <- as.character(source)
+  ifelse(grepl("^(preprint|biorxiv|medrxiv)", s, ignore.case = TRUE), "bioRxiv", s)
+}
+
+dedup_source_stats <- function(counts, dedup) {
+  cols <- c("Source", "Matched", "Retrieved", "Unique", "Merged", "Status")
+  if (!is.data.frame(counts) || nrow(counts) == 0) {
+    return(setNames(data.frame(matrix(nrow = 0, ncol = length(cols))), cols))
+  }
+  kept <- if (is.data.frame(dedup) && nrow(dedup) && "Source" %in% names(dedup)) table(source_key(dedup$Source)) else table(character(0))
+  uniq <- as.integer(ifelse(counts$source %in% names(kept), kept[counts$source], 0L))
+  status <- c(ok = "OK", partial = "Stopped early", failed = "No response")[counts$status]
+  out <- data.frame(
+    Source = unname(ifelse(counts$source %in% names(SOURCE_LABELS), SOURCE_LABELS[counts$source], counts$source)),
+    Matched = counts$total,
+    Retrieved = as.integer(counts$retrieved),
+    Unique = uniq,
+    Merged = pmax(0L, as.integer(counts$retrieved) - uniq),
+    Status = unname(ifelse(is.na(status), counts$status, status)),
+    stringsAsFactors = FALSE
+  )
+  # Case-insensitive and locale-independent, so the order is the same everywhere.
+  out <- out[order(-out$Retrieved, tolower(out$Source), method = "radix"), , drop = FALSE]
+  rownames(out) <- NULL
+  out
+}
+
+# The four headline numbers: matched in the databases, retrieved, merged as
+# duplicates, unique works. 'matched_complete' is FALSE when a database didn't
+# report its total, so the matched figure is a lower bound.
+dedup_flow <- function(stats, n_unique) {
+  if (!is.data.frame(stats) || nrow(stats) == 0) {
+    return(list(matched = NA_real_, matched_complete = FALSE, retrieved = 0L, merged = 0L, unique = n_unique))
+  }
+  answered <- stats$Status != "No response"
+  m <- stats$Matched[answered]
+  retrieved <- sum(stats$Retrieved)
+  list(matched = if (any(!is.na(m))) sum(m, na.rm = TRUE) else NA_real_,
+       matched_complete = all(!is.na(m)) && all(answered),
+       retrieved = retrieved,
+       merged = max(0L, retrieved - n_unique),
+       unique = n_unique)
 }

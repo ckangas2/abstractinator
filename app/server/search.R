@@ -390,17 +390,15 @@
       # ========================================================================
       
       
-      output$deduplicationTable <- DT::renderDataTable({
-        add_trial_phase_rows(rv$deduplication_table, rv$initial_extracted_data)
-      },
-      options = list(searching = FALSE, paging = FALSE, info = FALSE),
-      # Row numbers carry no meaning here - the rows are sources, not a sequence.
-      rownames = FALSE,
-      colnames = c("Source", "Total Search Records", "Unique Records", HTML("Duplicate Records Removed")),
-      escape = FALSE,
-      selection = "none"
-      )
-      
+      # ========================================================================
+      # DEDUPLICATINATOR: the search report
+      # ========================================================================
+      # Per database: matched, retrieved, kept, merged, status; headline
+      # numbers; and a log of merged records. Built from the per-source counts
+      # stored with each result, so a cache hit reports the same numbers.
+      dedup_stats <- dedup_source_stats(rv$source_counts, rv$article_df())
+      flow <- dedup_flow(dedup_stats, nrow(rv$article_df()))
+
       # Phase breakdown as indented rows beneath clinicaltrials.gov. Only the
       # record count is filled in: the other two columns are about duplicates,
       # and a phase subset has no honest value to put there, so they stay empty
@@ -440,20 +438,65 @@
         )
       }
 
+      output$deduplicationTable <- DT::renderDataTable({
+        tbl <- dedup_stats
+        req(nrow(tbl) > 0)
+        tbl$Matched <- ifelse(is.na(tbl$Matched), "\u2014", format(tbl$Matched, big.mark = ",", trim = TRUE))
+        tbl$Source <- htmltools::htmlEscape(tbl$Source)
+        # Trial phases as indented rows under ClinicalTrials.gov, counting
+        # retrieved trials (the trials themselves are rarely duplicates).
+        tbl <- add_trial_phase_rows(tbl[, c("Source", "Retrieved", "Matched", "Unique", "Merged", "Status")],
+                                    rv$article_df())
+        DT::datatable(tbl, rownames = FALSE, escape = FALSE, selection = "none",
+                      colnames = c("Database", "Retrieved", "Matched", "Kept", "Merged", "Status"),
+                      options = list(dom = "t", paging = FALSE, ordering = FALSE, scrollX = TRUE,
+                                     columnDefs = list(list(className = "dt-right", targets = 1:4))))
+      })
+
+      output$dedupMergesTable <- DT::renderDataTable({
+        d <- rv$article_df()
+        req(d, "MergedFrom" %in% names(d))
+        m <- d[!is.na(d$MergedFrom) & nzchar(d$MergedFrom), , drop = FALSE]
+        req(nrow(m) > 0)
+        DT::datatable(
+          data.frame(Title = substr(html_to_text(m$Title), 1, 140), Kept = m$Source,
+                     `Also found as` = m$MergedFrom, check.names = FALSE, stringsAsFactors = FALSE),
+          rownames = FALSE, escape = TRUE, selection = "none",
+          options = list(pageLength = 10, scrollX = TRUE, dom = "frtip",
+                         language = list(search = "_INPUT_", searchPlaceholder = "Filter merges...")))
+      })
+
       output$deduplicationSummaryContent <- renderUI({
-        # The whole panel is one centred column: heading, table and timing line
-        # share an axis, so the heading does not float off to the left of a
-        # centred table.
-        div(style = "max-width: 760px; margin: 0 auto;",
+        fmt <- function(n) if (is.na(n)) "\u2014" else format(n, big.mark = ",", trim = TRUE)
+        tile <- function(value, label, note = NULL) div(class = "stat-tile",
+          div(class = "stat-value", value), div(class = "stat-label", label),
+          if (!is.null(note)) div(class = "stat-note", note))
+        when <- rv$retrieved_at
+        when_txt <- if (inherits(when, "POSIXt")) paste0(
+          if (isTRUE(rv$from_cache)) "Cached result; databases queried " else "Databases queried ",
+          format(when, "%b %d, %H:%M UTC", tz = "UTC"), ".")
+        bad <- incomplete_source_labels(rv$source_counts)
+        n_merged_rows <- if ("MergedFrom" %in% names(rv$article_df()))
+          sum(!is.na(rv$article_df()$MergedFrom) & nzchar(rv$article_df()$MergedFrom)) else 0L
+        div(class = "dedup-panel",
           h4("Deduplicatinator"),
-          # Four short columns stretched across the full page leave a lot of
-          # empty space between a source and its count: this is a summary, not
-          # a grid. The width goes on the DT output as well as the wrapper,
-          # because a max-width on a parent div does not constrain the table
-          # element DT generates for itself.
-          div(style = "max-width: 760px;",
-              DT::dataTableOutput("deduplicationTable", width = "760px")),
-          uiOutput("searchTime")
+          p(class = "dedup-lead", time_message,
+            if (!is.null(when_txt)) span(class = "dedup-when", when_txt)),
+          if (length(bad)) div(class = "dedup-warning",
+            paste0(paste(bad, collapse = ", "), " didn't respond fully, so these results are incomplete and weren't cached. Searching again will retry.")),
+          div(class = "stat-tiles",
+            tile(paste0(fmt(flow$matched), if (!flow$matched_complete && !is.na(flow$matched)) "+"),
+                 "matched in the databases", "every record the databases have for this search"),
+            tile(fmt(flow$retrieved), "retrieved", "each database's top matches"),
+            tile(fmt(flow$merged), "duplicates merged", "same work from more than one source"),
+            tile(fmt(flow$unique), "unique works", "what the results show")),
+          h5("By database"),
+          DT::dataTableOutput("deduplicationTable"),
+          p(class = "plot-caveat",
+            "Retrieved: records fetched (a database's top matches, not all of them). Matched: the database's own total. Kept: unique records shown with that database as the source. Merged: its records folded into another copy of the same work (the same DOI, the same grant project, or the same title when one copy has no DOI)."),
+          if (n_merged_rows > 0) tags$details(class = "dedup-merges",
+            tags$summary(sprintf("Merged records (%d)", n_merged_rows)),
+            DT::dataTableOutput("dedupMergesTable"))
         )
       })
       

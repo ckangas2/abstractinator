@@ -384,6 +384,26 @@ tag_with_alias_list <- function(df, alias_list, prefix, weight_title = 20, weigh
 }
 
 
+# Therapy modality (primary_modality, modality_hits_combined). A trial's
+# registered interventions are what it tests, so they count like its title:
+# a trial of pembrolizumab is a checkpoint-inhibitor trial even if its title
+# only names the disease.
+tag_modality <- function(df) {
+  if (is.null(df) || nrow(df) == 0 || !exists("modality_alias_list")) return(df)
+  tmp <- df
+  if ("Interventions" %in% names(df)) {
+    iv <- as.character(df$Interventions)
+    iv[is.na(iv)] <- ""
+    title <- as.character(df$Title)
+    title[is.na(title)] <- ""
+    tmp$Title <- trimws(paste(title, iv, sep = ". "))
+  }
+  tmp <- tag_with_alias_list(tmp, modality_alias_list, "modality")
+  df$modality_hits_combined <- tmp$modality_hits_combined
+  df$primary_modality <- tmp$primary_modality
+  df
+}
+
 # Minimum score for a term to be called the PRIMARY subject. A title is
 # worth 20 per occurrence and an abstract 3, so any title mention qualifies
 # but a term appearing once in an abstract and nowhere else does not. It
@@ -651,7 +671,8 @@ DEEP_SEARCH_LIMIT <- 250L  # per-source cap for "deep search" (standard is 50)
 ALIAS_VERSION <- substr(digest::digest(list(
   if (exists("immune_cell_alias_list")) immune_cell_alias_list,
   if (exists("virus_alias_expanded")) virus_alias_expanded,
-  if (exists("bacteria_alias_expanded")) bacteria_alias_expanded
+  if (exists("bacteria_alias_expanded")) bacteria_alias_expanded,
+  if (exists("modality_alias_list")) modality_alias_list
 )), 1, 10)
 
 cache_variant <- function(mesh_lookups) {
@@ -843,6 +864,9 @@ finish_extraction <- function(search_term, vals, limit, elsevier_key, core_key, 
     final_data <- apply_mesh_tags(final_data, max_new_lookups = mesh_lookups)
   }
   
+  # Therapy modality, for the "what's been tried" view
+  final_data <- tag_modality(final_data)
+
   # Bioinformatics flag (vectorized)
   final_data$is_bioinformatics <- flag_bioinformatics(final_data$Title, final_data$Abstract)
   

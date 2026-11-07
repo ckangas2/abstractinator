@@ -68,9 +68,9 @@ The server exposes two tools:
 **`search_literature(query, max_results=25, abstract_chars=1500, deep=False, offset=0, sources="")`**
 returns `total_found`, `available`, `has_more`, `source_counts`, `unavailable_sources`, and a
 source-balanced list of records with `title`, `abstract`, `authors`, `publication_date`, `doi`,
-`pmid`, `url`, `source`, `primary_cell`, `primary_virus`, `primary_bacteria`,
+`pmid`, `url`, `source`, `primary_cell`, `primary_virus`, `primary_bacteria`, `primary_modality`,
 `is_bioinformatics`, `is_retracted`, for open-access articles `pmcid` and `is_open_access`, and for
-clinical trials `trial_status`, `trial_start`, `trial_end` and `phase`. Every record has every key.
+clinical trials `trial_status`, `trial_start`, `trial_end`, `phase`, `interventions` and `conditions`. Every record has every key.
 
 **`get_fulltext(pmcid, doi, max_chars=20000)`** returns the open-access full text of one article.
 
@@ -99,8 +99,13 @@ AI      ──► Cloudflare ──► mcp.abstractinator.me ──► MCP serve
   per year) via Arrow, instead of hitting their API on every search.
 - **Hit detection.** Titles and abstracts are matched against immune-cell, virus and bacteria
   alias lists (`aliases.R`); title hits weigh 20, abstract hits 3, and the top scorer becomes
-  `primary_cell` / `primary_virus` / `primary_bacteria`. Aliases are matched as whole words, so
-  "salmonella" doesn't match "salmonellosis".
+  `primary_cell` / `primary_virus` / `primary_bacteria`. A fourth axis, `primary_modality`, tags
+  the therapy (oncolytic virus, CAR-T, checkpoint inhibitor, vaccine, chemotherapy...), counting a
+  trial's registered interventions like its title. Aliases are matched as whole words, short
+  acronyms case-sensitively, and context rules drop phrases like "ad hoc" or "CMV promoter".
+- **Therapinator.** "What's been tried": a table of therapy x stage (grant, preprint, paper,
+  trial phase) for the current results, and the trials themselves with their interventions,
+  phase and status, most advanced first.
 - **Swappable pools.** The Plotinator's pathogen axis is not hard-wired to viruses: a pool switch
   selects which tagged category it plots, and the same search can be viewed through either lens.
   Adding a pool (fungi, parasites, drug classes, a lab's own vocabulary) means defining an alias

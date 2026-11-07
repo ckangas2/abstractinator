@@ -134,22 +134,15 @@
     )
   })
   
-  # One line above the results: how many records each database contributed
-  # out of how many it matched, and when. The results are each database's top
-  # matches, not every match, and this keeps that visible.
+  # Above the results, only when something is missing: which databases didn't
+  # answer fully. The full per-database report is in the Deduplicatinator.
   output$sourceCoverage <- renderUI({
     req(rv$article_df())
-    items <- source_coverage_items(rv$source_counts)
-    if (length(items) == 0) return(NULL)
-    when <- rv$retrieved_at
-    when_txt <- if (inherits(when, "POSIXt")) {
-      paste0(if (isTRUE(rv$from_cache)) "Cached result, retrieved " else "Retrieved ",
-             format(when, "%b %d, %H:%M UTC", tz = "UTC"))
-    }
-    div(class = "source-coverage",
-        span(class = "source-coverage-lead", "Top matches from each database:"),
-        paste(items, collapse = " \u00b7 "),
-        if (!is.null(when_txt)) span(class = "source-coverage-when", when_txt))
+    bad <- incomplete_source_labels(rv$source_counts)
+    if (!length(bad)) return(NULL)
+    div(class = "source-coverage source-coverage-warning",
+        paste0(paste(bad, collapse = ", "),
+               " didn't respond fully, so these results may be incomplete. Details in the Deduplicatinator tab."))
   })
 
   # Click a chip to filter; click the active chip again to show everything

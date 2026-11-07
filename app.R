@@ -71,7 +71,7 @@ ui <- source(file.path(APP_DIR, "app", "ui.R"), local = TRUE)$value
 # with local = TRUE, so it runs exactly as if written inline: the parts share
 # input, output, session and each other's variables, in this order.
 SERVER_PARTS <- c("state", "landing", "search", "settings", "help_feedback",
-                  "plot", "reading_list")
+                  "plot", "landscape", "reading_list")
 
 server <- function(input, output, session) {
   for (part in SERVER_PARTS) {
