@@ -313,6 +313,22 @@ table.dataTable tbody td a:hover {
   text-shadow: 0 10px 30px rgba(255, 255, 255, 0.15); 
 }
 
+/* --- Tagline under the title: what the app is, for first-time visitors --- */
+.full-width-search-area .app-tagline {
+  max-width: 34em;
+  margin: -14px auto 24px;
+  padding: 0 16px;
+  text-align: center;
+  font-size: 1.02em;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.68);
+}
+.gotham .full-width-search-area .app-tagline { margin-top: -0.6em; }
+/* Phones get the first clause only, so the search bar stays near the top. */
+@media (max-width: 640px) { .app-tagline .tagline-more { display: none; } }
+/* After a search the results need the room (same trigger as the skyline). */
+body:has(#landing_container[style*="display: none"]) .app-tagline { display: none; }
+
 /* ==========================================================================
    SEARCH BAR LAYOUT (Compact & Clean Edition)
    ========================================================================== */

@@ -126,6 +126,14 @@ fluidPage(
     # decorations. Hidden unless www/gotham.css is loaded.
     HTML(paste(readLines("app/partials/gotham-scene.html", warn = FALSE), collapse = "\n")),
 
+    # One line on what this is, for first-time visitors. Folds away with the
+    # landing content once a search runs.
+    p(class = "app-tagline",
+      "Biomedical literature search for immunology & virology",
+      span(class = "tagline-more",
+           ": papers, preprints, trials and grants from six databases at once"),
+      "."),
+
     # 1. Search Bar Row (Container becomes the anchor)
     div(
       class = "search-container-with-icons",
