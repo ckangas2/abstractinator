@@ -8,6 +8,19 @@ Development before v2.0.0 was untagged; see the git history for detail.
 
 ## [Unreleased]
 
+### Added
+- A "Welcome to Gotham" look for the home page, after the 1996 Batman
+  Forever site: a glowing stencil title over a city reflected in water, a moon
+  carrying the mascot's silhouette, and a neon skyline line over the feature
+  cards. It changes with the calendar: Halloween (Oct 1 - Nov 1) adds
+  jack-o'-lanterns and bats; Thanksgiving (Nov 2 - 30) turns amber with a
+  harvest moon, hay, a rooftop turkey and falling leaves; Christmas (Dec 1 -
+  Jan 1) adds snow, rooftop lights, a tree under the moon and a sleigh. The
+  rest of the year shows the plain city. Preview any season with
+  `?season=none|halloween|thanksgiving|christmas`. Lives in `www/gotham.css`,
+  `www/gotham.js` and `app/partials/`; deleting the two `gotham` lines in
+  `app/ui.R` switches it off.
+
 ## [2.1.0] - 2026-11-07
 
 A day of review-driven fixes: tag matching, record format, concurrency, a

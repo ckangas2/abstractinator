@@ -1,0 +1,451 @@
+/* ==========================================================================
+   gotham.css -- the "Welcome to Gotham" look, after the 1996 Batman Forever
+   website: a glowing stencil title over a city reflected in water, a moon
+   carrying the mascot's silhouette, and a neon "skyline" line over the
+   feature cards. Seasonal decorations (halloween, thanksgiving, christmas)
+   are layered on top.
+
+   How it switches on:
+     www/gotham.js puts class "gotham" and data-season="..." on <html>.
+     Every rule here is scoped under .gotham, so without gotham.js (or with
+     the two gotham lines removed from app/ui.R) styles.css applies untouched.
+
+   This file only overrides colours, fonts and borders of the existing
+   styles.css rules; it does not move layout, so the phone layout in
+   styles.css keeps working. Many styles.css rules use !important, so the
+   overrides here do too.
+
+   Sections:
+     1. Season palettes (the only place colours are defined)
+     2. Map the palette onto the app's existing theme variables
+     3. Page, title and search bar
+     4. The skyline scene (app/partials/gotham-scene.html)
+     5. Season visibility and falling leaves / snow
+     6. Home page: briefing box, skyline line, feature cards, share row
+     7. Footer and settings button
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Saira+Stencil+One&display=swap');
+
+
+/* ==========================================================================
+   1. SEASON PALETTES
+   "none" is the everyday look: green neon, purple city, yellow moon.
+   Halloween shares it and adds decorations. Each other season swaps colours.
+   ========================================================================== */
+.gotham {
+  --g-glow:        #39ff6a;  /* title, search border, skyline line */
+  --g-glow-mid:    #1fd651;  /* middle layer of the glow */
+  --g-glow-deep:   #12a63e;  /* outer layer of the glow */
+  --g-ink:         #d8ffd8;  /* text drawn "inside" the neon */
+  --g-accent:      #c9a8ff;  /* secondary text: links, chips, share row */
+  --g-accent-glow: #a46bff;
+  --g-text:        #c3b8d0;  /* body text */
+  --g-muted:       #a99bc2;  /* blurbs, captions */
+  --g-bg-1:        #1a0b2e;  /* page background, centre to edge */
+  --g-bg-2:        #0e0718;
+  --g-bg-3:        #07040c;
+  --g-city-top:    #3a1860;  /* building gradient */
+  --g-city-bottom: #230f3e;
+  --g-moon-core:   #ffe77a;
+  --g-moon-edge:   #f4c22e;
+  --g-win-a:       #ffd23f;  /* two colours of lit window */
+  --g-win-b:       #5bff7a;
+  --g-mist:        rgba(130, 90, 180, 0.45);
+  --g-silhouette:  #0a0612;  /* bats, sleigh */
+}
+
+.gotham[data-season="thanksgiving"] {
+  --g-glow:        #ffb03a;  /* amber */
+  --g-glow-mid:    #ff8a1f;
+  --g-glow-deep:   #c25a0a;
+  --g-ink:         #fff0d6;
+  --g-accent:      #f2a679;
+  --g-accent-glow: #d9612b;
+  --g-text:        #d9c4b4;
+  --g-muted:       #bba18e;
+  --g-bg-1:        #2a1208;
+  --g-bg-2:        #150905;
+  --g-bg-3:        #0a0503;
+  --g-city-top:    #4a2016;
+  --g-city-bottom: #2a110b;
+  --g-moon-core:   #ffd28a;  /* harvest moon */
+  --g-moon-edge:   #f08a24;
+  --g-win-a:       #ffc04d;
+  --g-win-b:       #ff8a3d;
+  --g-mist:        rgba(255, 170, 90, 0.22);
+  --g-silhouette:  #1a0a05;
+}
+
+.gotham[data-season="christmas"] {
+  --g-glow:        #3dff7a;  /* green neon, with red as the second colour */
+  --g-glow-mid:    #1fd651;
+  --g-glow-deep:   #0f9a3c;
+  --g-ink:         #e3ffe8;
+  --g-accent:      #ff8a96;
+  --g-accent-glow: #ff3b4e;
+  --g-text:        #c3cde0;
+  --g-muted:       #a3b0c8;
+  --g-bg-1:        #0e1a33;
+  --g-bg-2:        #08101f;
+  --g-bg-3:        #04070f;
+  --g-city-top:    #24345e;
+  --g-city-bottom: #141d3a;
+  --g-moon-core:   #ffffff;  /* cold, pale moon */
+  --g-moon-edge:   #cfdcff;
+  --g-win-a:       #ffd86b;
+  --g-win-b:       #ff5a6a;
+  --g-mist:        rgba(220, 230, 255, 0.2);
+  --g-silhouette:  #050a18;
+}
+
+
+/* ==========================================================================
+   2. EXISTING THEME VARIABLES
+   styles.css colours links, focus rings, the deep-search switch, chips and
+   tables from --accent-primary and the --glow-* variables, which the mascot
+   theme (body.theme-narwhal / -dino / -frog) normally sets. Under Gotham the
+   season palette sets them instead. The mascot still chooses the loading
+   animation, the "search complete" pop-ups and the moon silhouette.
+   ========================================================================== */
+.gotham,
+html.gotham body {
+  --accent-primary:   var(--g-glow);
+  --accent-secondary: var(--g-glow-deep);
+  --glow-color:  color-mix(in srgb, var(--g-glow) 50%, transparent);
+  --glow-medium: color-mix(in srgb, var(--g-glow) 40%, transparent);
+  --glow-subtle: color-mix(in srgb, var(--g-glow) 20%, transparent);
+  --search-btn-text: var(--g-ink);
+}
+
+
+/* ==========================================================================
+   3. PAGE, TITLE AND SEARCH BAR
+   ========================================================================== */
+html.gotham body {
+  background-color: var(--g-bg-3) !important;
+  background-image: radial-gradient(1100px 700px at 50% 22%,
+                      var(--g-bg-1) 0%, var(--g-bg-2) 55%, var(--g-bg-3) 100%) !important;
+  background-attachment: fixed !important;
+  color: var(--g-text) !important;
+}
+
+/* The glass card around the search area becomes open sky. */
+.gotham .full-width-search-area {
+  max-width: 1060px;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  margin-top: 3vh;
+  padding-top: 1.5em;
+}
+
+/* "WELCOME TO / THE ABSTRACTINATOR" in glowing stencil. The kicker is a
+   ::before so the h2 text, and so search engines and screen readers, keep
+   reading "The Abstractinator". */
+.gotham .full-width-search-area h2 {
+  font-family: 'Saira Stencil One', 'Montserrat', sans-serif !important;
+  font-weight: 400 !important;
+  font-size: clamp(2.1em, 6vw, 4.1em) !important;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--g-ink) !important;
+  text-shadow: 0 0 5px var(--g-glow), 0 0 14px var(--g-glow-mid), 0 0 30px var(--g-glow-deep);
+  margin-bottom: 0.1em;
+}
+.gotham .full-width-search-area h2::before {
+  content: "Welcome to";
+  display: block;
+  font-size: 0.34em;
+  letter-spacing: 0.18em;
+  margin-bottom: 0.15em;
+}
+
+/* Search box: dark glass with a neon edge. */
+.gotham .search-group #searchTerm {
+  background-color: color-mix(in srgb, var(--g-bg-3) 85%, transparent) !important;
+  border: 1.5px solid var(--g-glow) !important;
+  border-radius: 8px !important;
+  color: var(--g-ink) !important;
+  font-family: 'Rajdhani', 'Inter', sans-serif !important;
+  font-weight: 600;
+  font-size: 1.1em;
+  letter-spacing: 0.03em;
+  box-shadow: 0 0 16px color-mix(in srgb, var(--g-glow) 28%, transparent),
+              inset 0 0 12px color-mix(in srgb, var(--g-glow) 8%, transparent) !important;
+}
+.gotham .search-group #searchTerm::placeholder { color: var(--g-muted); opacity: 0.8; }
+.gotham .search-group #searchTerm:focus {
+  background-color: var(--g-bg-3) !important;
+  box-shadow: 0 0 24px color-mix(in srgb, var(--g-glow) 45%, transparent),
+              inset 0 0 12px color-mix(in srgb, var(--g-glow) 10%, transparent) !important;
+}
+
+/* Search button: a neon sign rather than a filled pill. */
+.gotham .search-group #searchButton,
+.gotham .search-group #searchButton:hover,
+.gotham .search-group #searchButton:focus {
+  background-color: color-mix(in srgb, var(--g-glow) 8%, transparent) !important;
+  border: 1.5px solid var(--g-glow) !important;
+  border-radius: 8px !important;
+  color: var(--g-ink) !important;
+  font-family: 'Rajdhani', 'Inter', sans-serif !important;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  text-shadow: 0 0 8px var(--g-glow);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--g-glow) 35%, transparent),
+              inset 0 0 12px color-mix(in srgb, var(--g-glow) 12%, transparent);
+}
+.gotham .search-group #searchButton:hover {
+  background-color: color-mix(in srgb, var(--g-glow) 20%, transparent) !important;
+}
+
+/* Quick-launch chips and the deep-search switch: purple ghost buttons. */
+.gotham .btn.ql-chip {
+  border-color: color-mix(in srgb, var(--g-accent) 45%, transparent) !important;
+  border-radius: 6px !important;
+  color: var(--g-accent) !important;
+  font-family: 'Rajdhani', 'Inter', sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+.gotham .btn.ql-chip:hover,
+.gotham .btn.ql-chip:focus-visible {
+  border-color: var(--g-glow) !important;
+  color: var(--g-ink) !important;
+}
+.gotham .ql-label,
+.gotham .deep-toggle-pill {
+  font-family: 'Rajdhani', 'Inter', sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--g-muted);
+}
+.gotham .deep-toggle-pill { background: transparent; border-color: color-mix(in srgb, var(--g-accent) 35%, transparent); }
+.gotham .search-options-divider { background: color-mix(in srgb, var(--g-accent) 30%, transparent); }
+
+
+/* ==========================================================================
+   4. THE SKYLINE SCENE  (app/partials/gotham-scene.html)
+   The SVG keeps its proportions and crops its sides on narrow screens
+   (preserveAspectRatio "xMidYMax slice"), so the moon stays in the middle.
+   ========================================================================== */
+.gotham .gotham-scene {
+  display: block !important;          /* the partial ships with display:none */
+  position: relative;
+  width: 100%;
+  height: clamp(170px, 28vw, 320px);
+  margin: 0.2em 0 1.4em;
+  overflow: hidden;
+  /* Fade the left and right ends of the city, and the reflection below the
+     waterline (the vertical middle), into whatever is behind the scene. */
+  -webkit-mask-image:
+    linear-gradient(to right, transparent 0, #000 8%, #000 92%, transparent 100%),
+    linear-gradient(to bottom, #000 0, #000 50%, rgba(0, 0, 0, 0.55) 62%, transparent 100%);
+  -webkit-mask-composite: source-in;
+          mask-image:
+    linear-gradient(to right, transparent 0, #000 8%, #000 92%, transparent 100%),
+    linear-gradient(to bottom, #000 0, #000 50%, rgba(0, 0, 0, 0.55) 62%, transparent 100%);
+          mask-composite: intersect;
+}
+.gotham .gotham-scene > svg { display: block; width: 100%; height: 100%; }
+
+/* After a search the results need the room, so the scene folds away. The
+   landing container is hidden by shinyjs at the same moment. Browsers
+   without :has() simply keep the scene. */
+html.gotham body:has(#landing_container[style*="display: none"]) .gotham-scene {
+  display: none !important;
+}
+
+/* Gradient stops and fills read the palette. */
+.gotham .g-city-top    { stop-color: var(--g-city-top); }
+.gotham .g-city-bottom { stop-color: var(--g-city-bottom); }
+.gotham .g-moon-core   { stop-color: var(--g-moon-core); }
+.gotham .g-moon-edge   { stop-color: var(--g-moon-edge); }
+.gotham .g-mist        { stop-color: var(--g-mist); }
+.gotham .g-waterline   { fill: color-mix(in srgb, var(--g-accent-glow) 60%, transparent); }
+
+.gotham .g-win-a { fill: var(--g-win-a); opacity: 0.8; }
+.gotham .g-win-b { fill: var(--g-win-b); opacity: 0.7; }
+
+/* The mascot in the moon, as a black silhouette. */
+.gotham .g-mascot { filter: brightness(0); opacity: 0.86; }
+
+/* Lab gear */
+.gotham .g-rung     { fill: none; stroke: var(--g-glow); stroke-width: 1.8; opacity: 0.85; }
+.gotham .g-liquid   { fill: var(--g-glow); opacity: 0.85; }
+.gotham .g-liquid-2 { fill: #ff5bd0; opacity: 0.75; }
+
+/* Pumpkins (halloween carved and lit; thanksgiving plain) */
+.gotham .g-pumpkin { fill: #e8701e; }
+.gotham .g-rib     { fill: #000; opacity: 0.13; }
+.gotham .g-stem    { fill: #3f6b2a; }
+.gotham .g-carve   { fill: #ffe77a; }
+
+/* Thanksgiving */
+.gotham .g-hay       { fill: #d9b65a; }
+.gotham .g-hay-line  { fill: none; stroke: #a8853a; stroke-width: 0.8; }
+.gotham .g-gourd     { fill: #c9b23a; }
+.gotham .g-corn      { fill: #c8a86a; }
+.gotham .g-corn-line { fill: none; stroke: #9a7a40; stroke-width: 0.8; }
+.gotham .g-corn-tie  { fill: #7a5a2a; }
+.gotham .g-geese path { fill: none; stroke: var(--g-silhouette); stroke-width: 1.4; stroke-linecap: round; }
+
+/* Christmas */
+.gotham .g-snow   { fill: #f4f8ff; }
+.gotham .g-wire   { fill: none; stroke: #0a0f1c; stroke-width: 0.6; }
+.gotham .g-tree   { fill: #1f7a3a; }
+.gotham .g-star   { fill: #ffd23f; }
+.gotham .g-ribbon { fill: #ffd23f; }
+.gotham .g-bulb   { animation: g-twinkle 2.4s ease-in-out infinite; animation-delay: calc(var(--i) * -0.6s); }
+@keyframes g-twinkle { 50% { opacity: 0.35; } }
+
+/* Things in the sky */
+.gotham .g-silhouette      { fill: var(--g-silhouette); }
+.gotham .g-silhouette .g-thin { fill: none; stroke: var(--g-silhouette); stroke-width: 0.9; }
+
+
+/* ==========================================================================
+   5. SEASON VISIBILITY, LEAVES AND SNOW
+   Every seasonal piece carries "g-season g-<season>". Only the pieces for
+   the season on <html data-season> are shown.
+   ========================================================================== */
+.gotham .g-season { display: none; }
+.gotham[data-season="halloween"]    .g-halloween,
+.gotham[data-season="thanksgiving"] .g-thanksgiving,
+.gotham[data-season="christmas"]    .g-christmas { display: inline; }
+
+.gotham .g-weather {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.gotham .g-weather > span {
+  position: absolute;
+  top: -12px;
+  left: var(--x);
+  width: var(--s);
+  height: var(--s);
+  animation: g-fall var(--t) linear var(--d) infinite;
+}
+.gotham .g-flake { border-radius: 50%; background: #fff; opacity: 0.85; }
+.gotham .g-leaf  { background: var(--c); border-radius: 0 70% 0 70%; opacity: 0.9; }
+.gotham .g-leaf  { animation-name: g-fall-spin; }
+
+@keyframes g-fall      { to { transform: translate(var(--drift), 360px); } }
+@keyframes g-fall-spin { to { transform: translate(var(--drift), 360px) rotate(540deg); } }
+
+/* Reduced motion: nothing falls or twinkles; leaves and snow rest where they are. */
+@media (prefers-reduced-motion: reduce) {
+  .gotham .g-weather > span { animation: none; top: var(--rest); }
+  .gotham .g-bulb { animation: none; }
+}
+
+
+/* ==========================================================================
+   6. HOME PAGE
+   ========================================================================== */
+/* Search-time / API-key briefing: keep it, quieter. Its box is styled
+   inline in ui.R, hence !important. */
+.gotham #landing_container > div:first-of-type {
+  background: color-mix(in srgb, var(--g-bg-3) 70%, transparent) !important;
+  border-color: color-mix(in srgb, var(--g-accent) 30%, transparent) !important;
+}
+
+/* The glowing skyline line over the feature cards (app/partials/gotham-skyline.html). */
+.gotham .gotham-skyline {
+  display: block !important;
+  max-width: 1060px;
+  margin: 0 auto 0.4em;
+  padding: 0 15px;
+}
+.gotham .gotham-skyline-title {
+  margin: 0;
+  font-family: 'Saira Stencil One', sans-serif;
+  font-size: 1.15em;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--g-ink);
+  text-shadow: 0 0 5px var(--g-glow), 0 0 14px var(--g-glow-mid);
+}
+.gotham .gotham-skyline svg {
+  display: block;
+  width: 100%;
+  height: 54px;
+  filter: drop-shadow(0 0 4px var(--g-glow)) drop-shadow(0 0 10px var(--g-glow-mid));
+}
+.gotham .gotham-skyline polyline { fill: none; stroke: var(--g-glow); stroke-width: 2.5; }
+@media (max-width: 767px) {
+  .gotham .gotham-skyline svg { display: none; }
+}
+
+/* Feature cards become glowing labels hanging off the skyline line. */
+.gotham .landing-card,
+.gotham .landing-card:hover {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  transform: none !important;
+  padding: 6px 10px 18px !important;
+}
+.gotham .landing-card > i,
+.gotham .landing-card > svg { display: none !important; }   /* the Font Awesome icon */
+.gotham .landing-card h4 {
+  font-family: 'Saira Stencil One', sans-serif !important;
+  font-weight: 400;
+  font-size: 1.05em;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--g-ink) !important;
+  text-shadow: 0 0 5px var(--g-glow), 0 0 14px var(--g-glow-mid);
+}
+.gotham .landing-card p { color: var(--g-muted) !important; font-size: 0.92em; }
+.gotham a.landing-card-link:hover .landing-card h4 {
+  text-shadow: 0 0 6px var(--g-glow), 0 0 18px var(--g-glow-mid), 0 0 34px var(--g-glow-deep);
+}
+
+/* Share row: the purple second tier of the original nav bar. */
+.gotham #landing_container .btn-outline-secondary {
+  border-color: color-mix(in srgb, var(--g-accent) 40%, transparent);
+  color: var(--g-accent);
+  font-family: 'Rajdhani', 'Inter', sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+.gotham #landing_container .btn-outline-secondary:hover {
+  background: color-mix(in srgb, var(--g-accent) 15%, transparent);
+  color: #fff;
+}
+
+
+/* ==========================================================================
+   7. FOOTER AND SETTINGS BUTTON
+   ========================================================================== */
+.gotham .thin-footer {
+  background-color: color-mix(in srgb, var(--g-bg-3) 92%, transparent);
+  border-top: 1px solid color-mix(in srgb, var(--g-glow) 22%, transparent);
+  font-family: 'Rajdhani', 'Inter', sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--g-muted);
+}
+.gotham .thin-footer a { color: var(--g-accent); }
+.gotham .thin-footer a:hover { color: #fff; text-shadow: 0 0 8px var(--g-accent-glow); }
+/* "The Abstractinator vX" glows like a sign. Its opacity is set inline. */
+.gotham .thin-footer > span:first-child {
+  opacity: 1 !important;
+  color: var(--g-ink);
+  text-shadow: 0 0 5px var(--g-glow), 0 0 12px var(--g-glow-mid);
+  text-transform: uppercase;
+}
+
+.gotham .hamburger-btn {
+  border-color: color-mix(in srgb, var(--g-accent) 40%, transparent) !important;
+}

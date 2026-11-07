@@ -45,7 +45,16 @@ fluidPage(
     # and Cloudflare always fetch the current version instead of a stale copy
     tags$link(rel = "stylesheet", type = "text/css",
               href = paste0("styles.css?v=", as.integer(file.mtime("www/styles.css")))),
-    tags$script(src = paste0("script.js?v=", as.integer(file.mtime("www/script.js"))))
+    tags$script(src = paste0("script.js?v=", as.integer(file.mtime("www/script.js")))),
+
+    # "Welcome to Gotham" look + seasonal decorations. gotham.css overrides
+    # styles.css, so it comes after it; gotham.js sets the season in <head>,
+    # before the first paint. Delete these two lines to switch the look off
+    # (the skyline partials below then stay hidden). Preview a season with
+    # ?season=none|halloween|thanksgiving|christmas -- see www/gotham.js.
+    tags$link(rel = "stylesheet", type = "text/css",
+              href = paste0("gotham.css?v=", as.integer(file.mtime("www/gotham.css")))),
+    tags$script(src = paste0("gotham.js?v=", as.integer(file.mtime("www/gotham.js"))))
   ),
   
   # ========================================================================
@@ -112,7 +121,11 @@ fluidPage(
     # ---------------------------------
     
     h2("The Abstractinator"),
-    
+
+    # Skyline under the title: city, moon with the mascot, seasonal
+    # decorations. Hidden unless www/gotham.css is loaded.
+    HTML(paste(readLines("app/partials/gotham-scene.html", warn = FALSE), collapse = "\n")),
+
     # 1. Search Bar Row (Container becomes the anchor)
     div(
       class = "search-container-with-icons",
@@ -211,6 +224,10 @@ fluidPage(
     
     
     
+    # Glowing "skyline" line over the feature cards. Decorative only; hidden
+    # unless www/gotham.css is loaded.
+    HTML(paste(readLines("app/partials/gotham-skyline.html", warn = FALSE), collapse = "\n")),
+
     # 2. Feature Cards (each one opens a short explainer with a way to try it)
     local({
       feature_card <- function(id, ic, title, blurb) {
