@@ -159,3 +159,54 @@ immune_cell_alias_list <- c(immune_cell_alias_list, list(
              "peripheral blood mononuclear cells",
              "mononuclear leukocyte", "mononuclear leukocytes")
 ))
+
+# ---- Major human pathogens and immunology model viruses, added 2026-11-07 --
+# The list above grew out of oncolytic virology and missed most of the viruses
+# immunology papers are about (a review found HBV, CMV and RSV papers all
+# tagged "Non-descript"). Acronyms here match only in capitals.
+
+virus_alias_expanded <- c(virus_alias_expanded, list(
+  "Hepatitis B Virus" = c("hepatitis B virus", "hepatitis B", "HBV"),
+  "Hepatitis C Virus" = c("hepatitis C virus", "hepatitis C", "HCV"),
+  "Cytomegalovirus" = c("cytomegalovirus", "cytomegaloviruses", "human cytomegalovirus",
+                        "CMV", "HCMV", "MCMV"),
+  "Epstein-Barr Virus" = c("Epstein-Barr virus", "EBV", "human herpesvirus 4"),
+  "Varicella-Zoster Virus" = c("varicella-zoster virus", "VZV", "herpes zoster",
+                               "shingles", "varicella"),
+  "Kaposi's Sarcoma-Associated Herpesvirus" = c("Kaposi's sarcoma-associated herpesvirus",
+                                                "Kaposi sarcoma-associated herpesvirus",
+                                                "KSHV", "HHV-8", "human herpesvirus 8"),
+  "Respiratory Syncytial Virus" = c("respiratory syncytial virus", "RSV", "hRSV"),
+  "Human Metapneumovirus" = c("human metapneumovirus", "hMPV", "HMPV"),
+  "Human Papillomavirus" = c("human papillomavirus", "human papillomaviruses",
+                             "papillomavirus", "papillomaviruses", "HPV"),
+  "MERS-CoV" = c("MERS-CoV", "Middle East respiratory syndrome coronavirus"),
+  "Simian Immunodeficiency Virus" = c("simian immunodeficiency virus", "SIV"),
+  "Lymphocytic Choriomeningitis Virus" = c("lymphocytic choriomeningitis virus", "LCMV"),
+  "Dengue Virus" = c("dengue virus", "dengue", "DENV"),
+  "Zika Virus" = c("Zika virus", "Zika", "ZIKV"),
+  "Yellow Fever Virus" = c("yellow fever virus", "YFV", "YF-17D"),
+  "Chikungunya Virus" = c("chikungunya virus", "chikungunya", "CHIKV"),
+  "Ebola Virus" = c("Ebola virus", "ebolavirus", "Ebola", "EBOV"),
+  "Mpox Virus" = c("mpox", "monkeypox", "monkeypox virus", "MPXV"),
+  "Enterovirus" = c("enterovirus", "enteroviruses", "EV-A71", "EV71", "EV-D68")
+))
+
+immune_cell_alias_list <- c(immune_cell_alias_list, list(
+  "Microglia" = c("microglia", "microglial cell", "microglial cells"),
+  "Gamma delta T cell" = c("gamma delta T cell", "gamma delta T cells",
+                           "\u03b3\u03b4 T cell", "\u03b3\u03b4 T cells",
+                           "gammadelta T cell", "gammadelta T cells"),
+  "NKT cell" = c("NKT cell", "NKT cells", "iNKT", "natural killer T cell",
+                 "natural killer T cells"),
+  "MAIT cell" = c("MAIT cell", "MAIT cells", "mucosal-associated invariant T cell",
+                  "mucosal-associated invariant T cells"),
+  "T follicular helper cell" = c("T follicular helper cell", "T follicular helper cells",
+                                 "follicular helper T cell", "follicular helper T cells",
+                                 "Tfh", "Tfh cells"),
+  "Th17 cell" = c("Th17", "Th17 cells", "T helper 17 cell", "T helper 17 cells"),
+  "Plasmacytoid dendritic cell" = c("plasmacytoid dendritic cell",
+                                    "plasmacytoid dendritic cells", "pDC", "pDCs"),
+  "Myeloid-derived suppressor cell" = c("myeloid-derived suppressor cell",
+                                        "myeloid-derived suppressor cells", "MDSC", "MDSCs")
+))

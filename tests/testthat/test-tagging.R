@@ -132,3 +132,26 @@ test_that("aliases of three characters or fewer contain a capital, so they match
   short <- all_aliases[nchar(all_aliases) <= 3]
   expect_true(all(grepl("[A-Z]", short)), info = paste(short[!grepl("[A-Z]", short)], collapse = ", "))
 })
+
+test_that("common human pathogens and immunology model viruses are tagged", {
+  out <- tag_cells_and_viruses(
+    c("CD8 T cell exhaustion in chronic hepatitis B",
+      "RSV vaccine in older adults",
+      "NKG2C+ NK cells expand after CMV infection",
+      "Herpes zoster after vaccination",
+      "T cell exhaustion during chronic LCMV infection"))
+  expect_equal(out$primary_virus,
+               c("Hepatitis B Virus", "Respiratory Syncytial Virus", "Cytomegalovirus",
+                 "Varicella-Zoster Virus", "Lymphocytic Choriomeningitis Virus"))
+})
+
+test_that("cell subsets win over their parent type", {
+  out <- tag_cells_and_viruses(
+    c("Microglia in Alzheimer's disease",
+      "Plasmacytoid dendritic cells produce type I interferon",
+      "γδ T cells in tumour immunity",
+      "Follicular helper T cells in germinal centres"))
+  expect_equal(out$primary_cell,
+               c("Microglia", "Plasmacytoid dendritic cell", "Gamma delta T cell",
+                 "T follicular helper cell"))
+})
