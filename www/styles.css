@@ -2096,4 +2096,112 @@ a.landing-card-link:focus-visible .landing-card {
   width: 1.9em;
 }
 
+/* ==========================================================================
+   PHONES (screens narrower than 640px)
+   The desktop layout assumes room to the sides: floating narwhals beside the
+   search bar, a toolbar parked beside the tabs, a four-column results table.
+   On a phone those collide, so each is rearranged here.
+   ========================================================================== */
+@media (max-width: 640px) {
 
+  /* --- Search header --- */
+  .full-width-search-area h2 { font-size: 2.3em; }
+  .search-group {
+    width: 100% !important;
+    margin: 0 !important;          /* the 60px side margins left the input ~60px wide */
+    flex-wrap: wrap;               /* input on its own row, Search centred below */
+    justify-content: center;
+    gap: 16px 10px;
+  }
+  .search-group > div.form-group { flex-basis: 100% !important; }
+  .search-group #searchButton { padding: 10px 40px !important; }
+
+  /* --- "Search complete" narwhals: still big and goofy, sized for a phone.
+     The height is set on the <img> itself in app/ui.R, hence !important.
+     They flank the Search button, one on each side. --- */
+  #completionIconLeft,
+  #completionIconRight {
+    height: 64px !important;
+    width: auto !important;
+  }
+  .completion-icon-left,
+  .completion-icon-right {
+    top: auto !important;
+    bottom: -8px !important;
+    transform: none !important;
+  }
+  .completion-icon-left  { left: 4% !important; }
+  .completion-icon-right { right: 4% !important; }
+
+  /* --- Tabs: one swipeable row instead of a stack --- */
+  ul#main_app_tabs.nav-pills {
+    padding-right: 10px !important;   /* the desktop 400px reserve for the toolbar */
+    flex-wrap: nowrap !important;
+    overflow-x: auto;
+    scrollbar-width: none;
+    gap: 8px;
+  }
+  ul#main_app_tabs.nav-pills::-webkit-scrollbar { display: none; }
+  ul#main_app_tabs.nav-pills .nav-link {
+    white-space: nowrap;
+    padding: 6px 14px;
+    font-size: 0.9em;
+  }
+
+  /* --- Table toolbar ("Show 25" + filter): back into the page flow --- */
+  .dt-top-toolbar {
+    position: static !important;
+    justify-content: space-between;
+    margin: 10px 0 2px;
+    gap: 8px;
+  }
+  .dt-top-toolbar .dataTables_filter { flex: 1; }
+  .dt-top-toolbar .dataTables_filter label,
+  .dt-top-toolbar .dataTables_filter input { width: 100% !important; margin: 0 !important; }
+
+  /* --- Results as cards: title, authors, date, then a clipped abstract.
+     Visible columns are Title, Abstract, Authors, Date (in that order). --- */
+  #resultsDisplay .dataTables_scrollHead { display: none !important; }
+  #resultsDisplay .dataTables_scrollBody { overflow-x: hidden !important; }
+  #resultsDisplay table.dataTable,
+  #resultsDisplay table.dataTable tbody { display: block; width: 100% !important; }
+  #resultsDisplay table.dataTable tbody tr {
+    display: flex;
+    flex-direction: column;
+    border-radius: 12px;
+    margin-bottom: 10px;
+  }
+  #resultsDisplay table.dataTable tbody td {
+    display: block;
+    width: auto !important;
+    padding: 6px 14px !important;
+    border-radius: 0 !important;
+    text-align: left;
+  }
+  #resultsDisplay table.dataTable tbody td:nth-child(1) { order: 1; padding-top: 14px !important; font-size: 1.05em; }
+  #resultsDisplay table.dataTable tbody td:nth-child(3) { order: 2; font-size: 0.85em; }
+  #resultsDisplay table.dataTable tbody td:nth-child(4) { order: 3; font-size: 0.85em; color: #aaa !important; }
+  #resultsDisplay table.dataTable tbody td:nth-child(2) {
+    order: 4;
+    padding-bottom: 0 !important;   /* padding would show part of the next line */
+    margin: 0 14px 14px;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    font-size: 0.9em;
+    display: -webkit-box;
+    -webkit-line-clamp: 6;          /* first six lines; the title links to the full record */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* --- Other fixed widths that overflow a phone --- */
+  .shiny-notification {
+    width: auto !important;
+    left: 12px !important;
+    right: 12px !important;
+  }
+  #loadingIcon { width: 220px; height: 220px; }
+
+  /* --- Plotinator: hide plotly's toolbar, which overlaps the title on a phone --- */
+  #allArticlesPlotOutput .modebar-container { display: none !important; }
+}

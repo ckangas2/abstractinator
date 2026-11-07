@@ -231,3 +231,32 @@ $(document).on('plotly_click', '#allArticlesPlotOutput', function(eventdata) {
     clickedAnnotation = null;
   }
 });
+
+// ==========================================================================
+// PLOTINATOR ON PHONES
+// ==========================================================================
+// The plot's layout (legend on the right, wide margins, a date label per tick)
+// is built for a desktop screen and squeezes the plot into a strip on a phone.
+// After each render, narrow screens get the legend underneath, fewer date
+// labels and smaller text. Retries briefly, since the widget draws after
+// Shiny delivers its data.
+function fitPlotToPhone(tries) {
+  tries = tries || 0;
+  var el = document.getElementById('allArticlesPlotOutput');
+  if (!el || window.innerWidth > 640) return;
+  if (!window.Plotly || !el.layout) {
+    if (tries < 15) setTimeout(function() { fitPlotToPhone(tries + 1); }, 300);
+    return;
+  }
+  if (el.layout.legend && el.layout.legend.orientation === 'h') return;  // already fitted
+  Plotly.relayout(el, {
+    'legend.orientation': 'h', 'legend.x': 0, 'legend.y': -0.12,
+    'legend.yanchor': 'top', 'legend.font.size': 10,
+    'xaxis.nticks': 4, 'xaxis.tickfont.size': 10, 'yaxis.tickfont.size': 10,
+    'xaxis.automargin': true, 'yaxis.automargin': true,
+    'margin.l': 10, 'margin.r': 10, 'margin.t': 40, 'title.font.size': 13
+  });
+}
+$(document).on('shiny:value', function(e) {
+  if (e.name === 'allArticlesPlotOutput') setTimeout(fitPlotToPhone, 300);
+});

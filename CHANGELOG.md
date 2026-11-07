@@ -9,6 +9,11 @@ Development before v2.0.0 was untagged; see the git history for detail.
 ## [Unreleased]
 
 ### Fixed
+- The site on phones (#17): the search box is full width with the Search
+  button below it, the "search complete" narwhals are phone-sized and flank the
+  button instead of covering the page, the tabs are one swipeable row, the
+  table toolbar sits under the tabs, results show as cards (title, authors,
+  date, a six-line abstract), and the Plotinator's legend moves under the plot.
 - Tags missed when a title carried markup ("CD8<sup>+</sup> T cells") or named
   the disease rather than the organism ("influenza", "tuberculosis",
   "COVID-19", "Lyme disease"). Markup is ignored when matching, and common
