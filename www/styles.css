@@ -2118,20 +2118,22 @@ a.landing-card-link:focus-visible .landing-card {
 
   /* --- "Search complete" narwhals: still big and goofy, sized for a phone.
      The height is set on the <img> itself in app/ui.R, hence !important.
-     They flank the Search button, one on each side. --- */
+     They flank the Search button and spill a little past the row below and
+     the card's edges, so they sit on top of the page rather than in a slot. --- */
   #completionIconLeft,
   #completionIconRight {
-    height: 64px !important;
+    height: 76px !important;
     width: auto !important;
   }
   .completion-icon-left,
   .completion-icon-right {
     top: auto !important;
-    bottom: -8px !important;
+    bottom: -24px !important;
     transform: none !important;
+    z-index: 20 !important;
   }
-  .completion-icon-left  { left: 4% !important; }
-  .completion-icon-right { right: 4% !important; }
+  .completion-icon-left  { left: -4% !important; }
+  .completion-icon-right { right: -4% !important; }
 
   /* --- Tabs: one swipeable row instead of a stack --- */
   ul#main_app_tabs.nav-pills {
@@ -2189,9 +2191,27 @@ a.landing-card-link:focus-visible .landing-card {
     padding-right: 0 !important;
     font-size: 0.9em;
     display: -webkit-box;
-    -webkit-line-clamp: 6;          /* first six lines; the title links to the full record */
+    -webkit-line-clamp: 6;          /* first six lines; tap to read the rest (script.js) */
     -webkit-box-orient: vertical;
     overflow: hidden;
+    cursor: pointer;
+  }
+  #resultsDisplay table.dataTable tbody td:nth-child(2).abstract-open {
+    display: block;
+    -webkit-line-clamp: unset;
+    overflow: visible;
+  }
+  /* Hint under abstracts that are actually cut off (marked by script.js) */
+  #resultsDisplay table.dataTable tbody tr.abstract-clipped::after {
+    content: "Tap the abstract to read more \25BE";
+    order: 5;
+    margin: -8px 14px 12px;
+    font-size: 0.78em;
+    color: var(--accent-primary);
+    opacity: 0.85;
+  }
+  #resultsDisplay table.dataTable tbody tr.abstract-expanded::after {
+    content: "Tap the abstract to collapse \25B4";
   }
 
   /* --- Other fixed widths that overflow a phone --- */

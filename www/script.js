@@ -260,3 +260,29 @@ function fitPlotToPhone(tries) {
 $(document).on('shiny:value', function(e) {
   if (e.name === 'allArticlesPlotOutput') setTimeout(fitPlotToPhone, 300);
 });
+
+// ==========================================================================
+// RESULT CARDS ON PHONES: TAP AN ABSTRACT TO READ ALL OF IT
+// ==========================================================================
+// On narrow screens styles.css clips each abstract to six lines. Rows whose
+// abstract is actually cut off get a "tap to read more" hint; tapping the
+// abstract toggles the full text. Links inside the abstract still work.
+function markClippedAbstracts() {
+  if (window.innerWidth > 640) return;
+  $('#resultsDisplay tbody tr').each(function() {
+    var td = this.cells && this.cells[1];
+    if (!td) return;
+    var open = $(td).hasClass('abstract-open');
+    $(this).toggleClass('abstract-clipped', open || td.scrollHeight > td.clientHeight + 2);
+  });
+}
+$(document).on('draw.dt', '#resultsDisplay table', function() {
+  setTimeout(markClippedAbstracts, 50);
+});
+$(document).on('click', '#resultsDisplay tbody td:nth-child(2)', function(e) {
+  if (window.innerWidth > 640 || $(e.target).closest('a').length) return;
+  var row = $(this).closest('tr');
+  if (!row.hasClass('abstract-clipped')) return;   // short abstract, nothing hidden
+  $(this).toggleClass('abstract-open');
+  row.toggleClass('abstract-expanded');
+});
