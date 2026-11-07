@@ -2380,6 +2380,25 @@ a.landing-card-link:focus-visible .landing-card {
      re-centre it to the 220px one (the icon's centre is 110px down). */
   .loading-icon-container::before { width: 250px; height: 250px; top: 110px; }
   .loading-icon-container::after  { width: 340px; height: 310px; top: 104px; }
+  /* Phones (Safari especially) render the blurred bloom washed out: the blur
+     spreads the same colour thinner. A radial gradient is already soft, so
+     on phones the core drops the blur and carries the colour itself. */
+  .loading-icon-container::before {
+    filter: none;
+    background: radial-gradient(circle at 50% 46%,
+        rgba(var(--accent-primary-rgb), 0.90) 0%,
+        rgba(var(--accent-primary-rgb), 0.74) 26%,
+        rgba(var(--accent-primary-rgb), 0.44) 46%,
+        rgba(var(--accent-primary-rgb), 0.14) 60%,
+        rgba(var(--accent-primary-rgb), 0) 68%);   /* fully faded inside the round edge */
+  }
+  .loading-icon-container::after {
+    filter: blur(12px);
+    background: radial-gradient(ellipse at 50% 50%,
+        rgba(var(--accent-primary-rgb), 0.40) 0%,
+        rgba(var(--accent-primary-rgb), 0.20) 50%,
+        rgba(var(--accent-primary-rgb), 0) 72%);
+  }
 
   /* --- Plotinator: hide plotly's toolbar, which overlaps the title on a phone --- */
   #allArticlesPlotOutput .modebar-container { display: none !important; }
