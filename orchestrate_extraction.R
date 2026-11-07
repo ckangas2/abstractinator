@@ -220,6 +220,13 @@ normalize_doi <- function(x) {
   x
 }
 
+# "2024-06-01T00:00:00" (NIH) -> "2024-06-01". Other formats are left alone;
+# the website parses the rest when it sorts and plots.
+normalize_date <- function(x) {
+  x <- as.character(x)
+  sub("^(\\d{4}-\\d{2}-\\d{2})[T ][0-9:.]+(Z|[+-][0-9:]+)?$", "\\1", trimws(x), perl = TRUE)
+}
+
 # Authors are always "A; B; C".
 normalize_authors <- function(x) {
   x <- as.character(x)
@@ -240,6 +247,7 @@ normalize_records <- function(df) {
   if ("Title" %in% names(df))    df$Title    <- decode_html_entities(df$Title)
   if ("Abstract" %in% names(df)) df$Abstract <- decode_html_entities(df$Abstract)
   if ("Authors" %in% names(df))  df$Authors  <- normalize_authors(df$Authors)
+  if ("PublicationDate" %in% names(df)) df$PublicationDate <- normalize_date(df$PublicationDate)
   df
 }
 

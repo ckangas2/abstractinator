@@ -99,7 +99,7 @@
                    rows = 6,
                    style = "width: 100%; font-family: monospace; color: #fff; background-color: #4b5563;", 
                    readonly = "readonly",
-                   "@software{TheAbstractinator2025,\n  author = {Kangas, Chase},\n  title = {The Abstractinator: Automated Boolean Search Tool for Rapid Acquisition, Classification, and Triage of Immuno-Networks And Therapeutic Oncolytic Research},\n  year = {2025},\n  url = {https://theabstractinator.shinyapps.io/Abstractinator/},\n  version = {1.4.0}\n}"
+                   sprintf("@software{TheAbstractinator2026,\n  author = {Kangas, Chase},\n  title = {The Abstractinator: Automated Boolean Search Tool for Rapid Acquisition, Classification, and Triage of Immuno-Networks And Therapeutic Oncolytic Research},\n  year = {2026},\n  url = {https://abstractinator.me},\n  version = {%s}\n}", APP_VERSION)
                  ),
                  
         ),

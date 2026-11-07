@@ -108,8 +108,13 @@ get_openalex_data <- function(search_term, mailto = NULL, per_page = 200, max_re
         AuthorAffiliations = as.character(extract_affiliations(item$authorships)), 
         PublicationDate = item$publication_date %||% NA_character_,
         Source = "OpenAlex",
+        # OpenAlex knows these too; without them OpenAlex records never had a
+        # PMID, an open-access flag, or a PMCID the full-text tool can use.
+        PMID = { v <- item$ids$pmid; if (is.null(v)) NA_character_ else sub("^.*/", "", v) },
+        PMCID = { v <- item$ids$pmcid; if (is.null(v)) NA_character_ else sub("^.*/", "", v) },
+        IsOpenAccess = { oa <- item$open_access$is_oa; if (is.null(oa)) NA_character_ else if (isTRUE(oa)) "Y" else "N" },
         IsRetracted = isTRUE(item$is_retracted),
-        URL = (item$ids$openalex %||% item$doi) %||% NA_character_
+        URL = (item$doi %||% item$ids$openalex) %||% NA_character_   # the paper, not its OpenAlex page
       )
     })
     

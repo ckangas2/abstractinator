@@ -310,7 +310,7 @@ by Magnific); line-art animations from the Noun Project. Details in [CREDITS.md]
 
 If you use The Abstractinator in your research, please cite:
 
-> Kangas, C. (2026). The Abstractinator: Automated Boolean Search Tool for Rapid Acquisition, Classification, and Triage of Immuno-Networks And Therapeutic Oncolytic Research (Version 2.0.0) [Computer software]. https://abstractinator.me
+> Kangas, C. (2026). The Abstractinator: Automated Boolean Search Tool for Rapid Acquisition, Classification, and Triage of Immuno-Networks And Therapeutic Oncolytic Research (Version 2.1.0) [Computer software]. https://abstractinator.me
 
 ```bibtex
 @software{TheAbstractinator2026,
@@ -318,7 +318,7 @@ If you use The Abstractinator in your research, please cite:
   title   = {The Abstractinator: Automated Boolean Search Tool for Rapid Acquisition, Classification, and Triage of Immuno-Networks And Therapeutic Oncolytic Research},
   year    = {2026},
   url     = {https://abstractinator.me},
-  version = {2.0.0}
+  version = {2.1.0}
 }
 ```
 

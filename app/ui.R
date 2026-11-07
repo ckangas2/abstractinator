@@ -403,7 +403,7 @@ fluidPage(
   # STICKY FOOTER
   # ========================================================================
   div(class = "thin-footer",
-      span("The Abstractinator v2.0", style = "opacity: 0.5; margin-right: 5px;"),
+      span(paste0("The Abstractinator v", APP_VERSION), style = "opacity: 0.5; margin-right: 5px;"),
       "|",
       # Using actionLink so it can trigger a Shiny Modal
       actionLink("footer_help_btn", " Help & Documentation", icon = icon("question-circle")),

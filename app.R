@@ -60,6 +60,10 @@ source("generate_plot.R")
 # directory is when a session starts.
 APP_DIR <- getwd()
 
+# Shown in the footer and in the help menu's citation. Bump with each tagged
+# release, alongside CHANGELOG.md and CITATION.cff.
+APP_VERSION <- "2.1.0"
+
 source(file.path(APP_DIR, "app", "dt_options.R"))
 ui <- source(file.path(APP_DIR, "app", "ui.R"), local = TRUE)$value
 

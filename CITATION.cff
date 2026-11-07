@@ -1,0 +1,20 @@
+# Powers GitHub's "Cite this repository" button. Keep version in step with
+# APP_VERSION in app.R and the latest release in CHANGELOG.md.
+cff-version: 1.2.0
+message: "If you use The Abstractinator, please cite it as below."
+type: software
+title: "The Abstractinator: Automated Boolean Search Tool for Rapid Acquisition, Classification, and Triage of Immuno-Networks And Therapeutic Oncolytic Research"
+authors:
+  - family-names: Kangas
+    given-names: Chase
+version: 2.1.0
+date-released: 2026-11-07
+url: "https://abstractinator.me"
+repository-code: "https://github.com/ckangas2/abstractinator"
+license: MIT
+keywords:
+  - immunology
+  - virology
+  - literature search
+  - bioinformatics
+  - MCP

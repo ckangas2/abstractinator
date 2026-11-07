@@ -8,7 +8,20 @@ Development before v2.0.0 was untagged; see the git history for detail.
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-11-07
+
+A day of review-driven fixes: tag matching, record format, concurrency, a
+published PubTator3 benchmark, and a phone layout.
+
 ### Fixed
+- NIH dates arrived as `2024-06-01T00:00:00`; dates are now plain ISO (#7).
+- OpenAlex records never carried `pmid`, `pmcid` or `is_open_access`, and
+  linked to their OpenAlex page rather than the paper. All three are filled
+  and the link prefers the DOI (#25). Cache schema 11.
+- Deduplication's source priority misspelled the trials source and left out
+  OpenAlex, NIH and NSF. A published record now wins over its preprint.
+- The help menu's citation said 2025, version 1.4.0 and an old URL; the
+  footer said v2.0. Both now read one version setting (#12).
 - The site on phones (#17): the search box is full width with the Search
   button below it, the "search complete" narwhals are phone-sized and flank the
   button instead of covering the page, the tabs are one swipeable row, the
@@ -49,6 +62,7 @@ Development before v2.0.0 was untagged; see the git history for detail.
   not only 429 and 503.
 
 ### Added
+- `CITATION.cff`, for GitHub's "Cite this repository" button.
 - `is_retracted` on search results, from Europe PMC publication types,
   OpenAlex, or a "Retracted:"/"Withdrawn" title. Cache schema 9.
 - `pmid` on search results (PubMed ID, from Europe PMC), kept through

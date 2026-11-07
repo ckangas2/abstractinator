@@ -8,7 +8,12 @@ deduplicate_data <- function(df) {
   # 2. Scopus (High quality)
   # 3. bioRxiv (If it's a unique preprint)
   # 4. CORE / ClinicalTrials
-  priority_order <- c("EPMC", "Scopus", "Preprint (biorxiv)", "Preprint (medrxiv)", "bioRxiv", "CORE", "ClinicalTrials.gov")
+  # Labels must match the Source values the extractors emit. This listed
+  # "ClinicalTrials.gov" (records say "clinicaltrials.gov") and left out
+  # OpenAlex, NIH and NSF, so those tied and fell back to the abstract check.
+  # A published record (EPMC, OpenAlex) is preferred over its preprint.
+  priority_order <- c("EPMC", "Scopus", "OpenAlex", "Preprint (biorxiv)", "Preprint (medrxiv)",
+                      "bioRxiv", "CORE", "clinicaltrials.gov", "NIH", "NSF")
   
   # --- DEFENSIVE SCHEMA CHECK (The Crash Fix) ---
   # If bioRxiv returns no results, this column will be missing.

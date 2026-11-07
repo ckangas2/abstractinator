@@ -95,3 +95,9 @@ test_that("preprint search terms must start a word", {
   expect_true(grepl(cd8, "CD8+ T cells", perl = TRUE))
   expect_false(grepl(cd8, "CD88 expression", perl = TRUE))
 })
+
+test_that("dates with a time part become plain ISO dates", {
+  expect_equal(normalize_date(c("2024-06-01T00:00:00", "2024-06-01T13:45:10Z", "2024-06-01",
+                                "2024-06", "07/15/2023", NA)),
+               c("2024-06-01", "2024-06-01", "2024-06-01", "2024-06", "07/15/2023", NA))
+})
