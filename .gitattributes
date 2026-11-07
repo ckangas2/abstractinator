@@ -1,0 +1,2 @@
+# Store text files with LF endings, whatever the editor used.
+* text=auto eol=lf
