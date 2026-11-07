@@ -59,11 +59,14 @@ fluidPage(
   # ========================================================================
   div(
     style = "position: absolute; top: 15px; right: 25px; z-index: 1050;", 
+    # Settings menu. Three drawn lines rather than an icon font, so they can
+    # be rounded and animated to match the rest of the app (styles.css).
     actionButton(
       inputId = "optsBtn",
-      label = NULL,
-      icon = icon("bars"), 
-      class = "hamburger-btn" # <--- ADD THIS CLASS. Remove the 'style' arg.
+      label = HTML('<span class="hb-lines" aria-hidden="true"><span></span><span></span><span></span></span>'),
+      class = "hamburger-btn",
+      title = "Settings",
+      `aria-label` = "Settings"
     )
   ),
   

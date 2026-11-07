@@ -1472,35 +1472,54 @@ html body .modal-content a.btn-download-pill.enw:focus {
 }
 
 /* ==========================================================================
-   CUSTOM HAMBURGER BUTTON (Outline Glow Edition)
+   SETTINGS (HAMBURGER) BUTTON
+   A round frosted-glass button, matching the search card, with three drawn
+   lines that turn the theme colour and shift on hover, like the chips.
    ========================================================================== */
-
-/* 1. Target the custom class */
 .hamburger-btn {
-    background-color: transparent !important; /* Start Transparent */
-    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); /* Mechanical feel */
-    border: 1px solid #444 !important; /* Default subtle border (replaces your old inline style) */
-    border-radius: 4px !important; 
-    color: #ccc !important; /* Default grey icon */
+    width: 46px;
+    height: 46px;
+    padding: 0 !important;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50% !important;
+    background: rgba(34, 34, 34, 0.6) !important;          /* same glass as the search card */
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    color: #ccc !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+    transition: border-color 0.2s ease, color 0.2s ease, box-shadow 0.25s ease, transform 0.1s ease;
 }
-
-/* 2. HOVER STATE: Outline + Theme Glow (No Fill) */
+.hamburger-btn .hb-lines {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+}
+.hamburger-btn .hb-lines span {
+    display: block;
+    width: 18px;
+    height: 2px;
+    border-radius: 2px;
+    background: currentColor;
+    transition: width 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
 .hamburger-btn:hover {
-    background-color: transparent !important; 
-    color: var(--accent-primary) !important; /* Icon turns Theme Color */
-    border: 1px solid var(--accent-primary) !important; /* Border turns Theme Color */
-    
-    /* The Glow Effect: Uses your theme variables */
-    box-shadow: 0 0 10px var(--glow-color), inset 0 0 5px var(--glow-subtle);
+    color: var(--accent-primary) !important;
+    border-color: var(--accent-primary) !important;
+    box-shadow: 0 0 12px var(--glow-subtle), 0 4px 14px rgba(0, 0, 0, 0.45);
 }
-
-/* 3. CLICK/ACTIVE STATE: Solid Fill */
-.hamburger-btn:active,
-.hamburger-btn:focus {
-    background-color: var(--accent-primary) !important; /* Solid Theme Fill */
-    color: var(--bg-dark) !important; /* Dark icon for contrast against bright fill */
-    box-shadow: 0 0 15px var(--glow-medium); 
-    border: 1px solid var(--accent-primary) !important;
+.hamburger-btn:hover .hb-lines span:nth-child(2) { width: 11px; }
+.hamburger-btn:hover .hb-lines span:nth-child(3) { width: 14px; }
+.hamburger-btn:active { transform: scale(0.93); }
+/* No fill on :focus: after a click it stuck solid until you clicked elsewhere.
+   Keyboard users still get a clear ring. */
+.hamburger-btn:focus { outline: none; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45); }
+.hamburger-btn:focus-visible {
+    border-color: var(--accent-primary) !important;
+    box-shadow: 0 0 0 3px var(--glow-medium) !important;
 }
 
 /* ==========================================================================
