@@ -20,16 +20,8 @@ setwd(ROOT)
 plan(multisession, workers = 8)
 
 # Same engine + cache as app.R
-for (f in c("epmc_standalone_extraction.R", "CORE_extraction.R",
-            "clinicaltrials.gov_extraction.R", "scopus_extraction.R",
-            "biorxiv_extraction.R", "patentsview_extraction.R", "deduplication.R",
-            "scopus_abstract_extraction.R", "R/db_utils_local.R", "R/log_utils_local.R",
-            "fulltext_extraction.R",
-            "openalex_standalone_extraction.R", "aliases.R",
-            "orchestrate_extraction.R", "NIHReporter_extraction.R",
-            "NSFAwards_extraction.R")) {
-  source(f)
-}
+source("R/engine.R")
+load_engine()
 
 # Use an absolute cache path so the cache works no matter what directory
 # plumber is in (it switches into agent/ while serving requests).
@@ -230,8 +222,11 @@ function(req, res, q = "", limit = 25, abstract_chars = 1500, deep = "false",
     error = function(e) e
   )
   if (inherits(out, "error")) {
+    # The detail can include file paths and upstream URLs, so it goes to the
+    # server log, not to the caller.
+    message("[API] Search failed for '", q, "': ", conditionMessage(out))
     res$status <- 500
-    return(list(error = "Search failed.", detail = conditionMessage(out)))
+    return(list(error = "Search failed. Please try again later."))
   }
 
   df <- out$deduplicated_data

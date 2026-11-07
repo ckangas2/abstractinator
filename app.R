@@ -45,24 +45,10 @@ PATHOGEN_POOLS <- list(
                     label = "Bacteria", icon = "bacterium", known_label = "\U0001F9A0 Bacteria Only")
 )
 
-# --- SOURCE EXTRACTORS ---
-source("epmc_standalone_extraction.R")
-source("CORE_extraction.R")
-source("clinicaltrials.gov_extraction.R")
-source("scopus_extraction.R")
-source("biorxiv_extraction.R")
-source("patentsview_extraction.R") 
-source("deduplication.R")
-source("scopus_abstract_extraction.R")
-source("R/db_utils_local.R")
-source("R/log_utils_local.R")
-source("openalex_standalone_extraction.R")
-source("aliases.R")           
-source("orchestrate_extraction.R") 
-source("generate_plot.R")      
-source("R/log_utils_local.R")
-source("NIHReporter_extraction.R")
-source("NSFAwards_extraction.R")
+# --- SEARCH ENGINE ---
+source("R/engine.R")
+load_engine()
+source("generate_plot.R")
 
 
 

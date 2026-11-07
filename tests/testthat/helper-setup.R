@@ -6,11 +6,10 @@
 repo_root <- normalizePath(file.path(testthat::test_path(), "..", ".."))
 
 suppressPackageStartupMessages({
-  for (f in c("R/display_utils.R", "R/db_utils_local.R",
-              "orchestrate_extraction.R", "biorxiv_extraction.R", "aliases.R",
-              "generate_plot.R", "fulltext_extraction.R")) {
-    source(file.path(repo_root, f))
-  }
+  source(file.path(repo_root, "R", "display_utils.R"))
+  source(file.path(repo_root, "R", "engine.R"))
+  load_engine(repo_root)
+  source(file.path(repo_root, "generate_plot.R"))
 })
 
 # Keep test runs from writing into the real cache
