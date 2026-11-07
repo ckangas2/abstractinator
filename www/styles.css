@@ -2072,10 +2072,10 @@ a.landing-card-link:focus-visible .landing-card {
  * Bloom colour: all accent, no white core.
  * Appended as an override rather than edited in place - later rules win,
  * so this does not depend on matching the earlier gradient exactly.
- * rgba() cannot take a hex custom property, so the accent is kept as
- * components here too; keep in step with --accent-primary (#00bcd4).
+ * Mixed straight from --accent-primary with color-mix(), so the glow follows
+ * whichever theme is active (narwhal, dino, frog, or a Gotham season). It used
+ * a fixed copy of the narwhal's cyan before, so every theme glowed cyan.
  * ------------------------------------------------------------------ */
-:root { --accent-primary-rgb: 0, 188, 212; }
 
 /* Denser than first tuned: on phones in particular the line art sat on a
    glow too faint to read against. */
@@ -2085,18 +2085,18 @@ a.landing-card-link:focus-visible .landing-card {
    a visible rim. */
 .loading-icon-container::before {
   background: radial-gradient(circle closest-side at 50% 50%,
-      rgba(var(--accent-primary-rgb), 0.72) 0%,
-      rgba(var(--accent-primary-rgb), 0.60) 45%,
-      rgba(var(--accent-primary-rgb), 0.36) 72%,
-      rgba(var(--accent-primary-rgb), 0.10) 90%,
-      rgba(var(--accent-primary-rgb), 0) 100%);
+      color-mix(in srgb, var(--accent-primary) 72%, transparent) 0%,
+      color-mix(in srgb, var(--accent-primary) 60%, transparent) 45%,
+      color-mix(in srgb, var(--accent-primary) 36%, transparent) 72%,
+      color-mix(in srgb, var(--accent-primary) 10%, transparent) 90%,
+      color-mix(in srgb, var(--accent-primary) 0%, transparent) 100%);
 }
 
 .loading-icon-container::after {
   background: radial-gradient(ellipse closest-side at 50% 50%,
-      rgba(var(--accent-primary-rgb), 0.34) 0%,
-      rgba(var(--accent-primary-rgb), 0.16) 70%,
-      rgba(var(--accent-primary-rgb), 0) 100%);
+      color-mix(in srgb, var(--accent-primary) 34%, transparent) 0%,
+      color-mix(in srgb, var(--accent-primary) 16%, transparent) 70%,
+      color-mix(in srgb, var(--accent-primary) 0%, transparent) 100%);
 }
 
 /* The overlay must paint above the floating controls, or the donate button
@@ -2394,18 +2394,18 @@ a.landing-card-link:focus-visible .landing-card {
   .loading-icon-container::before {
     filter: none;
     background: radial-gradient(circle closest-side at 50% 50%,
-        rgba(var(--accent-primary-rgb), 0.90) 0%,
-        rgba(var(--accent-primary-rgb), 0.74) 37%,
-        rgba(var(--accent-primary-rgb), 0.44) 65%,
-        rgba(var(--accent-primary-rgb), 0.14) 85%,
-        rgba(var(--accent-primary-rgb), 0) 100%);   /* zero exactly at the round edge */
+        color-mix(in srgb, var(--accent-primary) 90%, transparent) 0%,
+        color-mix(in srgb, var(--accent-primary) 74%, transparent) 37%,
+        color-mix(in srgb, var(--accent-primary) 44%, transparent) 65%,
+        color-mix(in srgb, var(--accent-primary) 14%, transparent) 85%,
+        color-mix(in srgb, var(--accent-primary) 0%, transparent) 100%);   /* zero exactly at the round edge */
   }
   .loading-icon-container::after {
     filter: blur(12px);
     background: radial-gradient(ellipse closest-side at 50% 50%,
-        rgba(var(--accent-primary-rgb), 0.40) 0%,
-        rgba(var(--accent-primary-rgb), 0.20) 68%,
-        rgba(var(--accent-primary-rgb), 0) 100%);
+        color-mix(in srgb, var(--accent-primary) 40%, transparent) 0%,
+        color-mix(in srgb, var(--accent-primary) 20%, transparent) 68%,
+        color-mix(in srgb, var(--accent-primary) 0%, transparent) 100%);
   }
 
   /* --- Plotinator: hide plotly's toolbar, which overlaps the title on a phone --- */
