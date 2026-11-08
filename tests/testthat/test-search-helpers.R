@@ -185,3 +185,11 @@ test_that("the search report counts retrieved, kept and merged per database", {
   expect_false(flow$matched_complete)   # bioRxiv has no total and OpenAlex failed
   expect_equal(nrow(dedup_source_stats(NULL, dedup)), 0)
 })
+
+test_that("an OpenAlex key goes in a header, and no key means no header", {
+  expect_null(openalex_auth(NULL))
+  expect_null(openalex_auth(""))
+  expect_null(openalex_auth(NA_character_))
+  h <- openalex_auth(" abc123 ")
+  expect_equal(unname(h$headers[["Authorization"]]), "Bearer abc123")
+})

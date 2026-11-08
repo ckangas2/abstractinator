@@ -109,3 +109,17 @@ test_that("gene and RNA therapies split by kind, and research tools aren't thera
                c("Viral vector gene therapy", "Gene editing therapy", "RNA therapeutic",
                  "Gene therapy", "Non-descript"))
 })
+
+test_that("chemotherapy is the backbone, not the headline, of a combination trial (live cases)", {
+  expect_equal(tag_mod(
+    c("Oncolytic Adenovirus TILT-123 in Combination With Lymphocyte-depleting Chemotherapy and Tumor-infiltrating Lymphocytes in Melanoma",
+      "Neoadjuvant Intravesical NIS Measles Virus (MV-NIS) in Patients Ineligible for Neoadjuvant Cisplatin-based Chemotherapy",
+      "Gemcitabine plus nab-paclitaxel in metastatic pancreatic cancer"),
+    interventions = c("TILT-123 (Biological); TIL (Biological); Cyclophosphamide (Drug); Fludarabine (Drug)",
+                      "MV-NIS (Biological)", "Gemcitabine (Drug); Nab-paclitaxel (Drug)")),
+    c("Oncolytic virus", "Oncolytic virus", "Chemotherapy"))
+  # chemotherapy is still recorded among the therapies the trial uses
+  df <- data.frame(Title = "TILT-123 with lymphodepleting chemotherapy", Abstract = "",
+                   Interventions = "TILT-123 (Biological); Cyclophosphamide (Drug)")
+  expect_true("Chemotherapy" %in% tag_modality(df)$modality_hits_combined[[1]])
+})

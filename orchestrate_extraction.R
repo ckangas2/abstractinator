@@ -319,6 +319,8 @@ ALIAS_CONTEXT_MASKS <- c(
   # something else: "CMV promoter", "SV40 NLS", "RSV-LTR" (Rous sarcoma virus).
   # "HCMV" and "HIV LTR" are left alone: virologists use those for the virus.
   vector_parts = "(?<![A-Za-z0-9])(?:CMV|hCMV|SV40|RSV|MoMLV|MMLV|MSCV)(?:[\\s-]*IE)?[\\s-]*(?i:promoters?|enhancers?|LTR|NLS|nuclear localization|ori|origin of replication|poly ?\\(?A\\)?|pA|intron|terminator)(?![A-Za-z0-9])",
+  # Conditioning before a cell therapy, not a chemotherapy treatment
+  lymphodepletion = "(?i:lympho(?:cyte)?[\\s-]*depleti(?:ng|on)(?:[\\s-]+(?:chemotherapy|regimen))?)",
   # Negated or absent: "HIV-negative", "HBV-uninfected", "CD4 negative".
   # Hyphenated forms are masked whole; with a space, only after a capitalised
   # term, so "T cell negative selection" still counts its T cell.
@@ -336,6 +338,11 @@ prepare_match_text <- function(text) {
   text[is.na(text)] <- ""
   # Match on the words, not the markup: "CD8<sup>+</sup> T cells" is "CD8+ T cells".
   text <- gsub("<[^>]+>", "", text)
+  # Checked before the masks below, which blank "ad libitum" itself.
+  # A paper that says "ad libitum" often abbreviates its groups as "Ad"
+  # ("Ad + HF"); there a bare "Ad" is the feeding group, not adenovirus.
+  adlib <- grepl("(?i)(?<![A-Za-z0-9])ad[\\s-]+lib", text, perl = TRUE)
+  text[adlib] <- gsub("(?<![A-Za-z0-9])Ad(?![A-Za-z0-9])", " ", text[adlib], perl = TRUE)
   text <- stringr::str_replace_all(text, ALIAS_CONTEXT_MASK, " ")
   letters_only <- gsub("[^A-Za-z]", "", text)
   shouting <- nchar(letters_only) >= 12 & !grepl("[a-z]", letters_only)
@@ -388,19 +395,32 @@ tag_with_alias_list <- function(df, alias_list, prefix, weight_title = 20, weigh
 # registered interventions are what it tests, so they count like its title:
 # a trial of pembrolizumab is a checkpoint-inhibitor trial even if its title
 # only names the disease.
-tag_modality <- function(df) {
+# Chemotherapy and radiotherapy are usually the backbone or conditioning in a
+# trial of something else (an oncolytic virus with lymphodepleting
+# chemotherapy, a KRAS inhibitor with FOLFOX). They are the main therapy only
+# when nothing else scores; they always stay in modality_hits_combined.
+BACKGROUND_MODALITIES <- c("Chemotherapy", "Radiotherapy")
+
+tag_modality <- function(df, weight_title = 20, weight_abstract = 3) {
   if (is.null(df) || nrow(df) == 0 || !exists("modality_alias_list")) return(df)
-  tmp <- df
+  title <- as.character(df$Title)
+  title[is.na(title)] <- ""
   if ("Interventions" %in% names(df)) {
     iv <- as.character(df$Interventions)
     iv[is.na(iv)] <- ""
-    title <- as.character(df$Title)
-    title[is.na(title)] <- ""
-    tmp$Title <- trimws(paste(title, iv, sep = ". "))
+    title <- trimws(paste(title, iv, sep = ". "))
   }
-  tmp <- tag_with_alias_list(tmp, modality_alias_list, "modality")
-  df$modality_hits_combined <- tmp$modality_hits_combined
-  df$primary_modality <- tmp$primary_modality
+  rx <- aliases_to_regex(modality_alias_list)
+  score <- count_alias_matches(title, rx) * weight_title +
+    count_alias_matches(df$Abstract, rx) * weight_abstract
+  cats <- colnames(score)
+  fg <- !cats %in% BACKGROUND_MODALITIES
+  df$modality_hits_combined <- lapply(seq_len(nrow(df)), function(i) cats[score[i, ] > 0])
+  df$primary_modality <- vapply(seq_len(nrow(df)), function(i) {
+    s <- score[i, ]
+    if (any(s[fg] >= MIN_PRIMARY_SCORE)) return(cats[fg][which.max(s[fg])])
+    if (max(s) >= MIN_PRIMARY_SCORE) cats[which.max(s)] else "Non-descript"
+  }, character(1))
   df
 }
 
@@ -736,9 +756,12 @@ dispatch_source_futures <- function(search_term, limit, elsevier_key, core_key, 
   
   user_email <- Sys.getenv("USER_EMAIL")
   if (user_email == "") user_email <- NULL
+  # Read here, in the main process, and handed to the worker explicitly.
+  openalex_key <- Sys.getenv("OPENALEX_API_KEY")
   f$OpenAlex <- future({
     print("    > Dispatching OpenAlex Worker...")
-    timed("OpenAlex", safe_source("OpenAlex", get_openalex_data(search_term, mailto = user_email, max_results = limit, per_page = 200)))
+    timed("OpenAlex", safe_source("OpenAlex", get_openalex_data(search_term, mailto = user_email, max_results = limit, per_page = 200,
+                                                     api_key = openalex_key)))
   })
   
   # Conditional: CORE

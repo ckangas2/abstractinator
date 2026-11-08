@@ -153,12 +153,16 @@ Optional `.Renviron` in the project root:
 ```text
 INTEGRATE_NIH_NSF=1      # include NIH & NSF grants (the app also sets this)
 USER_EMAIL=you@example.org  # sent to OpenAlex for its "polite pool"
+OPENALEX_API_KEY=        # free key from openalex.org: 10x the daily allowance, needed for deep search paging
 ENABLE_SCOPUS=0          # set to 1 only on a subscribing institution's network
 DATA_WEBHOOK_URL=        # optional Discord webhook for updater notifications
 ```
 
-No API keys are needed on the server: the website is strictly bring-your-own-key and never
-uses keys from `.Renviron`, and the AI connector uses open-access sources only. (Keys in
+No paid API keys are needed on the server: the website is strictly bring-your-own-key and
+never uses paid-source keys from `.Renviron`, and the AI connector uses open-access sources
+only. The one server key is the free `OPENALEX_API_KEY`, which raises OpenAlex's daily
+allowance for everyone's searches; it is sent as a request header, never logged, and never
+reaches the browser. Without it, a busy day can exhaust the keyless allowance (HTTP 429). (Keys in
 `.Renviron` are only read by command-line scripts you run yourself.)
 
 ### 2. Build the preprint store (once, takes several hours)

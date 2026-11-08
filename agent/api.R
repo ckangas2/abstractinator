@@ -320,7 +320,9 @@ function(req, res, q = "", limit = 25, abstract_chars = 1500, deep = "false",
             is_retracted = "IsRetracted",
             # Clinical trials only; null on every other record.
             trial_status = "TrialStatus", trial_start = "TrialStart", trial_end = "TrialEnd",
-            phase = "Phase", interventions = "Interventions", conditions = "Conditions")
+            phase = "Phase", interventions = "Interventions", conditions = "Conditions",
+            # copies of the same work from other databases, folded into this one
+            merged_from = "MergedFrom")
   # Every record carries every key, with null where a source has no value, so
   # clients can rely on the shape rather than checking for missing fields.
   for (cl in setdiff(unname(cols), names(df))) df[[cl]] <- NA

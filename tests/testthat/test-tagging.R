@@ -291,3 +291,10 @@ test_that("German measles is rubella, not measles", {
   out <- tag_cells_and_viruses(c("A German measles outbreak in schools", "Measles virus vaccination coverage"))
   expect_equal(out$primary_virus, c("Rubella Virus", "Measles Virus"))
 })
+
+test_that("a paper that abbreviates ad libitum as 'Ad' isn't adenovirus (live case)", {
+  out <- tag_cells_and_viruses(
+    "Time-restricted feeding vs. <i>ad libitum</i> feeding in male Wistar rats",
+    "Inactive-phase time-restricted feeding (TRF) vs. <i>ad libitum</i> feeding (Ad) in rats. Four groups (TRF + HF, TRF + S, Ad + S, Ad + HF) were monitored; weight gain was greatest in Ad + HF.")
+  expect_equal(out$primary_virus, "Non-descript")
+})

@@ -9,6 +9,18 @@ Development before v2.0.0 was untagged; see the git history for detail.
 ## [Unreleased]
 
 ### Fixed
+- The Therapinator was empty, and the Deduplicatinator's merge log and trial
+  phases missing, on the website: results are trimmed to a fixed column list
+  before display, and the new columns weren't on it. They are now, with a
+  test that checks the list.
+- Europe PMC records without a DOI or PMID linked to `.../PMC/NA`; they now
+  link by the record's own Europe PMC id (found in live testing).
+- A paper abbreviating its ad libitum group as "Ad" ("Ad + HF") was tagged
+  adenovirus; a bare "Ad" no longer counts in text that says "ad libitum".
+- Combination trials were tagged by their chemotherapy backbone (an
+  oncolytic virus trial with lymphodepleting chemotherapy came out as
+  "Chemotherapy"). Chemotherapy and radiotherapy are now the main therapy only
+  when nothing else scores, and "lymphodepleting chemotherapy" doesn't count.
 - A database that failed part-way (an error on a later page), or that returned
   an HTTP error instead of raising one (OpenAlex, NSF, ClinicalTrials.gov, the
   bioRxiv index), was treated as a complete answer and cached for 7 days. It is
@@ -45,6 +57,12 @@ Development before v2.0.0 was untagged; see the git history for detail.
   longer counts as support for a hepatitis B tag.
 
 ### Added
+- `merged_from` in API/MCP results: the copies from other databases folded
+  into each record.
+- Optional free OpenAlex API key (`OPENALEX_API_KEY` in `.Renviron`), sent as
+  a header: 10x the keyless daily allowance, and required for deep-search
+  paging. OpenAlex 429s are retried twice briefly before the source is
+  reported as failed.
 - The Deduplicatinator is now a search report: headline numbers (matched in
   the databases, retrieved, duplicates merged, unique works), one table per
   database (retrieved, matched, kept, merged, status, with trial phases), and

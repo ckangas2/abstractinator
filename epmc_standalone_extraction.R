@@ -130,10 +130,18 @@ get_epmc_data <- function(search_term, page_size = 1000, result_type = "core", m
       }
       
       # URL Logic
+      # Without a DOI, link the Europe PMC page by the record's own id (a PMID
+      # for MED records, PMC... for full-text-only ones, PPR... for
+      # preprints). Building it from the PMID gave ".../PMC/NA" links for
+      # records that have no PMID.
+      epmc_src <- results_df$source[i] %||% NA_character_
+      epmc_id  <- results_df$id[i] %||% NA_character_
       url <- if (!is.na(doi)) {
         paste0("https://doi.org/", doi)
-      } else if (!is.null(results_df$source[i]) && !is.null(results_df$pmid[i])) {
-        paste0("https://europepmc.org/article/", results_df$source[i], "/", results_df$pmid[i])
+      } else if (!is.na(epmc_src) && !is.na(epmc_id) && nzchar(epmc_id)) {
+        paste0("https://europepmc.org/article/", epmc_src, "/", epmc_id)
+      } else if (!is.na(pmcid) && nzchar(pmcid)) {
+        paste0("https://europepmc.org/article/PMC/", pmcid)
       } else {
         NA_character_
       }

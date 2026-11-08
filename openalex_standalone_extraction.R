@@ -46,7 +46,16 @@ extract_affiliations <- function(authorships_list) {
 }
 
 # --- 3. THE EXTRACTOR ---
-get_openalex_data <- function(search_term, mailto = NULL, per_page = 200, max_results = 200) {
+# OpenAlex API key (free, from openalex.org): 10x the keyless daily allowance,
+# and needed to page past the first page of results. Sent as a header, never in
+# the URL, so it can't end up in a logged request line. NULL when there is none.
+openalex_auth <- function(api_key) {
+  if (is.null(api_key) || is.na(api_key) || !nzchar(trimws(api_key))) return(NULL)
+  httr::add_headers(Authorization = paste("Bearer", trimws(api_key)))
+}
+
+get_openalex_data <- function(search_term, mailto = NULL, per_page = 200, max_results = 200,
+                              api_key = NULL) {
   
   print(paste("--- Starting Extraction for:", search_term, "---"))
   
@@ -80,7 +89,15 @@ get_openalex_data <- function(search_term, mailto = NULL, per_page = 200, max_re
     if (is_polite) query_params$mailto <- mailto
     
     # Fetch
-    resp <- tryCatch({ GET(base_url, query = query_params, httr::timeout(60)) }, error = function(e) NULL)
+    # 429 is OpenAlex's rate limit. A per-second limit clears in a moment, so
+    # retry twice with a short pause; a spent daily allowance still fails,
+    # and is reported as a failed source rather than an empty one.
+    for (attempt in 1:3) {
+      resp <- tryCatch({ GET(base_url, query = query_params, openalex_auth(api_key), httr::timeout(60)) },
+                       error = function(e) NULL)
+      if (is.null(resp) || status_code(resp) != 429 || attempt == 3) break
+      Sys.sleep(attempt)
+    }
     
     if (is.null(resp) || status_code(resp) != 200) {
       status <- if (is.null(resp)) "network error" else status_code(resp)

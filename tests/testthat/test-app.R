@@ -37,3 +37,15 @@ test_that("the server starts and sets up its state", {
     expect_length(rv$reading_list(), 0)
   })
 })
+
+test_that("the results every tab reads keep the columns the Therapinator and report need", {
+  # The website trims results to one column list (search.R). A column missing
+  # from it silently empties whichever tab reads it -- which is how the
+  # Therapinator first shipped blank.
+  src <- paste(readLines(file.path(repo_root, "app/server/search.R"), warn = FALSE), collapse = "\n")
+  sel <- regmatches(src, regexpr("select\\(Title, Abstract, Authors,[^)]*\\)", src))
+  expect_length(sel, 1)
+  needed <- c("primary_modality", "modality_hits_combined", "Interventions", "Conditions",
+              "Phase", "TrialStatus", "TrialStart", "MergedFrom", "NCTId", "Source")
+  for (col in needed) expect_match(sel, paste0("\\b", col, "\\b"), info = col)
+})

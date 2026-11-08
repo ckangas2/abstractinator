@@ -288,17 +288,37 @@
                      "No abstract provided by ", Source, "</span>")
             )
           ) %>% # <--- CLOSE MUTATE AND PIPE
+
+          # Columns the Therapinator, the Deduplicatinator report and the
+          # reading list read. Not every search has them (no trials, a cached
+          # result from before a field existed), so fill them in.
+          mutate(
+            primary_modality       = if ("primary_modality" %in% names(.)) primary_modality else NA_character_,
+            modality_hits_combined = if ("modality_hits_combined" %in% names(.)) modality_hits_combined else vector("list", n()),
+            Interventions          = if ("Interventions" %in% names(.)) Interventions else NA_character_,
+            Conditions             = if ("Conditions" %in% names(.)) Conditions else NA_character_,
+            Phase                  = if ("Phase" %in% names(.)) Phase else NA_character_,
+            TrialStatus            = if ("TrialStatus" %in% names(.)) TrialStatus else NA_character_,
+            TrialStart             = if ("TrialStart" %in% names(.)) TrialStart else NA_character_,
+            TrialEnd               = if ("TrialEnd" %in% names(.)) TrialEnd else NA_character_,
+            MergedFrom             = if ("MergedFrom" %in% names(.)) MergedFrom else NA_character_,
+            GrantID                = if ("GrantID" %in% names(.)) GrantID else NA_character_
+          ) %>%
           
           # --- UPDATE SELECT ---
           # Column order is a contract: the table's JS reads row[5] URL, row[6] DOI,
           # row[10] Source, row[17] primary_bacteria and row[22] ItemKey. New
-          # columns are APPENDED (23, 24, 25) so none of those indices move.
+          # columns are APPENDED (23 onwards) so none of those indices move.
+          # Anything another tab reads must be listed here: this select is
+          # what every tab sees (test-app.R checks the list).
           select(Title, Abstract, Authors, AuthorAffiliations, PublicationDate, URL, DOI,
                  EPMC_ID, CORE_ID, NCTId, Source, Affiliations, AdverseEvents,
                  SeriousAdverseEvents, is_bioinformatics, primary_cell,
                  primary_virus, primary_bacteria, immune_cell_hits_combined, virus_hits_combined,
                  bacteria_hits_combined, SortDate, ItemKey,
-                 HasAbstract, PMCID, IsOpenAccess)
+                 HasAbstract, PMCID, IsOpenAccess,
+                 primary_modality, modality_hits_combined, Interventions, Conditions,
+                 Phase, TrialStatus, TrialStart, TrialEnd, MergedFrom, GrantID)
       )
       
       output$resultsDisplay <- DT::renderDataTable({
@@ -322,7 +342,7 @@
         o$order <- list(list(23, "desc"), list(21, "desc"))
         o$columnDefs <- c(
           if (is.null(dt_options$columnDefs)) list() else dt_options$columnDefs,
-          list(list(targets = c(23, 24, 25), visible = FALSE))
+          list(list(targets = 23:35, visible = FALSE))
         )
         o
       }),
@@ -332,7 +352,9 @@
                    "AdverseEvents", "SeriousAdverseEvents", "Bioinformatics", 
                    "Primary Immune Cell", "Primary Virus", "Primary Bacteria", "Immune Cell Hits", "Virus Hits",
                    "Bacteria Hits", "SortDate", "ItemKey",
-                   "HasAbstract", "PMCID", "IsOpenAccess"),
+                   "HasAbstract", "PMCID", "IsOpenAccess",
+                   "Therapy", "Therapy Hits", "Interventions", "Conditions", "Phase",
+                   "TrialStatus", "TrialStart", "TrialEnd", "MergedFrom", "GrantID"),
       rownames = FALSE,
       escape = FALSE,
       selection = 'none',
