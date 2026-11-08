@@ -9,6 +9,9 @@ Development before v2.0.0 was untagged; see the git history for detail.
 ## [Unreleased]
 
 ### Fixed
+- The Therapinator summary table errored on every search: a bare
+  `validate()` resolved to jsonlite's JSON validator instead of Shiny's. Now
+  `shiny::validate`, with a test that no server code uses the bare name.
 - The Therapinator was empty, and the Deduplicatinator's merge log and trial
   phases missing, on the website: results are trimmed to a fixed column list
   before display, and the new columns weren't on it. They are now, with a

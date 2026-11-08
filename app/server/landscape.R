@@ -14,7 +14,8 @@ output$landscapeTable <- DT::renderDataTable({
   df <- landscape_df()
   req(df)
   tab <- therapy_landscape(df)
-  validate(need(nrow(tab) > 0,
+  # shiny:: on purpose: jsonlite, loaded after shiny, has its own validate().
+  shiny::validate(shiny::need(nrow(tab) > 0,
                 "No therapies were identified in these results. Try a search that names a treatment, target or disease."))
   DT::datatable(tab, rownames = FALSE, selection = "single", escape = TRUE,
                 options = list(dom = "t", pageLength = 50, ordering = TRUE, scrollX = TRUE))

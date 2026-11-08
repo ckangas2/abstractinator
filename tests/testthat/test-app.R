@@ -49,3 +49,15 @@ test_that("the results every tab reads keep the columns the Therapinator and rep
               "Phase", "TrialStatus", "TrialStart", "MergedFrom", "NCTId", "Source")
   for (col in needed) expect_match(sel, paste0("\\b", col, "\\b"), info = col)
 })
+
+test_that("server code calls shiny::validate, never the bare name", {
+  # jsonlite (attached after shiny) exports its own validate(txt), so a bare
+  # validate(need(...)) in a render function errors with "is.character(txt)
+  # is not TRUE". It broke the Plotinator once and the Therapinator once.
+  files <- list.files(file.path(repo_root, "app", "server"), pattern = "[.]R$", full.names = TRUE)
+  for (f in files) {
+    code <- sub("#.*$", "", readLines(f, warn = FALSE))
+    bare <- grep("(^|[^:A-Za-z0-9_.])validate\\(", code)
+    expect_length(bare, 0)
+  }
+})
