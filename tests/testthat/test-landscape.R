@@ -123,3 +123,13 @@ test_that("chemotherapy is the backbone, not the headline, of a combination tria
                    Interventions = "TILT-123 (Biological); Cyclophosphamide (Drug)")
   expect_true("Chemotherapy" %in% tag_modality(df)$modality_hits_combined[[1]])
 })
+
+test_that("trial phases summarise earliest first, with unphased trials last", {
+  df <- data.frame(Source = c(rep("clinicaltrials.gov", 7), "EPMC"),
+                   Phase = c("Phase 2", "Phase 1", "Phase 1/Phase 2", NA, "Early Phase 1",
+                             "Phase 1", "Phase 3", NA))
+  expect_equal(trial_phase_summary(df),
+               c("Early Phase 1" = 1L, "Phase 1" = 2L, "Phase 1/2" = 1L, "Phase 2" = 1L,
+                 "Phase 3" = 1L, "Not applicable" = 1L))
+  expect_length(trial_phase_summary(data.frame(Source = "EPMC")), 0)
+})

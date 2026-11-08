@@ -374,3 +374,23 @@ dedup_flow <- function(stats, n_unique) {
        merged = max(0L, retrieved - n_unique),
        unique = n_unique)
 }
+
+# Trial phases in a result set, as one compact summary for the search report:
+# c("Early Phase 1" = 1, "Phase 1" = 24, "Phase 1/2" = 12, ..., "Not applicable" = 5),
+# earliest first. Observational studies have no phase by design; they are
+# counted as "Not applicable" so the parts add up to the trial total.
+trial_phase_summary <- function(df) {
+  if (is.null(df) || !is.data.frame(df) || !"Source" %in% names(df)) return(integer(0))
+  tr <- df[df$Source %in% "clinicaltrials.gov", , drop = FALSE]
+  if (!nrow(tr)) return(integer(0))
+  ph <- if ("Phase" %in% names(tr)) as.character(tr$Phase) else rep(NA_character_, nrow(tr))
+  ph[is.na(ph) | !nzchar(trimws(ph))] <- "Not applicable"
+  ph <- gsub("Phase (\\d)/Phase (\\d)", "Phase \\1/\\2", ph, perl = TRUE)
+  counts <- table(ph)
+  nm <- names(counts)
+  first_digit <- suppressWarnings(as.numeric(sub("^\\D*(\\d).*$", "\\1", nm, perl = TRUE)))
+  first_digit[!grepl("\\d", nm, perl = TRUE)] <- Inf
+  early <- grepl("^Early", nm, perl = TRUE)
+  ord <- order(nm == "Not applicable", first_digit - 0.5 * early, nm, method = "radix")
+  setNames(as.integer(counts[ord]), nm[ord])
+}

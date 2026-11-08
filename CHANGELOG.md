@@ -66,10 +66,10 @@ Development before v2.0.0 was untagged; see the git history for detail.
   a header: 10x the keyless daily allowance, and required for deep-search
   paging. OpenAlex 429s are retried twice briefly before the source is
   reported as failed.
-- The Deduplicatinator is now a search report: headline numbers (matched in
-  the databases, retrieved, duplicates merged, unique works), one table per
-  database (retrieved, matched, kept, merged, status, with trial phases), and
-  a log of merged records. It reads the per-source counts stored with each
+- The Deduplicatinator is now a search report: the search as one flow line
+  (matched in the databases -> retrieved -> duplicates merged -> unique
+  works), a compact table per database (retrieved, matched, kept, merged,
+  status, with trial phases on one line), and a log of merged records. It reads the per-source counts stored with each
   result, so a cached search reports the same numbers. Above the results,
   only a short warning remains, shown when a database didn't respond fully.
 - **Therapinator** tab, "what's been tried": for the current results, a table

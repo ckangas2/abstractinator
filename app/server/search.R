@@ -55,7 +55,6 @@
     output$completionIconLeft <- renderImage(NULL, deleteFile = FALSE)
     output$completionIconRight <- renderImage(NULL, deleteFile = FALSE)
     output$resultsDisplay <- renderDataTable(NULL)
-    output$deduplicationTable <- DT::renderDataTable(NULL)
     rv$original_article_df <- NULL
     rv$article_df(NULL)
     rv$deduplication_table <- NULL
@@ -421,60 +420,6 @@
       dedup_stats <- dedup_source_stats(rv$source_counts, rv$article_df())
       flow <- dedup_flow(dedup_stats, nrow(rv$article_df()))
 
-      # Phase breakdown as indented rows beneath clinicaltrials.gov. Only the
-      # record count is filled in: the other two columns are about duplicates,
-      # and a phase subset has no honest value to put there, so they stay empty
-      # rather than repeating a number that would look computed.
-      add_trial_phase_rows <- function(tbl, raw) {
-        if (is.null(tbl) || !nrow(tbl)) return(tbl)
-        if (is.null(raw) || !"Source" %in% names(raw)) return(tbl)
-        tr <- raw[!is.na(raw$Source) & raw$Source == "clinicaltrials.gov", , drop = FALSE]
-        if (!nrow(tr)) return(tbl)
-
-        ph <- if ("Phase" %in% names(tr)) as.character(tr$Phase) else rep(NA_character_, nrow(tr))
-        # Observational studies have no phase by design; count them rather than
-        # hiding them, or the sub-rows will not add up to the trial total.
-        ph[is.na(ph) | !nzchar(trimws(ph))] <- "Not applicable"
-
-        counts <- table(ph)
-        nm <- names(counts)
-        counts <- counts[order(nm == "Not applicable", nm)]
-        if (!length(counts)) return(tbl)
-
-        i <- which(trimws(tolower(as.character(tbl[[1]]))) == "clinicaltrials.gov")
-        if (!length(i)) return(tbl)
-        i <- i[1]
-
-        sub <- tbl[rep(i, length(counts)), , drop = FALSE]
-        sub[[1]] <- sprintf(
-          "<span style=\"padding-left: 26px; opacity: 0.6;\">&#8627;&nbsp; %s</span>",
-          names(counts)
-        )
-        sub[[2]] <- as.integer(counts)
-        if (ncol(sub) >= 3) for (k in 3:ncol(sub)) sub[[k]] <- NA
-
-        dplyr::bind_rows(
-          tbl[seq_len(i), , drop = FALSE],
-          sub,
-          if (i < nrow(tbl)) tbl[(i + 1):nrow(tbl), , drop = FALSE] else NULL
-        )
-      }
-
-      output$deduplicationTable <- DT::renderDataTable({
-        tbl <- dedup_stats
-        req(nrow(tbl) > 0)
-        tbl$Matched <- ifelse(is.na(tbl$Matched), "\u2014", format(tbl$Matched, big.mark = ",", trim = TRUE))
-        tbl$Source <- htmltools::htmlEscape(tbl$Source)
-        # Trial phases as indented rows under ClinicalTrials.gov, counting
-        # retrieved trials (the trials themselves are rarely duplicates).
-        tbl <- add_trial_phase_rows(tbl[, c("Source", "Retrieved", "Matched", "Unique", "Merged", "Status")],
-                                    rv$article_df())
-        DT::datatable(tbl, rownames = FALSE, escape = FALSE, selection = "none",
-                      colnames = c("Database", "Retrieved", "Matched", "Kept", "Merged", "Status"),
-                      options = list(dom = "t", paging = FALSE, ordering = FALSE, scrollX = TRUE,
-                                     columnDefs = list(list(className = "dt-right", targets = 1:4))))
-      })
-
       output$dedupMergesTable <- DT::renderDataTable({
         d <- rv$article_df()
         req(d, "MergedFrom" %in% names(d))
@@ -489,31 +434,66 @@
       })
 
       output$deduplicationSummaryContent <- renderUI({
-        fmt <- function(n) if (is.na(n)) "\u2014" else format(n, big.mark = ",", trim = TRUE)
-        tile <- function(value, label, note = NULL) div(class = "stat-tile",
-          div(class = "stat-value", value), div(class = "stat-label", label),
-          if (!is.null(note)) div(class = "stat-note", note))
+        fmt <- function(n) if (length(n) == 0 || is.na(n)) "\u2014" else format(n, big.mark = ",", trim = TRUE)
         when <- rv$retrieved_at
         when_txt <- if (inherits(when, "POSIXt")) paste0(
           if (isTRUE(rv$from_cache)) "Cached result; databases queried " else "Databases queried ",
           format(when, "%b %d, %H:%M UTC", tz = "UTC"), ".")
         bad <- incomplete_source_labels(rv$source_counts)
-        n_merged_rows <- if ("MergedFrom" %in% names(rv$article_df()))
-          sum(!is.na(rv$article_df()$MergedFrom) & nzchar(rv$article_df()$MergedFrom)) else 0L
+        d <- rv$article_df()
+        n_merged_rows <- if ("MergedFrom" %in% names(d)) sum(!is.na(d$MergedFrom) & nzchar(d$MergedFrom)) else 0L
+
+        # The search as a flow, left to right: what the databases hold, what
+        # was fetched, what was folded together, what is shown.
+        step <- function(value, label) span(class = "flow-step",
+          span(class = "flow-value", value), span(class = "flow-label", label))
+        arrow <- span(class = "flow-arrow", "\u2192")
+        flow_line <- div(class = "dedup-flow",
+          step(paste0(fmt(flow$matched), if (!flow$matched_complete && !is.na(flow$matched)) "+"), "matched"), arrow,
+          step(fmt(flow$retrieved), "retrieved"), arrow,
+          step(fmt(flow$merged), "duplicates merged"), arrow,
+          step(fmt(flow$unique), "unique works"))
+
+        # One row per database, plain HTML: a handful of rows doesn't need a
+        # data grid. Trial phases fold into one line under ClinicalTrials.gov.
+        phases <- trial_phase_summary(d)
+        status_dot <- function(st) {
+          cls <- switch(st, "OK" = "ok", "Stopped early" = "partial", "No response" = "failed", "ok")
+          span(class = paste("status", cls), title = st, span(class = "status-dot"),
+               span(class = "status-text", st))
+        }
+        rows <- lapply(seq_len(nrow(dedup_stats)), function(i) {
+          r <- dedup_stats[i, ]
+          main <- tags$tr(
+            tags$td(class = "db", r$Source),
+            tags$td(class = "num", fmt(r$Retrieved)),
+            tags$td(class = "num muted", fmt(r$Matched)),
+            tags$td(class = "num", fmt(r$Unique)),
+            tags$td(class = "num", if (r$Merged > 0) fmt(r$Merged) else span(class = "muted", "0")),
+            tags$td(status_dot(r$Status)))
+          if (r$Source == "ClinicalTrials.gov" && length(phases)) {
+            sub <- tags$tr(class = "sub", tags$td(colspan = 6,
+              span(class = "sub-label", "Phases"),
+              lapply(seq_along(phases), function(k) span(class = "phase-chip",
+                names(phases)[k], span(class = "phase-n", phases[[k]])))))
+            tagList(main, sub)
+          } else main
+        })
+        db_table <- div(class = "dedup-table-wrap", tags$table(class = "dedup-table",
+          tags$thead(tags$tr(
+            tags$th("Database"), tags$th(class = "num", "Retrieved"), tags$th(class = "num", "Matched"),
+            tags$th(class = "num", "Kept"), tags$th(class = "num", "Merged"), tags$th(span(class = "status-text", "Status")))),
+          tags$tbody(rows)))
+
         div(class = "dedup-panel",
           h4("Deduplicatinator"),
           p(class = "dedup-lead", time_message,
             if (!is.null(when_txt)) span(class = "dedup-when", when_txt)),
           if (length(bad)) div(class = "dedup-warning",
             paste0(paste(bad, collapse = ", "), " didn't respond fully, so these results are incomplete and weren't cached. Searching again will retry.")),
-          div(class = "stat-tiles",
-            tile(paste0(fmt(flow$matched), if (!flow$matched_complete && !is.na(flow$matched)) "+"),
-                 "matched in the databases", "every record the databases have for this search"),
-            tile(fmt(flow$retrieved), "retrieved", "each database's top matches"),
-            tile(fmt(flow$merged), "duplicates merged", "same work from more than one source"),
-            tile(fmt(flow$unique), "unique works", "what the results show")),
+          flow_line,
           h5("By database"),
-          DT::dataTableOutput("deduplicationTable"),
+          if (nrow(dedup_stats)) db_table,
           p(class = "plot-caveat",
             "Retrieved: records fetched (a database's top matches, not all of them). Matched: the database's own total. Kept: unique records shown with that database as the source. Merged: its records folded into another copy of the same work (the same DOI, the same grant project, or the same title when one copy has no DOI)."),
           if (n_merged_rows > 0) tags$details(class = "dedup-merges",
@@ -535,7 +515,6 @@
       output$completionIconLeft <- renderImage({ return(NULL) }, deleteFile = FALSE)
       output$completionIconRight <- renderImage({ return(NULL) }, deleteFile = FALSE)
       output$resultsDisplay <- renderDataTable(NULL)
-      output$deduplicationTable <- DT::renderDataTable(NULL)
       rv$original_article_df <- NULL
       rv$article_df(NULL)
       rv$deduplication_table <- NULL

@@ -1886,26 +1886,67 @@ a.landing-card-link:focus-visible .landing-card {
   color: #e8c9a4;
   font-size: 0.9em;
 }
-.stat-tiles {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
+.dedup-flow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 14px;
+  margin: 4px 0 6px;
+  padding: 10px 0 12px;
+  border-bottom: 1px solid #2f3036;
 }
-.stat-tile {
-  padding: 12px 14px;
-  border: 1px solid #3a3b42;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.02);
-}
-.stat-value {
-  font-size: 1.6em;
+.flow-step { display: inline-flex; align-items: baseline; gap: 6px; }
+.flow-value {
+  font-size: 1.45em;
   font-weight: 600;
-  line-height: 1.2;
   color: var(--accent-primary);
   font-variant-numeric: tabular-nums;
 }
-.stat-label { margin-top: 2px; color: #ddd; font-size: 0.9em; }
-.stat-note { margin-top: 4px; color: #80868b; font-size: 0.75em; line-height: 1.35; }
+.flow-label { color: #b9bdc3; font-size: 0.9em; }
+.flow-arrow { color: #5f636a; font-size: 1.1em; }
+
+.dedup-table-wrap { overflow-x: auto; }
+.dedup-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92em;
+  font-variant-numeric: tabular-nums;
+}
+.dedup-table th {
+  padding: 6px 10px;
+  text-align: left;
+  font-weight: 500;
+  font-size: 0.8em;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #8a8f96;
+  border-bottom: 1px solid #3a3b42;
+  white-space: nowrap;
+}
+.dedup-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid #2a2b30;
+  color: #e3e5e8;
+  white-space: nowrap;
+}
+.dedup-table .num { text-align: right; }
+.dedup-table .muted { color: #80868b; }
+.dedup-table tr.sub td {
+  padding: 2px 10px 10px 22px;
+  white-space: normal;
+  color: #9aa0a6;
+  font-size: 0.88em;
+}
+.dedup-table tr:has(+ tr.sub) td { border-bottom: none; }
+.sub-label { margin-right: 8px; color: #80868b; }
+.phase-chip { display: inline-block; margin: 2px 12px 2px 0; white-space: nowrap; }
+.phase-n { margin-left: 5px; color: #e3e5e8; }
+.status { display: inline-flex; align-items: center; gap: 6px; }
+.status-dot { width: 7px; height: 7px; border-radius: 50%; background: #5bbf7a; }
+.status.partial .status-dot { background: #f0a14a; }
+.status.failed .status-dot { background: #e5534b; }
+.status.failed { color: #e8a9a5; }
+
 .dedup-merges { margin-top: 18px; }
 .dedup-merges > summary {
   cursor: pointer;
@@ -1914,9 +1955,15 @@ a.landing-card-link:focus-visible .landing-card {
   margin-bottom: 8px;
 }
 @media (max-width: 640px) {
-  .stat-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .stat-value { font-size: 1.3em; }
+  .flow-value { font-size: 1.2em; }
   .dedup-panel { padding: 0 0 18px; }
+  .dedup-table { font-size: 0.82em; }
+  .dedup-table td, .dedup-table th { padding-left: 5px; padding-right: 5px; }
+  .dedup-table th { font-size: 0.72em; letter-spacing: 0.02em; }
+  .dedup-table td.db { white-space: normal; }
+  .dedup-table tr.sub td { padding-left: 12px; }
+  /* On a phone the status is its coloured dot; the word stays for screen readers */
+  .status-text { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 }
 
 /* ==========================================================================
