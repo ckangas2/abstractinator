@@ -53,6 +53,9 @@ Development before v2.0.0 was untagged; see the git history for detail.
   compatible year. Covered by new offline tests (`test-dedup.R`).
 
 ### Changed
+- The Therapinator tab is hidden on the website while it is developed further
+  (`SHOW_THERAPINATOR` in `app.R`); its code and tests stay, and the therapy
+  tags remain in the API and MCP results.
 - The PubTator3 benchmark now leads with tag support and adds 95% confidence
   intervals, a frozen held-out set of searches that name no organism (figures
   only, no examples, so it can't be tuned on), and negative controls reported

@@ -103,9 +103,10 @@ AI      ──► Cloudflare ──► mcp.abstractinator.me ──► MCP serve
   the therapy (oncolytic virus, CAR-T, checkpoint inhibitor, vaccine, chemotherapy...), counting a
   trial's registered interventions like its title. Aliases are matched as whole words, short
   acronyms case-sensitively, and context rules drop phrases like "ad hoc" or "CMV promoter".
-- **Therapinator.** "What's been tried": a table of therapy x stage (grant, preprint, paper,
-  trial phase) for the current results, and the trials themselves with their interventions,
-  phase and status, most advanced first.
+- **Therapinator** (in development, hidden on the website: `SHOW_THERAPINATOR` in `app.R`).
+  "What's been tried": a table of therapy x stage (grant, preprint, paper, trial phase) for the
+  current results, and the trials themselves with their interventions, phase and status, most
+  advanced first. The therapy tags themselves (`primary_modality`) are live in the API.
 - **Swappable pools.** The Plotinator's pathogen axis is not hard-wired to viruses: a pool switch
   selects which tagged category it plots, and the same search can be viewed through either lens.
   Adding a pool (fungi, parasites, drug classes, a lab's own vocabulary) means defining an alias
