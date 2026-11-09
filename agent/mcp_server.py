@@ -39,6 +39,8 @@ from pathlib import Path
 import httpx2
 from mcp.server.mcpserver import MCPServer
 from mcp.types import ToolAnnotations
+from typing import Annotated
+from pydantic import Field
 from mcp.server.transport_security import TransportSecuritySettings
 
 # The REST API runs as several identical processes (see agent/*.service), so
@@ -412,15 +414,35 @@ mcp.middleware.append(usage_logging_middleware)
     )
 )
 async def search_literature(
-    query: str, max_results: int = 25, abstract_chars: int = 1500,
-    deep: bool = False, offset: int = 0, sources: str = ""
+    query: Annotated[str, Field(
+        description='Search term, e.g. "oncolytic virus", "T-VEC", "NK cell exhaustion".')],
+    max_results: Annotated[int, Field(
+        description="How many records to return (1-100). Split evenly between the "
+                    "databases that have hits, not the N best overall.")] = 25,
+    abstract_chars: Annotated[int, Field(
+        description="Truncate each abstract to this many characters; 0 omits "
+                    "abstracts to save space.")] = 1500,
+    deep: Annotated[bool, Field(
+        description="Search more broadly: up to 250 records per database instead of "
+                    "50. Slower (often 20-60 seconds); use for broad topics or when a "
+                    "standard search seems to miss relevant work.")] = False,
+    offset: Annotated[int, Field(
+        description="Skip this many records, to page through a large result set. "
+                    "Ordering is deterministic, so paging never repeats or skips a "
+                    "record. Page against `available` or `has_more`, not `total_found` "
+                    "(which counts the whole pool before any sources= filter).")] = 0,
+    sources: Annotated[str, Field(
+        description='Restrict which databases are drawn from. Comma-separated: the '
+                    'groups "papers" (Europe PMC + OpenAlex), "grants" (NIH + NSF), '
+                    '"preprints", "trials", or exact source names. Empty means every '
+                    'source. The even split then applies only to what remains.')] = "",
 ) -> dict:
     """Search immunology/virology literature across several databases at once.
 
     Queries Europe PMC, OpenAlex, ClinicalTrials.gov, bioRxiv/medRxiv preprints,
     NIH RePORTER grants and NSF awards in parallel, removes duplicates, and tags each
     record with its most prominent immune cell type (primary_cell), virus
-    (primary_virus) and bacterium (primary_bacteria).
+    (primary_virus), bacterium (primary_bacteria) and therapy (primary_modality).
 
     Results are split EVENLY between the sources that have hits, so
     max_results=25 across five sources returns about five records from each --
@@ -429,26 +451,6 @@ async def search_literature(
 
     A fresh search takes roughly 5-10 seconds; repeat searches within 7 days
     are instant.
-
-    Args:
-        query: Search term, e.g. "oncolytic virus", "T-VEC", "NK cell exhaustion".
-        max_results: How many records to return (1-100). Default 25.
-        abstract_chars: Truncate abstracts to this length; 0 omits them to save space.
-        deep: Search more broadly (up to 250 records per database instead of 50).
-            Slower (often 20-60 seconds); use for broad topics or when a standard
-            search seems to miss relevant work.
-        sources: Restrict which databases are drawn from. Comma-separated, any
-            of the groups "papers" (Europe PMC + OpenAlex), "grants" (NIH +
-            NSF), "preprints", "trials", or exact source names. The even split
-            then applies only to what remains, so sources="papers" with
-            max_results=25 returns about 12 from each of two databases.
-            Default: every source.
-        offset: Skip this many records before returning, to page through a
-            large result set. Ordering is deterministic, so paging cannot
-            repeat or skip a record. Check has_more in the response.
-            total_found is the whole deduplicated pool; available is what is
-            pageable after any sources= filter, so page against available or
-            has_more, not total_found.
 
     Returns a dict with total_found, available, returned, offset, has_more,
     source_counts, retrieved_at (when the databases were queried; a cached
@@ -504,7 +506,16 @@ async def search_literature(
     )
 )
 async def get_fulltext(
-    pmcid: str = "", doi: str = "", max_chars: int = 20000
+    pmcid: Annotated[str, Field(
+        description='PMC identifier from a search result, e.g. "PMC5334499". Give '
+                    'this or doi.')] = "",
+    doi: Annotated[str, Field(
+        description="DOI, used to look up the PMCID when pmcid isn't given. One "
+                    "request slower, and only works for articles in Europe PMC.")] = "",
+    max_chars: Annotated[int, Field(
+        description="Truncate the returned text: default 20000, maximum 100000, "
+                    "minimum 500. The whole text is cached server-side, so asking for "
+                    "more later costs nothing.")] = 20000,
 ) -> dict:
     """Read the full text of ONE open-access article from Europe PMC.
 
@@ -517,15 +528,8 @@ async def get_fulltext(
     JATS text, already split into sections, with no navigation or paywall
     interstitials to work around.
 
-    Args:
-        pmcid: PMC identifier from a search result, e.g. "PMC5334499".
-        doi: DOI, used to look up the PMCID when pmcid is not supplied. Slower
-            by one request, and only works if the article is in Europe PMC.
-        max_chars: Truncate the returned text. Default 20000, maximum 100000,
-            minimum 500 -- asking for less than 500 still returns 500. A
-            truncated response also carries a trailing "[truncated]" marker,
-            so chars can exceed max_chars by 13. The whole text is cached
-            server-side either way, so asking for more later costs nothing.
+    A truncated response carries a trailing "[truncated]" marker, so chars
+    can exceed max_chars by 13; asking for less than 500 still returns 500.
 
     Returns a dict with pmcid, status, chars, total_chars, truncated,
     from_cache and full_text. total_chars is the length of the whole article,

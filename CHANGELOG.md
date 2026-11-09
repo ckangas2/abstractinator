@@ -53,6 +53,9 @@ Development before v2.0.0 was untagged; see the git history for detail.
   compatible year. Covered by new offline tests (`test-dedup.R`).
 
 ### Changed
+- MCP tools describe every argument in their input schema (Field
+  descriptions), instead of only in the docstring, so agent clients see what
+  each parameter does when choosing values.
 - The Therapinator tab is hidden on the website while it is developed further
   (`SHOW_THERAPINATOR` in `app.R`); its code and tests stay, and the therapy
   tags remain in the API and MCP results.
