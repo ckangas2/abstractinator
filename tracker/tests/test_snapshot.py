@@ -5,6 +5,7 @@ import gzip
 import json
 import os
 import shutil
+import sqlite3
 import sys
 import tempfile
 import unittest
@@ -81,16 +82,12 @@ class FakeAPI:
         return out
 
 
-def slurp(*parts, mode="r"):
-    with open(os.path.join(*parts), mode) as fh:
-        return fh.read()
-
-
-def read_snapshot(out, day):
-    with gzip.open(os.path.join(out, day, "trials.jsonl.gz"), "rt", encoding="utf-8") as fh:
-        recs = [json.loads(l) for l in fh if l.strip()]
-    with open(os.path.join(out, day, "manifest.json"), encoding="utf-8") as fh:
-        return recs, json.load(fh)
+def db_rows(db, sql, *args):
+    con = sqlite3.connect(db)
+    try:
+        return con.execute(sql, args).fetchall()
+    finally:
+        con.close()
 
 
 class Canonical(unittest.TestCase):
@@ -145,94 +142,166 @@ class Canonical(unittest.TestCase):
 
 class Snapshot(unittest.TestCase):
     def setUp(self):
-        self.out = tempfile.mkdtemp()
+        self.dir = tempfile.mkdtemp()
+        self.db = os.path.join(self.dir, "snap", "trials.sqlite")
         self.scope = [("onc", "oncolytic"), ("kras", "KRAS")]
         self.logs = []
 
     def tearDown(self):
-        shutil.rmtree(self.out)
+        shutil.rmtree(self.dir)
 
-    def run_snap(self, api, day="2026-11-15", **kw):
-        return snap.take_snapshot(self.out, self.scope, today=day, get=api, log=self.logs.append, **kw)
+    def run_snap(self, api, day="2026-11-15"):
+        return snap.take_snapshot(self.db, self.scope, today=day, get=api, log=self.logs.append)
 
     def test_full_run(self):
         api = FakeAPI({"oncolytic": [study("NCT03"), study("NCT01"), study("NCT02")],
                        "KRAS": [study("NCT02"), study("NCT04")]})
         self.assertEqual(self.run_snap(api), 0)
-        recs, m = read_snapshot(self.out, "2026-11-15")
-        self.assertEqual([r["nct_id"] for r in recs], ["NCT01", "NCT02", "NCT03", "NCT04"])
-        self.assertEqual(recs[1]["matched_queries"], ["kras", "onc"])
-        self.assertTrue(m["complete"])
-        self.assertEqual(m["n_trials"], 4)
-        self.assertEqual(m["queries"][0]["pages"], 2)                    # paging followed
+        obs = db_rows(self.db, "SELECT nct_id, matched_queries FROM observation ORDER BY nct_id")
+        self.assertEqual([o[0] for o in obs], ["NCT01", "NCT02", "NCT03", "NCT04"])
+        self.assertEqual(json.loads(obs[1][1]), ["kras", "onc"])
+        (complete, n, new, manifest), = db_rows(self.db, "SELECT complete, n_trials, n_new_versions, manifest FROM snapshot")
+        self.assertEqual((complete, n, new), (1, 4, 4))
+        self.assertEqual(json.loads(manifest)["queries"][0]["pages"], 2)  # paging followed
         self.assertTrue(all("fields" in c for c in api.calls))
-        self.assertEqual(m["n_new_raw_versions"], 4)
-        self.assertFalse([d for d in os.listdir(self.out) if d.endswith(".tmp")])
+        # The stored record is the tracked fields, and hashes to its content_hash.
+        (nct, h, rec, raw), = db_rows(self.db, "SELECT nct_id, content_hash, record, raw FROM trial_version WHERE nct_id='NCT01'")
+        self.assertEqual(snap.content_hash(json.loads(rec)), h)
+        self.assertNotIn("last_update_post_date", json.loads(rec))
+        raw = snap.decompress(raw)
+        self.assertEqual(raw["protocolSection"]["identificationModule"]["nctId"], "NCT01")
+        self.assertNotIn("centralContacts", raw["protocolSection"]["contactsLocationsModule"])
 
-    def test_existing_snapshot_is_never_overwritten(self):
+    def test_a_date_is_written_once(self):
         api = FakeAPI({"oncolytic": [study("NCT01")], "KRAS": []})
         self.run_snap(api)
-        first = slurp(self.out, "2026-11-15", "manifest.json")
         calls = len(api.calls)
         self.assertEqual(self.run_snap(api), 0)
         self.assertEqual(len(api.calls), calls)                          # didn't even fetch
-        self.run_snap(api, force=True)
-        kept = [d for d in os.listdir(self.out) if d.startswith("2026-11-15.replaced-")]
-        self.assertEqual(len(kept), 1)
-        self.assertEqual(slurp(self.out, kept[0], "manifest.json"), first)
+        self.assertEqual(db_rows(self.db, "SELECT count(*) FROM snapshot"), [(1,)])
 
-    def test_raw_archive_only_when_content_changes(self):
-        self.run_snap(FakeAPI({"oncolytic": [study("NCT01")], "KRAS": []}), day="2026-11-15")
-        _, m = read_snapshot(self.out, "2026-11-15")
-        self.assertEqual(m["n_new_raw_versions"], 1)
-        # A bookkeeping-only edit: no new raw version.
-        self.run_snap(FakeAPI({"oncolytic": [study("NCT01", updated="2026-11-20")], "KRAS": []}), day="2026-11-22")
-        _, m = read_snapshot(self.out, "2026-11-22")
-        self.assertEqual(m["n_new_raw_versions"], 0)
-        # A real change: archived.
-        self.run_snap(FakeAPI({"oncolytic": [study("NCT01", status="TERMINATED")], "KRAS": []}), day="2026-11-29")
-        _, m = read_snapshot(self.out, "2026-11-29")
-        self.assertEqual(m["n_new_raw_versions"], 1)
-        self.assertEqual(len(os.listdir(os.path.join(self.out, "raw", "NCT01"))), 2)
-
-    def test_same_content_same_bytes(self):
-        api = lambda: FakeAPI({"oncolytic": [study("NCT02"), study("NCT01")], "KRAS": []})
-        self.run_snap(api(), day="2026-11-15")
-        self.run_snap(api(), day="2026-11-22")
-        a = slurp(self.out, "2026-11-15", "trials.jsonl.gz", mode="rb")
-        b = slurp(self.out, "2026-11-22", "trials.jsonl.gz", mode="rb")
-        self.assertEqual(a, b)
+    def test_versions_stored_once_and_changes_found(self):
+        self.run_snap(FakeAPI({"oncolytic": [study("NCT01"), study("NCT02")], "KRAS": []}), day="2026-11-15")
+        # Bookkeeping-only edit to NCT01, real change to NCT02: one new version.
+        self.run_snap(FakeAPI({"oncolytic": [study("NCT01", updated="2026-11-20"),
+                                             study("NCT02", status="TERMINATED")], "KRAS": []}), day="2026-11-22")
+        self.assertEqual(db_rows(self.db, "SELECT n_new_versions FROM snapshot WHERE snapshot_date='2026-11-22'"), [(1,)])
+        self.assertEqual(db_rows(self.db, "SELECT count(*) FROM trial_version"), [(3,)])
+        self.assertEqual(db_rows(self.db, "SELECT count(*) FROM observation"), [(4,)])
+        con = sqlite3.connect(self.db)
+        changed = con.execute(snap.CHANGES_SQL, {"a": "2026-11-15", "b": "2026-11-22"}).fetchall()
+        con.close()
+        self.assertEqual([c[0] for c in changed], ["NCT02"])
+        # The bookkeeping date is still recorded, per observation.
+        self.assertEqual(db_rows(self.db, "SELECT last_update_post_date FROM observation WHERE nct_id='NCT01' "
+                                          "ORDER BY snapshot_date"), [("2026-10-01",), ("2026-11-20",)])
 
     def test_failed_query_marks_snapshot_incomplete(self):
         api = FakeAPI({"oncolytic": [study("NCT01")]}, fail={"KRAS"})
         self.assertEqual(self.run_snap(api), 3)
-        recs, m = read_snapshot(self.out, "2026-11-15")
-        self.assertEqual(len(recs), 1)
-        self.assertFalse(m["complete"])
-        self.assertIn("503", m["queries"][1]["error"])
+        (complete, manifest), = db_rows(self.db, "SELECT complete, manifest FROM snapshot")
+        self.assertEqual(complete, 0)
+        self.assertIn("503", json.loads(manifest)["queries"][1]["error"])
 
     def test_nothing_fetched_writes_nothing(self):
         self.assertEqual(self.run_snap(FakeAPI({}, fail={"oncolytic", "KRAS"})), 1)
-        self.assertEqual(os.listdir(self.out), [])
+        self.assertEqual(db_rows(self.db, "SELECT count(*) FROM snapshot"), [(0,)])
+
+    def test_failure_while_storing_leaves_no_partial_snapshot(self):
+        api = FakeAPI({"oncolytic": [study("NCT01"), study("NCT02")], "KRAS": []})
+        real = snap.strip_contacts
+        calls = []
+
+        def boom(s):
+            calls.append(1)
+            if len(calls) == 2:
+                raise RuntimeError("disk full")
+            return real(s)
+        snap.strip_contacts = boom
+        try:
+            with self.assertRaises(RuntimeError):
+                self.run_snap(api)
+        finally:
+            snap.strip_contacts = real
+        for table in ("snapshot", "trial_version", "observation"):
+            self.assertEqual(db_rows(self.db, "SELECT count(*) FROM %s" % table), [(0,)], table)
 
     def test_field_list_fallback(self):
         api = FakeAPI({"oncolytic": [study("NCT01")], "KRAS": [study("NCT02")]}, reject_fields=True)
         self.assertEqual(self.run_snap(api), 0)
-        _, m = read_snapshot(self.out, "2026-11-15")
-        self.assertFalse(m["used_field_list"])
-        self.assertEqual(m["n_trials"], 2)
+        (manifest,), = db_rows(self.db, "SELECT manifest FROM snapshot")
+        self.assertFalse(json.loads(manifest)["used_field_list"])
 
     def test_status(self):
         out = []
-        self.assertEqual(snap.status(self.out, today="2026-11-15", log=out.append), 1)
+        self.assertEqual(snap.status(self.db, today="2026-11-15", log=out.append), 1)
         self.run_snap(FakeAPI({"oncolytic": [study("NCT01")], "KRAS": []}))
-        self.assertEqual(snap.status(self.out, today="2026-11-20", log=out.append), 0)
-        self.assertEqual(snap.status(self.out, today="2026-12-01", log=out.append), 1)   # stale
+        self.assertEqual(snap.status(self.db, today="2026-11-20", log=out.append), 0)
+        self.assertEqual(snap.status(self.db, today="2026-12-01", log=out.append), 1)   # stale
 
     def test_scope_file(self):
         rows = snap.read_scope(snap.DEFAULT_SCOPE)
-        ids = [q for q, _ in rows]
-        self.assertEqual(ids, ["oncolytic", "car_t", "kras"])
+        self.assertEqual([q for q, _ in rows], ["oncolytic", "car_t", "kras"])
+
+
+class ImportLegacy(unittest.TestCase):
+    """Snapshots written by script version 1 load into the database unchanged."""
+
+    def setUp(self):
+        self.dir = tempfile.mkdtemp()
+        self.legacy = os.path.join(self.dir, "legacy")
+        self.db = os.path.join(self.dir, "trials.sqlite")
+
+    def tearDown(self):
+        shutil.rmtree(self.dir)
+
+    def write_legacy(self, day, studies, drop_raw=None, tamper=None):
+        recs = []
+        for s in studies:
+            rec = snap.canonical(s)
+            rec["matched_queries"] = ["onc"]
+            recs.append(rec)
+            if rec["nct_id"] != drop_raw:
+                path = os.path.join(self.legacy, "raw", rec["nct_id"], rec["content_hash"][:16] + ".json.gz")
+                os.makedirs(os.path.dirname(path), exist_ok=True)
+                with gzip.open(path, "wt", encoding="utf-8") as fh:
+                    json.dump(snap.strip_contacts(s), fh)
+        if tamper:
+            recs[0]["overall_status"] = tamper
+        os.makedirs(os.path.join(self.legacy, day))
+        with gzip.open(os.path.join(self.legacy, day, "trials.jsonl.gz"), "wt", encoding="utf-8") as fh:
+            for r in recs:
+                fh.write(json.dumps(r) + "\n")
+        with open(os.path.join(self.legacy, day, "manifest.json"), "w") as fh:
+            json.dump({"snapshot_date": day, "started_at": "2026-11-11T06:30:00+00:00",
+                       "finished_at": "2026-11-11T06:32:00+00:00", "script_version": "1",
+                       "complete": True, "n_trials": len(recs), "queries": []}, fh)
+
+    def test_import(self):
+        self.write_legacy("2026-11-11", [study("NCT01"), study("NCT02")])
+        logs = []
+        self.assertEqual(snap.import_legacy(self.db, self.legacy, log=logs.append), 0)
+        self.assertEqual(db_rows(self.db, "SELECT snapshot_date, n_trials, n_new_versions, complete FROM snapshot"),
+                         [("2026-11-11", 2, 2, 1)])
+        (raw,), = db_rows(self.db, "SELECT raw FROM trial_version WHERE nct_id='NCT02'")
+        self.assertEqual(snap.decompress(raw)["protocolSection"]["identificationModule"]["nctId"], "NCT02")
+        # Running it again changes nothing.
+        self.assertEqual(snap.import_legacy(self.db, self.legacy, log=logs.append), 0)
+        self.assertEqual(db_rows(self.db, "SELECT count(*) FROM observation"), [(2,)])
+        # A later live snapshot of unchanged trials adds no new versions.
+        api = FakeAPI({"oncolytic": [study("NCT01"), study("NCT02")]})
+        snap.take_snapshot(self.db, [("onc", "oncolytic")], today="2026-11-15", get=api, log=logs.append)
+        self.assertEqual(db_rows(self.db, "SELECT n_new_versions FROM snapshot WHERE snapshot_date='2026-11-15'"), [(0,)])
+
+    def test_refuses_missing_raw_or_bad_hash(self):
+        self.write_legacy("2026-11-11", [study("NCT01"), study("NCT02")], drop_raw="NCT02")
+        with self.assertRaises(SystemExit):
+            snap.import_legacy(self.db, self.legacy, log=lambda m: None)
+        self.assertEqual(db_rows(self.db, "SELECT count(*) FROM snapshot"), [(0,)])
+        shutil.rmtree(self.legacy)
+        self.write_legacy("2026-11-11", [study("NCT01")], tamper="TERMINATED")
+        with self.assertRaises(SystemExit):
+            snap.import_legacy(self.db, self.legacy, log=lambda m: None)
 
 
 if __name__ == "__main__":
