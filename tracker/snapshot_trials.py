@@ -475,7 +475,8 @@ def status(db_path, today=None, log=print):
     if not os.path.isfile(db_path):
         log("no snapshot database at %s" % db_path)
         return 1
-    con = connect(db_path)
+    # Read-only: the uptime probe runs this as a user who can't write the file.
+    con = sqlite3.connect("file:%s?mode=ro" % db_path, uri=True)
     try:
         row = con.execute("SELECT snapshot_date, n_trials, complete FROM snapshot "
                           "ORDER BY snapshot_date DESC LIMIT 1").fetchone()

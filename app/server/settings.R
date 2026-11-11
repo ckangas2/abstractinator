@@ -208,7 +208,13 @@
           ),
           
         )
-      ) # End navset_pill
+      ), # End navset_pill
+
+      # Beta: features still in development, kept out of the main tab bar.
+      # Each opens its hidden tab (handled in that tab's server part).
+      hr(style = "border-top: 1px solid #444; margin: 22px 0 14px;"),
+      h5("Beta", class = "settings-section"),
+      actionLink("open_therapinator", "Therapinator (beta)", icon = icon("flask"))
       ) # End settings-modal
     )) # End modalDialog and showModal
   })

@@ -30,6 +30,11 @@ dir.create(get("CACHE_DIR", envir = globalenv()), recursive = TRUE, showWarnings
 
 `%||%` <- function(a, b) if (is.null(a) || length(a) == 0) b else a
 
+# Program registry for /program and /changes (R/registry.R). The database is
+# rebuilt weekly by tracker/build_registry.py and read per request.
+source("R/registry.R")
+REGISTRY_DB <- registry_db_path(ROOT)
+
 MAX_RETURN         <- 100L  # most results one call can return
 MAX_QUERY_CHARS    <- 200L
 # The API runs as several processes (agent/abstractinator-api*.service) so one
@@ -52,7 +57,14 @@ SEARCHES_PER_MIN   <- per_process(20L)   # server-wide cap, protects the machine
 FULLTEXT_PER_MIN   <- per_process(30L)
 .recent_fulltext   <- numeric(0)
 
-#* Run every request from the repo root, and rate-limit /search
+# /program and /changes share a bucket. Each is a few local SQLite queries, so
+# the limit is generous; it is there so a runaway client cannot hog a process.
+REGISTRY_PER_MIN   <- per_process(120L)
+.recent_registry   <- numeric(0)
+MAX_REGISTRY_CHARS <- 100L
+MAX_CHANGES        <- 500L
+
+#* Run every request from the repo root, and rate-limit /search, /fulltext and the registry
 #* @filter root_and_rate_limit
 function(req, res) {
   # plumber serves requests from agent/; switch back so relative paths
@@ -60,7 +72,7 @@ function(req, res) {
   # exactly as they do for the website.
   if (!identical(getwd(), ROOT)) setwd(ROOT)
   path <- req$PATH_INFO
-  if (!path %in% c("/search", "/fulltext")) return(forward())
+  if (!path %in% c("/search", "/fulltext", "/program", "/changes")) return(forward())
   # A throttled request returns before the endpoint runs, so nothing was
   # logged: "nobody used it" and "everyone was turned away" looked identical.
   # Logged under its own event name rather than as a search with a failed
@@ -93,7 +105,7 @@ function(req, res) {
       return(list(error = "Rate limit reached. Please wait a minute and try again."))
     }
     .recent_searches <<- c(.recent_searches, now)
-  } else {
+  } else if (identical(path, "/fulltext")) {
     .recent_fulltext <<- .recent_fulltext[.recent_fulltext > now - 60]
     if (length(.recent_fulltext) >= FULLTEXT_PER_MIN) {
       res$status <- 429
@@ -101,6 +113,14 @@ function(req, res) {
       return(list(error = "Full-text rate limit reached. Please wait a minute and try again."))
     }
     .recent_fulltext <<- c(.recent_fulltext, now)
+  } else {
+    .recent_registry <<- .recent_registry[.recent_registry > now - 60]
+    if (length(.recent_registry) >= REGISTRY_PER_MIN) {
+      res$status <- 429
+      log_throttle("registry_rate_limited")
+      return(list(error = "Registry rate limit reached. Please wait a minute and try again."))
+    }
+    .recent_registry <<- c(.recent_registry, now)
   }
   forward()
 }
@@ -377,4 +397,134 @@ function(req, res, q = "", limit = 25, abstract_chars = 1500, deep = "false",
     source_counts = src,
     results = picked
   ))
+}
+
+# --- Program registry --------------------------------------------------------
+
+# One query parameter as a single trimmed string: "" when absent, NA when
+# repeated or not valid UTF-8, so validation can reject it.
+registry_param <- function(x) {
+  x <- as.character(x)
+  if (length(x) == 0L) return("")
+  if (length(x) != 1L || is.na(x) || !validUTF8(x)) return(NA_character_)
+  trimws(x)
+}
+
+# A program or name parameter: 1-100 characters when required, 0-100 otherwise.
+registry_name_ok <- function(x, required) {
+  n <- if (is.na(x)) NA_integer_ else nchar(x, allowNA = TRUE)
+  !is.na(n) && n <= MAX_REGISTRY_CHARS && (n > 0L || !required)
+}
+
+# Logged on the same store as searches, under its own event name, after the
+# handler knows how the lookup went.
+log_registry_call <- function(req, event, term, t0, out, returned = NA_integer_) {
+  agent_session <- trimws(req$HTTP_X_SESSION_ID %||% "")
+  agent_client  <- trimws(req$HTTP_X_CLIENT_NAME %||% "")
+  tryCatch(
+    log_search_to_s3(
+      search_term  = term,
+      duration_sec = as.numeric(difftime(Sys.time(), t0, units = "secs")),
+      source_type  = "REGISTRY",
+      channel      = if (grepl("uptime-probe|abstractinator-probe",
+                               tolower(agent_client))) "probe" else "agent",
+      event        = event,
+      session      = if (nzchar(agent_session)) agent_session else NA_character_,
+      client       = if (nzchar(agent_client))  agent_client  else NA_character_,
+      returned     = returned,
+      status       = if (out$status < 400L) "ok" else if (out$status == 404L) "empty" else "error"
+    ),
+    error = function(e) message("[Logger] Registry log failed: ", e$message)
+  )
+}
+
+# Run a registry lookup; a failure is logged here and reported as a 500
+# without detail (it can include file paths).
+run_registry <- function(what, expr) {
+  out <- tryCatch(expr, error = function(e) e)
+  if (inherits(out, "error")) {
+    message("[API] Registry ", what, " failed: ", conditionMessage(out))
+    out <- registry_result(500, list(error = "Registry lookup failed. Please try again later."))
+  }
+  out
+}
+
+#* One therapy program from the program registry: its aliases, linked trials and recent changes
+#* @param id AXP ID (e.g. AXP000001) or any name or code of the program (1-100 characters)
+#* @get /program
+#* @serializer unboxedJSON list(na = "null")
+function(req, res, id = "") {
+  t0 <- Sys.time()
+  id <- registry_param(id)
+  if (!registry_name_ok(id, required = TRUE)) {
+    res$status <- 400
+    return(list(error = sprintf("id must be 1-%d characters: an AXP ID or a name.", MAX_REGISTRY_CHARS)))
+  }
+  out <- run_registry(sprintf("lookup of '%s'", id), registry_program(REGISTRY_DB, id))
+  log_registry_call(req, "program", id, t0, out)
+  res$status <- out$status
+  out$body
+}
+
+#* Changes to clinical trials seen in the weekly ClinicalTrials.gov snapshots
+#* @param since Changes seen on or after this date, YYYY-MM-DD (default 30 days ago)
+#* @param program Only changes to this program's trials: AXP ID or name
+#* @param modality Only changes to programs of this therapy category, e.g. "Oncolytic virus"
+#* @param significance "major" (major only), "minor" (major and minor) or "info" (everything, the default)
+#* @param limit Maximum events to return, 1-500 (default 100)
+#* @get /changes
+#* @serializer unboxedJSON list(na = "null")
+function(req, res, since = "", program = "", modality = "", significance = "info", limit = 100) {
+  t0 <- Sys.time()
+  since        <- registry_param(since)
+  program      <- registry_param(program)
+  modality     <- registry_param(modality)
+  significance <- tolower(registry_param(significance))
+  limit        <- registry_param(limit)
+
+  if (is.na(since) || (nzchar(since) && (!grepl("^[0-9]{4}-[0-9]{2}-[0-9]{2}$", since) ||
+                                          is.na(as.Date(since, format = "%Y-%m-%d"))))) {
+    res$status <- 400
+    return(list(error = "since must be a date as YYYY-MM-DD."))
+  }
+  if (!nzchar(since)) since <- format(Sys.Date() - 30, "%Y-%m-%d")
+  if (!registry_name_ok(program, required = FALSE)) {
+    res$status <- 400
+    return(list(error = sprintf("program must be at most %d characters: an AXP ID or a name.",
+                                MAX_REGISTRY_CHARS)))
+  }
+  # The therapy categories are the app's own (modality_alias_list in aliases.R),
+  # matched without regard to case.
+  if (!registry_name_ok(modality, required = FALSE)) {
+    res$status <- 400
+    return(list(error = "modality is not a therapy category."))
+  }
+  if (nzchar(modality)) {
+    m <- match(tolower(modality), tolower(names(modality_alias_list)))
+    if (is.na(m)) {
+      res$status <- 400
+      return(list(error = "modality is not a therapy category.",
+                  modalities = I(names(modality_alias_list))))
+    }
+    modality <- names(modality_alias_list)[m]
+  }
+  if (!is.na(significance) && !nzchar(significance)) significance <- "info"
+  if (is.na(significance) || !significance %in% REGISTRY_SIGNIFICANCE) {
+    res$status <- 400
+    return(list(error = "significance must be major, minor or info."))
+  }
+  if (!is.na(limit) && !nzchar(limit)) limit <- "100"
+  if (is.na(limit) || !grepl("^[0-9]{1,3}$", limit) || as.integer(limit) < 1L || as.integer(limit) > MAX_CHANGES) {
+    res$status <- 400
+    return(list(error = sprintf("limit must be a whole number from 1 to %d.", MAX_CHANGES)))
+  }
+  limit <- as.integer(limit)
+
+  out <- run_registry("changes", registry_changes(REGISTRY_DB, since = since, program = program,
+                                                  modality = modality, significance = significance,
+                                                  limit = limit))
+  log_registry_call(req, "changes", if (nzchar(program)) program else NA_character_, t0, out,
+                    returned = if (is.null(out$body$count)) NA_integer_ else out$body$count)
+  res$status <- out$status
+  out$body
 }

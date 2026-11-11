@@ -61,3 +61,16 @@ test_that("server code calls shiny::validate, never the bare name", {
     expect_length(bare, 0)
   }
 })
+
+test_that("the Therapinator, kept out of the tab bar, opens from the settings menu", {
+  # SHOW_THERAPINATOR = FALSE hides the tab; the Beta link in the settings
+  # menu must still reach it, and its server logic must still run.
+  settings  <- paste(readLines(file.path(repo_root, "app/server/settings.R"), warn = FALSE), collapse = "\n")
+  landscape <- paste(readLines(file.path(repo_root, "app/server/landscape.R"), warn = FALSE), collapse = "\n")
+  expect_match(settings, 'actionLink("open_therapinator", "Therapinator (beta)"', fixed = TRUE)
+  expect_match(landscape, "observeEvent(input$open_therapinator", fixed = TRUE)
+  expect_match(landscape, 'nav_show("main_app_tabs", target = "Therapinator", select = TRUE', fixed = TRUE)
+  # The tab's outputs are defined whatever SHOW_THERAPINATOR says, not in an else branch.
+  expect_false(grepl("} else {", landscape, fixed = TRUE))
+  expect_match(landscape, "output$landscapeTable", fixed = TRUE)
+})

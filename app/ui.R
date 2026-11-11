@@ -333,6 +333,8 @@ fluidPage(
       bslib::nav_panel(
         title = "Therapinator",
         div(class = "landscape-tab",
+            p(class = "plot-caveat", icon("flask"),
+              strong("Beta:"), "an early look at the therapy view. Results may be incomplete."),
             h4("What's been tried", style = "margin: 0 0 4px;"),
             p(class = "plot-caveat",
               "Each record counted once, under its main therapy, from grant to trial phase. Counts are within the retrieved records (each database's top matches), not the full literature."),

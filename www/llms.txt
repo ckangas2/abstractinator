@@ -18,7 +18,8 @@ In Claude: Settings -> Connectors -> Add custom connector -> paste the URL
 above and choose "No sign-in". Any MCP client supporting remote streamable
 HTTP servers works the same way.
 
-Two tools: search_literature to find records, get_fulltext to read one.
+Four tools: search_literature to find records, get_fulltext to read one,
+program to look up a therapy program, changes for what changed in its trials.
 
 ### Tool: search_literature
 
@@ -93,6 +94,43 @@ open-access corpus; EBI offer bulk downloads for that.
 A fresh search takes about 5-10 seconds. Repeat searches within 7 days return
 immediately from cache. Searches are rate limited to keep the service
 available; a 429 response means waiting a minute and retrying.
+
+### Tool: program
+
+    program(query)
+
+Looks up one therapy program (one product in development: an oncolytic
+virus, a CAR-T product, a KRAS inhibitor...) in the program registry.
+
+- query: an AXP ID ("AXP000001") or any name or code - INN, brand name,
+  development code. Case, spaces and hyphens do not matter.
+
+AXP IDs are stable and never reused; a merged ID resolves to the program that
+survives it and says so in merged_from. Returns registry_release, program
+(preferred_name, status, modality, platform, targets, originator, sponsor,
+ncit, wikidata, unii), aliases, trials and recent_changes. Each trial carries
+link_method (intervention_name, intervention_text or title), link_confidence
+and link_status: "auto" links are counted, "candidate" links are unreviewed.
+A name shared by several programs returns program null and candidates.
+
+### Tool: changes
+
+    changes(since="", program="", modality="", significance="info", limit=100)
+
+Change events in registry programs' trials, from weekly ClinicalTrials.gov
+snapshots: trial.new, trial.status_changed, trial.phase_changed,
+trial.results_posted, trial.enrollment_changed, trial.completion_slipped,
+trial.sponsor_changed, trial.intervention_added, trial.dropped.
+
+- since: YYYY-MM-DD, default 30 days ago.
+- program: an AXP ID or name. modality: a therapy category, e.g.
+  "Oncolytic virus".
+- significance: "major" (major only), "minor" (major and minor) or "info"
+  (all). limit: 1-500.
+
+Returns registry_release, latest_snapshot, since, count and events (event_id,
+snapshot_date, previous_date, nct_id, brief_title, type, significance, field,
+before, after, programs), newest first.
 
 ## Sources searched
 

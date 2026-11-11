@@ -8,6 +8,7 @@ log. Nothing to install.
 | `registry.py` | alias keys and the registry validator (`validate`, `next-id`, `key`) |
 | `snapshot_trials.py` | weekly ClinicalTrials.gov snapshot of the tracked topics |
 | `snapshot_scope.tsv` | the queries that define "tracked topics" |
+| `build_registry.py` | builds `data/registry/registry.sqlite` (programs, names, trial links, what changed) and the `www/changes.html` digest; layout in `REGISTRY_DB.md` |
 | `tests/` | `python3 -m unittest discover -s tracker/tests` (no network) |
 
 ## Trial snapshots
@@ -45,3 +46,25 @@ python3 tracker/snapshot_trials.py --status
 
 Changing `snapshot_scope.tsv` changes which trials are followed from the next
 run on; trials that drop out of scope simply stop appearing.
+
+## Registry database and digest
+
+`build_registry.py` runs right after each snapshot (same cron line) and can be
+run by hand any time. It rebuilds `data/registry/registry.sqlite` from scratch:
+
+- **trial links**: a trial links to a program when one of the program's names
+  is an intervention's name or other name (`auto`, confidence 0.95), appears
+  inside an intervention name (`auto` for INNs and brands, `candidate` for
+  codes, 0.8), or appears only in the title (`candidate`, 0.6). Ambiguous
+  names only ever give candidates. Candidates are listed in
+  `data/registry/link_review.tsv` for review; accepted fixes go into the
+  registry (a missing name, or `ambiguous = 1`).
+- **change events** between each pair of consecutive snapshots: status,
+  phase, results posted, enrolment (±20% or estimated → actual), primary
+  completion slipping by more than 90 days, sponsor, intervention added, new
+  trials and dropped trials (only when both snapshots were complete).
+- **digest**: `www/changes.html` (abstractinator.me/changes.html): the week's
+  major changes by program, minor changes counted, and the tracked programs.
+
+The API serves the database read-only: `/program` and `/changes`, and the MCP
+tools of the same names.
