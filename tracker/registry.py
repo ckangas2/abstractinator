@@ -314,6 +314,20 @@ def validate(registry_dir=DEFAULT_DIR, modalities=None):
         if row["status"] == "accepted" and alias_key(row["alias"]):
             names.append((alias_key(row["alias"]), row["axp_id"], row["ambiguous"] == "1",
                           "aliases.tsv line %d" % row["_line"], False))
+
+    # A program listing the same name twice is an error whatever the rows'
+    # status: "Stafal" and "STAFAL" are one name, and a batch that ships them
+    # both only fails later, when a reviewer accepts them. Rejected rows are
+    # kept so they aren't proposed again, so they don't count.
+    proposed_dupes = defaultdict(list)
+    for row in aliases:
+        key = alias_key(row["alias"])
+        if row["status"] == "proposed" and key:
+            proposed_dupes[(row["axp_id"], key)].append("aliases.tsv line %d" % row["_line"])
+    for (pid, key), wheres in sorted(proposed_dupes.items()):
+        if len(wheres) > 1:
+            errors.append("aliases.tsv: name key %s listed more than once for %s (%s)"
+                          % (key, pid, ", ".join(wheres)))
     seen = defaultdict(list)
     for key, pid, amb, where, is_pref in names:
         seen[key].append((pid, amb, where, is_pref))

@@ -123,6 +123,20 @@ class Validate(RegistryCase):
         # Listing the preferred name as an alias is fine.
         self.assertEqual(self.problems(p, [alias("AXP000001", "Alpha", alias_type="inn")]), [])
 
+    def test_proposed_rows_cannot_repeat_a_key_either(self):
+        # Found on 2026-11-11: "Stafal"/"STAFAL" and "Pyophage"/"PYO phage"
+        # shipped as proposed, passed validation, and only failed once the
+        # reference check accepted them. A name listed twice is wrong at the
+        # moment it is written, whatever its status.
+        p = [program("AXP000001", "Alpha")]
+        probs = self.problems(p, [alias("AXP000001", "Stafal", status="proposed"),
+                                  alias("AXP000001", "STAFAL", status="proposed")])
+        self.assertProblem(probs, "listed more than once")
+        # One proposed row beside the accepted one it duplicates is still caught
+        # when both are accepted; and a rejected row never counts.
+        self.assertEqual(self.problems(p, [alias("AXP000001", "Stafal", status="proposed"),
+                                           alias("AXP000001", "STAFAL", status="rejected")]), [])
+
     def test_alias_fields(self):
         p = [program("AXP000001")]
         probs = self.problems(p, [alias("AXP000001", "X1", licence="CC-BY-SA-3.0", alias_type="nick",

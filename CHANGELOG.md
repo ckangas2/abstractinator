@@ -9,6 +9,11 @@ Development before v2.0.0 was untagged; see the git history for detail.
 ## [Unreleased]
 
 ### Fixed
+- The registry validator now catches a program listing the same name key
+  twice while the rows are still `proposed`, instead of only once they are
+  accepted. Two phage rows shipped that way ("Stafal"/"STAFAL",
+  "Pyophage"/"PYO phage"); the duplicates are dropped, and each name's
+  evidence is still cited by the rows that remain.
 - Registry pages: papers that a linked trial cites now always have a title,
   journal and year (the weekly fetch looks them up), and lab papers PubMed
   tags "Comparative", "Evaluation" or "Validation Study" are no longer listed
