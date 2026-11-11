@@ -108,7 +108,9 @@ virus, a CAR-T product, a KRAS inhibitor...) in the program registry.
 AXP IDs are stable and never reused; a merged ID resolves to the program that
 survives it and says so in merged_from. Returns registry_release, program
 (preferred_name, status, modality, platform, targets, originator, sponsor,
-ncit, wikidata, unii), aliases, trials and recent_changes. Each trial carries
+ncit, wikidata, unii), virus (for virus-based programs: role, family, virus,
+strain, replication, modifications, transgenes, route; else null), approvals,
+aliases, trials and recent_changes. Each trial carries
 link_method (intervention_name, intervention_text or title), link_confidence
 and link_status: "auto" links are counted, "candidate" links are unreviewed.
 A name shared by several programs returns program null and candidates.

@@ -13,7 +13,7 @@ Readers must open it read-only (`file:...?mode=ro` URI in SQLite).
 ### meta
 | key | value |
 |---|---|
-| `schema_version` | `1` |
+| `schema_version` | `2` (2 added `virus` and `approval`) |
 | `built_at` | UTC ISO 8601 |
 | `registry_release` | `YYYY-MM-DD+<first 12 hex of sha256 of programs.tsv + aliases.tsv>` |
 | `latest_snapshot` | the newest snapshot date used, or empty |
@@ -36,6 +36,11 @@ Accepted aliases only, plus each active program's preferred name.
 | `ambiguous` | INTEGER 0/1 |
 
 Index on `alias_key`.
+
+### virus, approval
+`virus.tsv` and `approvals.tsv` as they are (TEXT columns, '' for empty).
+`virus` has one row per virus-based program (PRIMARY KEY `axp_id`);
+`approval` any number per program.
 
 ### trial
 The latest observation of every trial in the newest snapshot.
@@ -104,6 +109,11 @@ Event types:
  "program": {"axp_id": "AXP000009", "preferred_name": "...", "status": "active", "modality": "...",
              "platform": "...", "targets": ["TNF","IL2"], "originator": "...", "sponsor": "...",
              "ncit": "...", "wikidata": "...", "unii": "...", "entry_version": 1, "notes": "..."},
+ "virus": {"role": "oncolytic", "virus_family": "Adenoviridae", "virus": "human adenovirus 5", "ncbi_taxon": "28285",
+           "strain": "Ad5/3 chimera", "replication": "conditionally_replicating", "modifications": "...",
+           "transgenes": ["TNF", "IL2"], "route": ["intratumoral", "intravenous"], "carrier": "", "evidence_url": "..."},
+ "approvals": [{"agency": "FDA", "region": "US", "date": "2015-10-27", "status": "approved", "brand": "Imlygic",
+                "indication": "...", "evidence_url": "..."}],
  "aliases": [{"alias": "TILT-123", "alias_type": "code", "ambiguous": false, "source": "...", "evidence_url": "..."}],
  "trials": [{"nct_id": "...", "brief_title": "...", "overall_status": "...", "phases": "...", "start_date": "...",
              "primary_completion_date": "...", "enrollment_count": 20, "has_results": false,
@@ -111,6 +121,7 @@ Event types:
  "recent_changes": [ ...change_event rows for its auto-linked trials, newest first, max 50... ],
  "merged_from": null}
 ```
+- `virus` is null for programs that aren't virus-based; `approvals` is `[]` when none.
 - A merged ID resolves to its survivor and says so in `merged_from`.
 - A name matching several programs (ambiguous alias) returns 200 with
   `"program": null` and `"candidates": [{axp_id, preferred_name}]`.

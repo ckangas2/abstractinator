@@ -51,8 +51,10 @@ One therapy program from the program registry. `query` is an AXP ID
 AXP IDs are stable; a merged ID resolves to its survivor (`merged_from`).
 
 Returns `program` (`preferred_name`, `status`, `modality`, `platform`,
-`targets`, `originator`, `sponsor`, `ncit`, `wikidata`, `unii`), `aliases`,
-`trials` and `recent_changes`. Each trial has `link_method`
+`targets`, `originator`, `sponsor`, `ncit`, `wikidata`, `unii`), `virus`
+(for virus-based programs: `role`, `virus_family`, `virus`, `strain`,
+`replication`, `modifications`, `transgenes`, `route`; else null),
+`approvals`, `aliases`, `trials` and `recent_changes`. Each trial has `link_method`
 (`intervention_name`, `intervention_text`, `title`), `link_confidence` and
 `link_status`: `auto` links are counted, `candidate` links are unreviewed.
 An ambiguous name returns `program: null` and `candidates`.

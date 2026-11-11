@@ -49,7 +49,7 @@ DEFAULT_SNAPSHOTS = os.path.join(REPO, "data", "trial_snapshots", "trials.sqlite
 DEFAULT_OUT = os.path.join(REPO, "data", "registry", "registry.sqlite")
 DEFAULT_PAGE = os.path.join(REPO, "www", "changes.html")
 
-SCHEMA_VERSION = "1"
+SCHEMA_VERSION = "2"   # 2: virus and approval tables
 
 CONFIDENCE = {"intervention_name": 0.95, "intervention_text": 0.8, "title": 0.6}
 MIN_AUTO_TEXT_KEY = 5        # shorter names found inside text are only candidates
@@ -76,6 +76,15 @@ CREATE TABLE alias (
   source TEXT, source_record TEXT, licence TEXT, evidence_url TEXT, ambiguous INTEGER NOT NULL
 );
 CREATE INDEX alias_by_key ON alias(alias_key);
+CREATE TABLE virus (
+  axp_id TEXT PRIMARY KEY, role TEXT, virus_family TEXT, virus TEXT, ncbi_taxon TEXT, strain TEXT,
+  replication TEXT, modifications TEXT, transgenes TEXT, route TEXT, carrier TEXT, evidence_url TEXT
+);
+CREATE TABLE approval (
+  axp_id TEXT NOT NULL, agency TEXT, region TEXT, date TEXT, status TEXT, brand TEXT,
+  indication TEXT, evidence_url TEXT
+);
+CREATE INDEX approval_by_program ON approval(axp_id);
 CREATE TABLE trial (
   nct_id TEXT PRIMARY KEY, snapshot_date TEXT, brief_title TEXT, overall_status TEXT,
   why_stopped TEXT, study_type TEXT, lead_sponsor TEXT, phases TEXT, start_date TEXT,
@@ -302,6 +311,11 @@ def build(registry_dir, snapshots, out, today=None, log=print):
                                    "evidence_url": a["evidence_url"], "ambiguous": int(a["ambiguous"])})
         db.executemany("INSERT INTO alias VALUES (:axp_id, :alias, :alias_key, :alias_type, :source, "
                        ":source_record, :licence, :evidence_url, :ambiguous)", alias_rows)
+        (viruses, _), (approvals, _) = reg.read_optional(registry_dir)
+        db.executemany("INSERT INTO virus VALUES (%s)" % ",".join("?" * len(reg.VIRUS_COLUMNS)),
+                       [[v[c] for c in reg.VIRUS_COLUMNS] for v in viruses])
+        db.executemany("INSERT INTO approval VALUES (%s)" % ",".join("?" * len(reg.APPROVAL_COLUMNS)),
+                       [[a[c] for c in reg.APPROVAL_COLUMNS] for a in approvals])
 
     latest = previous = ""
     n_links = n_events = 0

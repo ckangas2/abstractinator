@@ -639,7 +639,11 @@ async def program(
 
     Returns a dict with registry_release, program (axp_id, preferred_name,
     status, modality, platform, targets (gene symbols), originator, sponsor,
-    ncit, wikidata, unii, entry_version, notes), aliases (each with
+    ncit, wikidata, unii, entry_version, notes), virus (for virus-based
+    programs: role such as oncolytic or in_vivo_gene_transfer, virus_family,
+    virus, ncbi_taxon, strain, replication, modifications, transgenes, route,
+    carrier; null otherwise), approvals (agency, region, date, status, brand,
+    indication), aliases (each with
     alias_type, ambiguous, source and evidence_url), trials and
     recent_changes (up to 50, newest first, as in the changes tool).
 

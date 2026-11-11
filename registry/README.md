@@ -6,9 +6,13 @@ by: development codes, INNs, brand names, former codes. It lets the
 Abstractinator link the grants, preprints, papers and trials that talk about
 the same therapy under different names.
 
-Status: **32 programs, 116 names** (2026-11-11): 12 oncolytic viruses, 10
-CAR-T therapies and 10 KRAS-targeted agents. Each has its NCI Thesaurus code
-and UNII; 22 have a Wikidata item. Every name has a source link.
+Status (2026-11-11): **140 programs, 311 names.** 120 oncolytic and other
+therapeutic viruses (every one known to have been given to humans, by virus
+family: adenoviruses, herpes, pox, paramyxo, picorna, rhabdo, toga, reo,
+retro, parvo and flaviviruses), each with its virus, strain, replication,
+modifications, transgenes and route, and 7 regulatory approvals; plus 10
+CAR-T therapies and 10 KRAS-targeted agents. Every name and fact has a
+source link.
 
 - `SPEC.md`: what counts as a program, how IDs, merges and aliases work,
   which licences are allowed. Read this before adding anything.

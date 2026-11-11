@@ -271,7 +271,7 @@ sudo -u shiny /usr/bin/Rscript -e 'source("R/log_utils_local.R"); print(summariz
 `GET /program?id=<AXP ID or name>`
 
 - One program from `data/registry/registry.sqlite` (override with `ABSTRACTINATOR_REGISTRY_DB`):
-  aliases, linked trials, recent changes; a merged ID resolves to its survivor (`merged_from`)
+  its virus or vector (for virus-based programs), approvals, aliases, linked trials, recent changes; a merged ID resolves to its survivor (`merged_from`)
 - An ambiguous name returns `"program": null` and `candidates`; no match is a 404, and a
   registry not built yet a 503
 

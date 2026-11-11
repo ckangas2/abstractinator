@@ -115,3 +115,198 @@ AXP000031	IBI351	code	ncit	C199055	CC-BY-4.0	2021		0	accepted	https://evsexplore
 AXP000031	Dupert	brand	press	https://www.pharmafocusasia.com/index.php/news/innovents-dupert-gains-nmpa-approval-as-chinas-first-kras-g12c-inhibitor	CC-BY-4.0	2024		0	accepted	https://www.pharmafocusasia.com/index.php/news/innovents-dupert-gains-nmpa-approval-as-chinas-first-kras-g12c-inhibitor	2026-11-11
 AXP000032	olomorasib	inn	ncit	C181751	CC-BY-4.0			0	accepted	https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C181751	2026-11-11
 AXP000032	LY3537982	code	ncit	C181751	CC-BY-4.0			0	accepted	https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C181751	2026-11-11
+AXP000003	Oncolytic Adenovirus H101	synonym	press	https://www.biospace.com/shanghai-sunway-biotech-co-ltd-release-first-oncolytic-viral-therapy-approved-for-head-and-neck-cancer	CC-BY-4.0			0	accepted	https://www.biospace.com/shanghai-sunway-biotech-co-ltd-release-first-oncolytic-viral-therapy-approved-for-head-and-neck-cancer	2026-11-11
+AXP000005	Ad5-d24-RGD	synonym	paper	PMC5088758	CC-BY-4.0			0	accepted	https://pmc.ncbi.nlm.nih.gov/articles/PMC5088758/	2026-11-11
+AXP000006	cretostimogene	inn	ctgov	NCT04452591	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT04452591	2026-11-11
+AXP000033	lontucirev	inn	ncit	C2830	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C2830?include=synonyms	2026-11-11
+AXP000033	ONYX-015	code	ncit	C2830	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C2830?include=synonyms	2026-11-11
+AXP000033	dl1520	former_code	paper	PMC7091735	CC-BY-4.0			0	accepted	https://pmc.ncbi.nlm.nih.gov/articles/PMC7091735	2026-11-11
+AXP000033	CI-1042	code	ncit	C2830	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C2830?include=synonyms	2026-11-11
+AXP000033	E1B 55kDa mutant adenovirus dl1520	synonym	ncit	C2830	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C2830?include=synonyms	2026-11-11
+AXP000034	suratadenoturev	inn	ncit	C119617	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C119617?include=synonyms	2026-11-11
+AXP000034	OBP-301	code	ncit	C119617	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C119617?include=synonyms	2026-11-11
+AXP000034	Telomelysin	brand	ncit	C119617	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C119617?include=synonyms	2026-11-11
+AXP000034	Telomelycin	synonym	ncit	C119617	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C119617?include=synonyms	2026-11-11
+AXP000035	ONCOS-102	code	ncit	C98287	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C98287?include=synonyms	2026-11-11
+AXP000035	CGTG-102	former_code	ncit	C98287	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C98287?include=synonyms	2026-11-11
+AXP000035	Ad5/3-D24-GMCSF	synonym	paper	PMC5088758	CC-BY-4.0			0	accepted	https://pmc.ncbi.nlm.nih.gov/articles/PMC5088758/	2026-11-11
+AXP000036	tezemlimogene daxadenorepvec	inn	ncit	C160192	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C160192?include=synonyms	2026-11-11
+AXP000036	DNX-2440	code	ncit	C160192	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C160192?include=synonyms	2026-11-11
+AXP000037	ORCA-010	code	ncit	C168607	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C168607?include=synonyms	2026-11-11
+AXP000038	NG-350A	code	ncit	C159599	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C159599?include=synonyms	2026-11-11
+AXP000039	NG-641	code	ncit	C168790	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C168790?include=synonyms	2026-11-11
+AXP000040	AdAPT-001	code	ncit	C179574	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C179574?include=synonyms	2026-11-11
+AXP000041	MEM-288	code	ncit	C185120	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C185120?include=synonyms	2026-11-11
+AXP000042	CAdVEC	code	ncit	C158743	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C158743?include=synonyms	2026-11-11
+AXP000043	GM103	code	ncit	C208077	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C208077?include=synonyms	2026-11-11
+AXP000044	YSCH-01	code	ncit	C186376	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C186376?include=synonyms	2026-11-11
+AXP000044	Recombinant L-IFN adenovirus injection	synonym	ctgov	NCT05180851	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT05180851	2026-11-11
+AXP000045	SynOV1.1	code	ncit	C179256	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C179256?include=synonyms	2026-11-11
+AXP000046	BioTTT001	code	ncit	C205444	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C205444?include=synonyms	2026-11-11
+AXP000046	Ad5-TD-nsIL-12	synonym	ncit	C205444	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C205444?include=synonyms	2026-11-11
+AXP000046	Ad-TD-nsIL12	code	ctgov	NCT05717712	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT05717712	2026-11-11
+AXP000047	Ad5-yCD/mutTK(SR39)rep-ADP	code	ncit	C88330	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C88330?include=synonyms	2026-11-11
+AXP000048	Ad5-yCD/mutTKSR39rep-hIL12	code	ncit	C123930	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C123930?include=synonyms	2026-11-11
+AXP000049	Ad5-CD/TKrep	code	paper	PMID:14612551	CC-BY-4.0			0	accepted	https://pubmed.ncbi.nlm.nih.gov/14612551/	2026-11-11
+AXP000050	ICOVIR-5	code	ctgov	NCT01864759	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT01864759	2026-11-11
+AXP000050	Celyvir	synonym	ncit	C107160	CC-BY-4.0			1	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C107160?include=synonyms	2026-11-11
+AXP000050	AloCELYVIR	synonym	ncit	C179678	CC-BY-4.0			1	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C179678?include=synonyms	2026-11-11
+AXP000051	ICOVIR-7	code	paper	PMC5088758	CC-BY-4.0			0	accepted	https://pmc.ncbi.nlm.nih.gov/articles/PMC5088758/	2026-11-11
+AXP000052	CRAd-S-pk7	code	ncit	C135612	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C135612?include=synonyms	2026-11-11
+AXP000052	NSC-CRAd-S-pk7	synonym	ncit	C135612	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C135612?include=synonyms	2026-11-11
+AXP000052	NSC-CRAd-Survivin-pk7	synonym	ctgov	NCT03072134	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT03072134	2026-11-11
+AXP000053	CG7870	code	ctgov	NCT00103428	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT00103428	2026-11-11
+AXP000053	CV787	former_code	paper	PMC7091735	CC-BY-4.0		2001	0	accepted	https://pmc.ncbi.nlm.nih.gov/articles/PMC7091735	2026-11-11
+AXP000054	CG7060	code	paper	PMID:11454691	CC-BY-4.0			0	accepted	https://pubmed.ncbi.nlm.nih.gov/11454691/	2026-11-11
+AXP000054	CV706	former_code	paper	PMID:11454691	CC-BY-4.0		2001	0	accepted	https://pubmed.ncbi.nlm.nih.gov/11454691/	2026-11-11
+AXP000055	ICVB-1042	code	ncit	C200413	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C200413?include=synonyms	2026-11-11
+AXP000056	THEO-260	code	ncit	C222794	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C222794?include=synonyms	2026-11-11
+AXP000057	Ixovex-1	code	ctgov	NCT06549946	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT06549946	2026-11-11
+AXP000058	KD01	code	ctgov	NCT06552598	public-domain			1	accepted	https://clinicaltrials.gov/study/NCT06552598	2026-11-11
+AXP000059	TS-2021	code	ctgov	NCT06585527	public-domain			1	accepted	https://clinicaltrials.gov/study/NCT06585527	2026-11-11
+AXP000060	NRG-103	code	ctgov	NCT06757153	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT06757153	2026-11-11
+AXP000061	VT-101	code	ctgov	NCT06632964	public-domain			1	accepted	https://clinicaltrials.gov/study/NCT06632964	2026-11-11
+AXP000062	YH-02	code	ctgov	NCT07697937	public-domain			1	accepted	https://clinicaltrials.gov/study/NCT07697937	2026-11-11
+AXP000063	Adze1.C	code	ctgov	NCT07086105	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT07086105	2026-11-11
+AXP000064	H103	code	paper	DOI:10.1038/gt.2008.179	CC-BY-4.0			1	accepted	https://doi.org/10.1038/gt.2008.179	2026-11-11
+AXP000065	KH901	code	paper	DOI:10.4161/cbt.8.8.7913	CC-BY-4.0			0	accepted	https://doi.org/10.4161/cbt.8.8.7913	2026-11-11
+AXP000066	Ad5-D24-GMCSF	code	paper	PMC5088758	CC-BY-4.0			0	accepted	https://pmc.ncbi.nlm.nih.gov/articles/PMC5088758/	2026-11-11
+AXP000067	Ad5/3-E2F-d24-GMCSF	code	paper	PMC5088758	CC-BY-4.0			0	accepted	https://pmc.ncbi.nlm.nih.gov/articles/PMC5088758/	2026-11-11
+AXP000068	Ad5-RGD-D24-GMCSF	code	paper	PMC5088758	CC-BY-4.0			0	accepted	https://pmc.ncbi.nlm.nih.gov/articles/PMC5088758/	2026-11-11
+AXP000069	Ad5/3-Cox2L-D24	code	paper	PMC5088758	CC-BY-4.0			0	accepted	https://pmc.ncbi.nlm.nih.gov/articles/PMC5088758/	2026-11-11
+AXP000070	Ad5/3-hTERT-E1A-hCD40L	code	paper	PMC5088758	CC-BY-4.0			0	accepted	https://pmc.ncbi.nlm.nih.gov/articles/PMC5088758/	2026-11-11
+AXP000071	Ad5/3-D24-hNIS	code	paper	PMC5088758	CC-BY-4.0			0	accepted	https://pmc.ncbi.nlm.nih.gov/articles/PMC5088758/	2026-11-11
+AXP000072	Ad3-hTERT-E1A	code	paper	PMC5088758	CC-BY-4.0			0	accepted	https://pmc.ncbi.nlm.nih.gov/articles/PMC5088758/	2026-11-11
+AXP000070	Ad5/3-hTERT-CD40L	synonym	paper	PMC5088758	CC-BY-4.0			0	accepted	https://pmc.ncbi.nlm.nih.gov/articles/PMC5088758/	2026-11-11
+AXP000073	HSV1716	code	ncit	C84840	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C84840?include=synonyms	2026-11-11
+AXP000073	Seprehvir	brand	ncit	C84840	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C84840?include=synonyms	2026-11-11
+AXP000073	RL1 mutant HSV-1 1716	synonym	curator		CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C84840?include=synonyms	2026-11-11
+AXP000074	G207	code	ncit	C2676	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C2676?include=synonyms	2026-11-11
+AXP000074	HSV G207	synonym	ctgov	NCT04482933	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT04482933	2026-11-11
+AXP000075	NV1020	code	ncit	C2623	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C2623?include=synonyms	2026-11-11
+AXP000075	R7020	former_code	ncit	C2623	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C2623?include=synonyms	2026-11-11
+AXP000076	canerpaturev	inn	ncit	C88318	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C88318?include=synonyms	2026-11-11
+AXP000076	HF10	code	ncit	C88318	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C88318?include=synonyms	2026-11-11
+AXP000076	C-REV	synonym	curator		CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C88318?include=synonyms	2026-11-11
+AXP000076	TBI-1401	code	ncit	C88318	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C88318?include=synonyms	2026-11-11
+AXP000077	OrienX010	code	ncit	C111893	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C111893?include=synonyms	2026-11-11
+AXP000078	sturlimogene erparepvec	inn	ncit	C176748	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C176748?include=synonyms	2026-11-11
+AXP000078	RP2	code	ncit	C176748	CC-BY-4.0			1	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C176748?include=synonyms	2026-11-11
+AXP000079	RP3	code	ncit	C179624	CC-BY-4.0			1	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C179624?include=synonyms	2026-11-11
+AXP000080	T3011	code	ncit	C175473	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C175473?include=synonyms	2026-11-11
+AXP000080	MVR-T3011	code	ctgov	NCT05602792	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT05602792	2026-11-11
+AXP000081	MVR-C5252	code	ncit	C184943	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C184943?include=synonyms	2026-11-11
+AXP000082	VG161	code	ncit	C179675	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C179675?include=synonyms	2026-11-11
+AXP000082	Recombinant Human IL12/15-PDL1B Oncolytic HSV-1 Injection (Vero Cell)	synonym	ctgov	NCT06746480	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT06746480	2026-11-11
+AXP000083	VG2025	code	ncit	C187035	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C187035?include=synonyms	2026-11-11
+AXP000084	ONCR-177	code	ncit	C171540	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C171540?include=synonyms	2026-11-11
+AXP000085	C134	code	ncit	C162635	CC-BY-4.0			1	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C162635?include=synonyms	2026-11-11
+AXP000086	M032	code	ctgov	NCT02062827	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT02062827	2026-11-11
+AXP000086	M032-HSV-1	synonym	curator		CC-BY-4.0			0	accepted	https://clinicaltrials.gov/study/NCT07076498	2026-11-11
+AXP000087	CAN-3110	code	ctgov	NCT03152318	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT03152318	2026-11-11
+AXP000087	rQNestin34.5v.2	code	ctgov	NCT03152318	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT03152318	2026-11-11
+AXP000087	rQNestin	synonym	ctgov	NCT03152318	public-domain			1	accepted	https://clinicaltrials.gov/study/NCT03152318	2026-11-11
+AXP000088	rRp450	code	ncit	C90563	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C90563?include=synonyms	2026-11-11
+AXP000089	OH2	code	ncit	C172106	CC-BY-4.0			1	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C172106?include=synonyms	2026-11-11
+AXP000089	oHSV2hGM-CSF	synonym	curator		CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C172106?include=synonyms	2026-11-11
+AXP000089	OH2 injection	synonym	ctgov	NCT04386967	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT04386967	2026-11-11
+AXP000090	BS-006	code	ncit	C188176	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C188176?include=synonyms	2026-11-11
+AXP000091	R130	code	ncit	C200561	CC-BY-4.0			1	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C200561?include=synonyms	2026-11-11
+AXP000092	JNJ-87704916	code	ncit	C205181	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C205181?include=synonyms	2026-11-11
+AXP000093	olvimulogene nanivacirepvec	inn	ncit	C79833	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C79833?include=synonyms	2026-11-11
+AXP000093	GL-ONC1	former_code	ncit	C79833	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C79833?include=synonyms	2026-11-11
+AXP000093	GLV-1h68	code	ncit	C79833	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C79833?include=synonyms	2026-11-11
+AXP000093	Olvi-Vec	brand	ncit	C79833	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C79833?include=synonyms	2026-11-11
+AXP000094	TG6002	code	ncit	C148178	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C148178?include=synonyms	2026-11-11
+AXP000094	T601	code	ncit	C148178	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C148178?include=synonyms	2026-11-11
+AXP000094	TG6002/5-FC	synonym	ctgov	NCT03294486	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT03294486	2026-11-11
+AXP000095	BT-001	code	ncit	C179623	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C179623?include=synonyms	2026-11-11
+AXP000095	TG6030	code	ctgov	NCT04725331	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT04725331	2026-11-11
+AXP000096	TG6050	code	ncit	C200558	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C200558?include=synonyms	2026-11-11
+AXP000097	JX-929	code	curator		CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C74089?include=synonyms	2026-11-11
+AXP000097	vvDD-CDSR	code	ncit	C74089	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C74089?include=synonyms	2026-11-11
+AXP000097	vvDD	synonym	ctgov	NCT00574977	public-domain			1	accepted	https://clinicaltrials.gov/study/NCT00574977	2026-11-11
+AXP000098	vvDD-hIL2-RG-1	code	ctgov	NCT07001592	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT07001592	2026-11-11
+AXP000099	CF33-hNIS	code	ctgov	NCT05346484	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT05346484	2026-11-11
+AXP000099	VAXINIA	brand	ctgov	NCT05346484	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT05346484	2026-11-11
+AXP000099	HOV2	code	ctgov	NCT05346484	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT05346484	2026-11-11
+AXP000100	CF33-hNIS-antiPDL1	code	ncit	C181094	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C181094?include=synonyms	2026-11-11
+AXP000100	CHECKvacc	brand	curator		CC-BY-4.0			0	accepted	https://clinicaltrials.gov/study/NCT05081492	2026-11-11
+AXP000101	CF33-CD19	code	ncit	C201773	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C201773?include=synonyms	2026-11-11
+AXP000101	onCARlytics	brand	ncit	C201773	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C201773?include=synonyms	2026-11-11
+AXP000101	CF33-CD19t	code	curator		CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C201773?include=synonyms	2026-11-11
+AXP000102	ASP9801	code	ncit	C161021	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C161021?include=synonyms	2026-11-11
+AXP000103	hV01	code	ctgov	NCT05914376	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT05914376	2026-11-11
+AXP000103	Recombinant human IL-21-expressing oncolytic vaccinia virus injection	synonym	ctgov	NCT05914376	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT05914376	2026-11-11
+AXP000104	TBio-6517	code	ctgov	NCT04301011	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT04301011	2026-11-11
+AXP000104	RIVAL-01	code	ncit	C174049	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C174049?include=synonyms	2026-11-11
+AXP000105	PF-07263689	code	ncit	C183114	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C183114?include=synonyms	2026-11-11
+AXP000106	VET3-TGI	code	ncit	C211499	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C211499?include=synonyms	2026-11-11
+AXP000107	OTS-412	code	ctgov	NCT07190833	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT07190833	2026-11-11
+AXP000108	GC001	code	ctgov	NCT06508307	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT06508307	2026-11-11
+AXP000109	GO306	code	ctgov	NCT07128914	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT07128914	2026-11-11
+AXP000110	IDOV-Immune	code	ctgov	NCT06910657	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT06910657	2026-11-11
+AXP000111	VV-GMCSF-Lact	code	ncit	C188116	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C188116?include=synonyms	2026-11-11
+AXP000111	Double Recombinant Vaccinia Virus VV-GMCSF-Lact	synonym	ncit	C188116	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C188116?include=synonyms	2026-11-11
+AXP000112	MV-CEA	code	ncit	C64775	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C64775?include=synonyms	2026-11-11
+AXP000112	Carcinoembryonic Antigen-Expressing Measles Virus	synonym	ncit	C64775	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C64775?include=synonyms	2026-11-11
+AXP000113	MV-NIS	code	ncit	C66942	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C66942?include=synonyms	2026-11-11
+AXP000113	Oncolytic Measles Virus Encoding Thyroidal Sodium Iodide Symporter	synonym	ncit	C66942	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C66942?include=synonyms	2026-11-11
+AXP000114	MV-s-NAP	code	ncit	C173889	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C173889?include=synonyms	2026-11-11
+AXP000114	MV Encoding NAP	synonym	ncit	C173889	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C173889?include=synonyms	2026-11-11
+AXP000115	PV701	code	ncit	C2799	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C2799?include=synonyms	2026-11-11
+AXP000115	Oncolytic Newcastle Disease Virus Strain PV701	synonym	ncit	C2799	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C2799?include=synonyms	2026-11-11
+AXP000116	MTH-68/H	code	paper	PMID 15072452	CC-BY-4.0			0	accepted	https://pubmed.ncbi.nlm.nih.gov/15072452/	2026-11-11
+AXP000116	MTH-68	synonym	paper	PMID 15072452	CC-BY-4.0			1	accepted	https://pubmed.ncbi.nlm.nih.gov/15072452/	2026-11-11
+AXP000117	NDV-HUJ	code	paper	PMID 16257582	CC-BY-4.0			0	accepted	https://pubmed.ncbi.nlm.nih.gov/16257582/	2026-11-11
+AXP000118	MEDI5395	code	ncit	C165457	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C165457?include=synonyms	2026-11-11
+AXP000118	recNDV(GM-CSF)	synonym	ncit	C165457	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C165457?include=synonyms	2026-11-11
+AXP000119	VSV-hIFNbeta-NIS	code	ncit	C131580	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C131580?include=synonyms	2026-11-11
+AXP000119	Voyager-V1	brand	ncit	C131580	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C131580?include=synonyms	2026-11-11
+AXP000119	VV1	synonym	ncit	C131580	CC-BY-4.0			1	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C131580?include=synonyms	2026-11-11
+AXP000119	VSV-IFNb-NIS	synonym	ncit	C131580	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C131580?include=synonyms	2026-11-11
+AXP000120	BI 1831169	code	press	NCT05155332	CC-BY-4.0			0	accepted	https://clinicaltrials.gov/study/NCT05155332	2026-11-11
+AXP000120	VSV-GP	synonym	press	NCT05155332	CC-BY-4.0			1	accepted	https://clinicaltrials.gov/study/NCT05155332	2026-11-11
+AXP000121	MG1-MAGEA3	code	ctgov	NCT02879760	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT02879760	2026-11-11
+AXP000121	MG1MA3	code	ncit	C118973	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C118973?include=synonyms	2026-11-11
+AXP000121	MG1 Maraba/MAGE-A3	synonym	ncit	C118973	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C118973?include=synonyms	2026-11-11
+AXP000122	SVV-001	code	ncit	C62524	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C62524?include=synonyms	2026-11-11
+AXP000122	NTX-010	code	ncit	C62524	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C62524?include=synonyms	2026-11-11
+AXP000122	Seneca Valley Virus-001	synonym	ncit	C62524	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C62524?include=synonyms	2026-11-11
+AXP000123	gebasaxturev	inn	ncit	C61493	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C61493?include=synonyms	2026-11-11
+AXP000123	CAVATAK	brand	ncit	C61493	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C61493?include=synonyms	2026-11-11
+AXP000123	V937	code	ncit	C61493	CC-BY-4.0	2018		0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C61493?include=synonyms	2026-11-11
+AXP000123	CVA21	synonym	ncit	C61493	CC-BY-4.0			1	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C61493?include=synonyms	2026-11-11
+AXP000124	lerapolturev	inn	ncit	C184921	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C184921?include=synonyms	2026-11-11
+AXP000124	PVSRIPO	code	ncit	C184921	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C184921?include=synonyms	2026-11-11
+AXP000125	Rigvir	brand	press	ZVA notice	CC-BY-4.0	2004	2019	0	accepted	https://zva.gov.lv/en/news-and-publications/news/rigvir-marketing-authorisation-suspended-information-current-patients	2026-11-11
+AXP000125	ECHO-7	synonym	press	ZVA notice	CC-BY-4.0			1	accepted	https://zva.gov.lv/en/news-and-publications/news/rigvir-marketing-authorisation-suspended-information-current-patients	2026-11-11
+AXP000126	vocimagene amiretrorepvec	inn	ncit	C91734	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C91734?include=synonyms	2026-11-11
+AXP000126	Toca 511	code	ncit	C91734	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C91734?include=synonyms	2026-11-11
+AXP000127	ParvOryx	brand	ncit	C96229	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C96229?include=synonyms	2026-11-11
+AXP000127	H-1PV	synonym	ncit	C96229	CC-BY-4.0			1	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C96229?include=synonyms	2026-11-11
+AXP000128	VRT106	code	ctgov	NCT06368921	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT06368921	2026-11-11
+AXP000128	oncolytic virus M1	synonym	ctgov	NCT06368921	public-domain			1	accepted	https://clinicaltrials.gov/study/NCT06368921	2026-11-11
+AXP000129	M1-c6v1	code	ctgov	NCT06046742	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT06046742	2026-11-11
+AXP000130	HVJ-E	code	paper	PMID 34984539	CC-BY-4.0			0	accepted	https://pubmed.ncbi.nlm.nih.gov/34984539/	2026-11-11
+AXP000130	GEN0101	code	paper	PMID 34984539	CC-BY-4.0			0	accepted	https://pubmed.ncbi.nlm.nih.gov/34984539/	2026-11-11
+AXP000131	Egypt 101	synonym	paper	PMID 12988191	CC-BY-4.0			1	accepted	https://pubmed.ncbi.nlm.nih.gov/12988191/	2026-11-11
+AXP000131	Egypt 101 virus	synonym	paper	PMID 12988191	CC-BY-4.0			1	accepted	https://pubmed.ncbi.nlm.nih.gov/12988191/	2026-11-11
+AXP000132	OVV-01	code	ctgov	NCT04787003	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT04787003	2026-11-11
+AXP000132	C045	code	ctgov	NCT04787003	public-domain			1	accepted	https://clinicaltrials.gov/study/NCT04787003	2026-11-11
+AXP000132	oncolytic virus (OVV-01) injection	synonym	ctgov	NCT04787003	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT04787003	2026-11-11
+AXP000133	VSV-02	code	ctgov	NCT07260591	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT07260591	2026-11-11
+AXP000133	VSV-02 Injection	synonym	ctgov	NCT07260591	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT07260591	2026-11-11
+AXP000134	Revottack	brand	ctgov	NCT05644509	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT05644509	2026-11-11
+AXP000135	STI-1386	code	ncit	C187651	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C187651?include=synonyms	2026-11-11
+AXP000135	Seprehvec	code	ncit	C187651	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C187651?include=synonyms	2026-11-11
+AXP000135	Oncolytic HSV-1 STI-1386	synonym	ncit	C187651	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C187651?include=synonyms	2026-11-11
+AXP000136	VSV-hIFNbeta	code	ncit	C102545	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C102545?include=synonyms	2026-11-11
+AXP000136	VSV-IFN-beta	synonym	ncit	C102545	CC-BY-4.0			1	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C102545?include=synonyms	2026-11-11
+AXP000136	Recombinant Vesicular Stomatitis Virus-expressing Interferon-beta	synonym	ncit	C102545	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C102545?include=synonyms	2026-11-11
+AXP000136	VSV-hIFN-b	synonym	ncit	C102545	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C102545?include=synonyms	2026-11-11
+AXP000137	IDOV-SAFE	code	ctgov	NCT06346041	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT06346041	2026-11-11
+AXP000138	ON-01	code	ctgov	NCT06562621	public-domain			1	accepted	https://clinicaltrials.gov/study/NCT06562621	2026-11-11
+AXP000139	RGV005	code	ctgov	NCT07398963	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT07398963	2026-11-11
+AXP000139	CD19-CAR novel oncolytic vaccinia virus	synonym	ctgov	NCT07398963	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT07398963	2026-11-11
+AXP000003	Recombinant Human Adenovirus Type 5 Injection	synonym	ctgov	NCT05113290	public-domain			1	accepted	https://clinicaltrials.gov/study/NCT05113290	2026-11-11

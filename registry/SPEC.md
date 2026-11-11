@@ -1,9 +1,10 @@
 # Program registry: specification
 
-Version 0.1 (2026-11-11). The registry gives each investigational therapy a
-stable, citable ID and lists every name it has gone by, so that grants,
-preprints, papers and trials that use different names can be linked to the
-same thing. The tracker's tools (`tracker/`) validate it and build on it.
+Version 0.2 (2026-11-11; 0.2 adds virus.tsv and approvals.tsv). The registry
+gives each investigational therapy a stable, citable ID and lists every name
+it has gone by, so that grants, preprints, papers and trials that use
+different names can be linked to the same thing. The tracker's tools
+(`tracker/`) validate it and build on it.
 
 ## 1. What a program is
 
@@ -97,6 +98,44 @@ whether or not it is listed.
 | `status` | `accepted`, `proposed` (awaiting review) or `rejected` (kept so it isn't proposed again) |
 | `evidence_url` | link showing the name refers to this program |
 | `added` | date added |
+
+### virus.tsv
+
+The virus or viral vector of every virus-based program: oncolytic viruses,
+viral-vector gene therapies (in vivo and ex vivo), viral-vector vaccines and
+phages. One row per program; programs that aren't virus-based have no row.
+These fields hold for any indication: a program's indications come from its
+trials, not from here.
+
+| column | meaning |
+|---|---|
+| `axp_id` | the program (must be active) |
+| `role` | `oncolytic`, `in_vivo_gene_transfer`, `ex_vivo_gene_transfer` (the vector modifies cells outside the body, e.g. a CAR-T or HSC product), `vaccine_vector`, `phage`, `other` |
+| `virus_family` | ICTV family, e.g. `Adenoviridae`, `Herpesviridae`, `Poxviridae`, `Parvoviridae`; for phages the family, or the class `Caudoviricetes` where no family applies |
+| `virus` | the parent virus as commonly named: `human adenovirus 5`, `herpes simplex virus 1`, `vaccinia virus`, `adeno-associated virus 9`, `lentivirus (HIV-1-derived)` |
+| `ncbi_taxon` | NCBI Taxonomy ID of the parent virus (digits) |
+| `strain` | strain, serotype or chimera: `Wyeth`, `JS1`, `Ad5/3 chimera`, `AAV9`, `Dearing` |
+| `replication` | `replicating`, `conditionally_replicating` (engineered to replicate selectively, e.g. E1A-deleted adenovirus) or `non_replicating` |
+| `modifications` | the engineering, briefly: `ICP34.5 and ICP47 deleted`, `TK deleted`, `E1B-55K deleted; E3 deleted` |
+| `transgenes` | what it delivers, `; `-separated: HGNC symbols for human genes (`CSF2`, `SMN1`), else the common name (`GALV-GP`, `LacZ`, `CAR (anti-CD19)`) |
+| `route` | how it is given, `; `-separated: `intratumoral`, `intravenous`, `intra_arterial`, `intravesical`, `intraperitoneal`, `intrapleural`, `intracerebral`, `intrathecal`, `subretinal`, `intravitreal`, `intramuscular`, `subcutaneous`, `intradermal`, `intranasal`, `oral`, `topical`, `ex_vivo` |
+| `carrier` | a cell or other carrier it is delivered in, e.g. `mesenchymal stem cells`; empty if none |
+| `evidence_url` | a source for these facts (a paper, label or company page) |
+
+### approvals.tsv
+
+Regulatory approvals, one row per program, agency and indication.
+
+| column | meaning |
+|---|---|
+| `axp_id` | the program |
+| `agency` | `FDA`, `EMA`, `PMDA`, `NMPA`, `MFDS`, `MHRA`, `Health Canada`, `TGA`, `other` |
+| `region` | `US`, `EU`, `JP`, `CN`, `KR`, `UK`, `CA`, `AU`, or another ISO country code |
+| `date` | YYYY, YYYY-MM or YYYY-MM-DD |
+| `status` | `approved`, `conditional` (accelerated, conditional or time-limited approval), `withdrawn` |
+| `brand` | brand name under that approval |
+| `indication` | as approved, briefly |
+| `evidence_url` | the agency record, label or press release |
 
 ## 5. Matching names
 

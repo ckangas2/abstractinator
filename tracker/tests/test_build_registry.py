@@ -120,10 +120,13 @@ class Build(unittest.TestCase):
 
     def test_programs_only_without_snapshots(self):
         self.build()
-        (n,), = rows(self.out, "SELECT count(*) FROM program")
-        self.assertEqual(n, 32)
+        programs, _ = br.reg.read_tsv(os.path.join(REPO_REGISTRY, "programs.tsv"), br.reg.PROGRAM_COLUMNS)
+        (viruses, _), _ = br.reg.read_optional(REPO_REGISTRY)
+        active = sum(1 for p in programs if p["status"] == "active")
+        self.assertEqual(rows(self.out, "SELECT count(*) FROM program"), [(len(programs),)])
+        self.assertEqual(rows(self.out, "SELECT count(*) FROM virus"), [(len(viruses),)])
         # every active program's preferred name is a name, and keys are filled
-        self.assertEqual(rows(self.out, "SELECT count(*) FROM alias WHERE alias_type='preferred'"), [(32,)])
+        self.assertEqual(rows(self.out, "SELECT count(*) FROM alias WHERE alias_type='preferred'"), [(active,)])
         self.assertEqual(rows(self.out, "SELECT count(*) FROM alias WHERE alias_key=''"), [(0,)])
         with open(self.page, encoding="utf-8") as fh:
             self.assertIn("Tracked programs", fh.read())
