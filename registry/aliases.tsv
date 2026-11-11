@@ -1,1 +1,117 @@
 axp_id	alias	alias_type	source	source_record	licence	valid_from	valid_to	ambiguous	status	evidence_url	added
+AXP000001	talimogene laherparepvec	inn	ncit	C61314	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C61314?include=synonyms	2026-11-11
+AXP000001	T-VEC	synonym	ncit	C61314	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C61314?include=synonyms	2026-11-11
+AXP000001	Imlygic	brand	ncit	C61314	CC-BY-4.0	2015		0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C61314?include=synonyms	2026-11-11
+AXP000001	OncoVEX GM-CSF	former_code	ncit	C61314	CC-BY-4.0		2015	0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C61314?include=synonyms	2026-11-11
+AXP000001	JS1 34.5-hGMCSF 47- pA-	code	ncit	C61314	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C61314?include=synonyms	2026-11-11
+AXP000002	teserpaturev	inn	ncit	C190358	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C190358?include=synonyms	2026-11-11
+AXP000002	G47∆	code	press	https://www.daiichisankyo.com/files/news/pressrelease/pdf/202106/20210611_E_47.pdf	CC-BY-4.0			0	accepted	https://www.daiichisankyo.com/files/news/pressrelease/pdf/202106/20210611_E_47.pdf	2026-11-11
+AXP000002	DS-1647	code	press	https://www.daiichisankyo.com/files/news/pressrelease/pdf/006666/170711_746_E.pdf	CC-BY-4.0	2017		0	accepted	https://www.daiichisankyo.com/files/news/pressrelease/pdf/006666/170711_746_E.pdf	2026-11-11
+AXP000002	Delytact	brand	press	https://www.daiichisankyo.com/files/news/pressrelease/pdf/202106/20210611_E_47.pdf	CC-BY-4.0	2021		0	accepted	https://www.daiichisankyo.com/files/news/pressrelease/pdf/202106/20210611_E_47.pdf	2026-11-11
+AXP000003	H101	code	ncit	C107504	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C107504?include=synonyms	2026-11-11
+AXP000003	Oncorine	brand	ncit	C107504	CC-BY-4.0	2005		0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C107504?include=synonyms	2026-11-11
+AXP000003	Recombinant Human Adenovirus Type 5 H101	synonym	ncit	C107504	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C107504?include=synonyms	2026-11-11
+AXP000003	rAd5 H101	synonym	ncit	C107504	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C107504?include=synonyms	2026-11-11
+AXP000004	pelareorep	inn	ncit	C60774	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C60774?include=synonyms	2026-11-11
+AXP000004	Reolysin	brand	ncit	C60774	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C60774?include=synonyms	2026-11-11
+AXP000004	PO-BB0209	code	ncit	C60774	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C60774?include=synonyms	2026-11-11
+AXP000004	Reovirus Serotype 3	synonym	ncit	C60774	CC-BY-4.0			1	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C60774?include=synonyms	2026-11-11
+AXP000005	tasadenoturev	inn	ncit	C74067	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C74067?include=synonyms	2026-11-11
+AXP000005	DNX-2401	code	ncit	C74067	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C74067?include=synonyms	2026-11-11
+AXP000005	Ad5-Delta24RGD	code	ncit	C74067	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C74067?include=synonyms	2026-11-11
+AXP000005	Delta-24-RGD	former_code	press	https://www.mdanderson.org/newsroom/2018/02/smart-bomb-virus-shows-promise-as-brain-tumor-immunotherapy-.html	CC-BY-4.0			1	accepted	https://www.mdanderson.org/newsroom/2018/02/smart-bomb-virus-shows-promise-as-brain-tumor-immunotherapy-.html	2026-11-11
+AXP000006	cretostimogene grenadenorepvec	inn	ncit	C48412	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C48412?include=synonyms	2026-11-11
+AXP000006	CG0070	code	ncit	C48412	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C48412?include=synonyms	2026-11-11
+AXP000006	Oncolytic Adenovirus Encoding GM-CSF	synonym	ncit	C48412	CC-BY-4.0			1	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C48412?include=synonyms	2026-11-11
+AXP000007	delolimogene mupadenorepvec	inn	ncit	C148462	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C148462?include=synonyms	2026-11-11
+AXP000007	LOAd703	code	ncit	C148462	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C148462?include=synonyms	2026-11-11
+AXP000007	Oncolytic Adenovirus LOAd703	synonym	ncit	C148462	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C148462?include=synonyms	2026-11-11
+AXP000008	zabilugene almadenorepvec	inn	ncit	C211709	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C211709?include=synonyms	2026-11-11
+AXP000008	VCN-01	code	ncit	C211709	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C211709?include=synonyms	2026-11-11
+AXP000009	igrelimogene litadenorepvec	inn	ncit	C175454	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C175454?include=synonyms	2026-11-11
+AXP000009	TILT-123	code	ncit	C175454	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C175454?include=synonyms	2026-11-11
+AXP000009	Ad5/3-E2F-d24-hTNFa-IRES-hIL2	code	ncit	C175454	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C175454?include=synonyms	2026-11-11
+AXP000010	vusolimogene oderparepvec	inn	ncit	C158074	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C158074?include=synonyms	2026-11-11
+AXP000010	RP1	code	ncit	C158074	CC-BY-4.0			1	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C158074?include=synonyms	2026-11-11
+AXP000010	vusolimogene oderparepvec-wtpg	synonym	fda	https://www.fda.gov/news-events/press-announcements/fda-approves-new-engineered-viral-immunotherapy-patients-treatment-resistant-advanced-melanoma	public-domain	2026		0	accepted	https://www.fda.gov/news-events/press-announcements/fda-approves-new-engineered-viral-immunotherapy-patients-treatment-resistant-advanced-melanoma	2026-11-11
+AXP000010	Tudriqev	brand	fda	https://www.fda.gov/news-events/press-announcements/fda-approves-new-engineered-viral-immunotherapy-patients-treatment-resistant-advanced-melanoma	public-domain	2026		0	accepted	https://www.fda.gov/news-events/press-announcements/fda-approves-new-engineered-viral-immunotherapy-patients-treatment-resistant-advanced-melanoma	2026-11-11
+AXP000011	pexastimogene devacirepvec	inn	ncit	C71533	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C71533?include=synonyms	2026-11-11
+AXP000011	JX-594	code	ncit	C71533	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C71533?include=synonyms	2026-11-11
+AXP000011	Pexa-Vec	synonym	ncit	C71533	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C71533?include=synonyms	2026-11-11
+AXP000011	TG-6006	code	ncit	C71533	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C71533?include=synonyms	2026-11-11
+AXP000012	enadenotucirev	inn	ncit	C113786	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C113786?include=synonyms	2026-11-11
+AXP000012	ColoAd1	former_code	ncit	C113786	CC-BY-4.0	2008		0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C113786?include=synonyms	2026-11-11
+AXP000012	EnAd	synonym	ncit	C113786	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C113786?include=synonyms	2026-11-11
+AXP000013	tisagenlecleucel	inn	ncit	C102758	CC-BY-4.0			0	accepted	https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C102758	2026-11-11
+AXP000013	Kymriah	brand	ncit	C102758	CC-BY-4.0			0	accepted	https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C102758	2026-11-11
+AXP000013	CTL019	code	ncit	C102758	CC-BY-4.0			0	accepted	https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C102758	2026-11-11
+AXP000013	CART-19	synonym	ncit	C102758	CC-BY-4.0			1	accepted	https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C102758	2026-11-11
+AXP000013	tisa-cel	synonym	ncit	C102758	CC-BY-4.0			0	accepted	https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C102758	2026-11-11
+AXP000013	Tisagenlecleucel-T	synonym	ncit	C102758	CC-BY-4.0			0	accepted	https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C102758	2026-11-11
+AXP000014	axicabtagene ciloleucel	inn	ncit	C120309	CC-BY-4.0			0	accepted	https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C120309	2026-11-11
+AXP000014	Yescarta	brand	ncit	C120309	CC-BY-4.0			0	accepted	https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C120309	2026-11-11
+AXP000014	KTE-C19	code	ncit	C120309	CC-BY-4.0			0	accepted	https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C120309	2026-11-11
+AXP000014	axi-cel	synonym	ncit	C120309	CC-BY-4.0			0	accepted	https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C120309	2026-11-11
+AXP000015	brexucabtagene autoleucel	inn	ncit	C170439	CC-BY-4.0			0	accepted	https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C170439	2026-11-11
+AXP000015	Tecartus	brand	ncit	C170439	CC-BY-4.0			0	accepted	https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C170439	2026-11-11
+AXP000015	KTE-X19	code	ncit	C170439	CC-BY-4.0			0	accepted	https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C170439	2026-11-11
+AXP000015	brexu-cel	synonym	ncit	C170439	CC-BY-4.0			0	accepted	https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C170439	2026-11-11
+AXP000016	lisocabtagene maraleucel	inn	ncit	C125192	CC-BY-4.0			0	accepted	https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C125192	2026-11-11
+AXP000016	Breyanzi	brand	ncit	C125192	CC-BY-4.0			0	accepted	https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C125192	2026-11-11
+AXP000016	JCAR017	code	ncit	C125192	CC-BY-4.0			0	accepted	https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C125192	2026-11-11
+AXP000016	liso-cel	synonym	ncit	C125192	CC-BY-4.0			0	accepted	https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C125192	2026-11-11
+AXP000017	idecabtagene vicleucel	inn	ncit	C117729	CC-BY-4.0			0	accepted	https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C117729	2026-11-11
+AXP000017	Abecma	brand	ncit	C117729	CC-BY-4.0			0	accepted	https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C117729	2026-11-11
+AXP000017	bb2121	code	ncit	C117729	CC-BY-4.0			0	accepted	https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C117729	2026-11-11
+AXP000017	ide-cel	synonym	ncit	C117729	CC-BY-4.0			0	accepted	https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C117729	2026-11-11
+AXP000018	ciltacabtagene autoleucel	inn	ncit	C148498	CC-BY-4.0			0	accepted	https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C148498	2026-11-11
+AXP000018	Carvykti	brand	ncit	C148498	CC-BY-4.0			0	accepted	https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C148498	2026-11-11
+AXP000018	JNJ-68284528	code	ncit	C148498	CC-BY-4.0			0	accepted	https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C148498	2026-11-11
+AXP000018	JNJ-4528	code	press	https://www.cgtlive.com/view/cita-cel-induces-high-response-rate-in-relapsed-refractory-multiple-myeloma	CC-BY-4.0			0	accepted	https://www.cgtlive.com/view/cita-cel-induces-high-response-rate-in-relapsed-refractory-multiple-myeloma	2026-11-11
+AXP000018	LCAR-B38M	code	ncit	C148498	CC-BY-4.0			0	accepted	https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C148498	2026-11-11
+AXP000018	cilta-cel	synonym	ncit	C148498	CC-BY-4.0			0	accepted	https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C148498	2026-11-11
+AXP000019	obecabtagene autoleucel	inn	ncit	C172746	CC-BY-4.0			0	accepted	https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C172746	2026-11-11
+AXP000019	Aucatzyl	brand	ncit	C172746	CC-BY-4.0			0	accepted	https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C172746	2026-11-11
+AXP000019	AUTO1	code	ncit	C172746	CC-BY-4.0			0	accepted	https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C172746	2026-11-11
+AXP000019	obe-cel	synonym	ncit	C172746	CC-BY-4.0			0	accepted	https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C172746	2026-11-11
+AXP000020	relmacabtagene autoleucel	inn	ncit	C155878	CC-BY-4.0			0	accepted	https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C155878	2026-11-11
+AXP000020	Carteyva	brand	press	https://www.biospace.com/jw-therapeutics-announces-nmpa-acceptance-of-the-supplemental-biological-license-application-for-carteyva-in-patients-with-relapsed-or-refractory-mantle-cell-lymphoma	CC-BY-4.0			0	accepted	https://www.biospace.com/jw-therapeutics-announces-nmpa-acceptance-of-the-supplemental-biological-license-application-for-carteyva-in-patients-with-relapsed-or-refractory-mantle-cell-lymphoma	2026-11-11
+AXP000020	JWCAR029	code	ncit	C155878	CC-BY-4.0			0	accepted	https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C155878	2026-11-11
+AXP000020	relma-cel	synonym	ncit	C155878	CC-BY-4.0			0	accepted	https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C155878	2026-11-11
+AXP000021	equecabtagene autoleucel	inn	ncit	C185123	CC-BY-4.0			0	accepted	https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C185123	2026-11-11
+AXP000021	Fucaso	brand	press	https://www.onclive.com/view/equecabtagene-autoleucel-approved-in-china-for-relapsed-refractory-multiple-myeloma	CC-BY-4.0			0	accepted	https://www.onclive.com/view/equecabtagene-autoleucel-approved-in-china-for-relapsed-refractory-multiple-myeloma	2026-11-11
+AXP000021	CT103A	code	ncit	C185123	CC-BY-4.0			0	accepted	https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C185123	2026-11-11
+AXP000021	IBI326	code	press	https://www.drugdiscoveryonline.com/doc/iaso-bio-and-innovent-jointly-announce-the-nmpa-acceptance-refractory-multiple-myeloma-0001	CC-BY-4.0			0	accepted	https://www.drugdiscoveryonline.com/doc/iaso-bio-and-innovent-jointly-announce-the-nmpa-acceptance-refractory-multiple-myeloma-0001	2026-11-11
+AXP000021	eque-cel	synonym	press	https://www.onclive.com/view/eque-cel-demonstrates-activity-in-r-r-multiple-myeloma	CC-BY-4.0			0	accepted	https://www.onclive.com/view/eque-cel-demonstrates-activity-in-r-r-multiple-myeloma	2026-11-11
+AXP000022	anitocabtagene autoleucel	inn	ncit	C199003	CC-BY-4.0			0	accepted	https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C199003	2026-11-11
+AXP000022	anito-cel	synonym	ncit	C199003	CC-BY-4.0			0	accepted	https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C199003	2026-11-11
+AXP000022	CART-ddBCMA	former_code	ncit	C199003	CC-BY-4.0			0	accepted	https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C199003	2026-11-11
+AXP000022	ddBCMA	former_name	press	https://www.gilead.com/news/news-details/2026/gilead-and-kite-advance-leadership-with-new-data-across-pipeline-and-portfolio-at-ash-2026	CC-BY-4.0			1	accepted	https://www.gilead.com/news/news-details/2026/gilead-and-kite-advance-leadership-with-new-data-across-pipeline-and-portfolio-at-ash-2026	2026-11-11
+AXP000023	sotorasib	inn	ncit	C154287	CC-BY-4.0			0	accepted	https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C154287	2026-11-11
+AXP000023	AMG 510	code	ncit	C154287	CC-BY-4.0			0	accepted	https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C154287	2026-11-11
+AXP000023	Lumakras	brand	fda	NDA 214665	public-domain			0	accepted	https://www.accessdata.fda.gov/drugsatfda_docs/label/2025/214665s009lbl.pdf	2026-11-11
+AXP000023	Lumykras	brand	press	https://www.ema.europa.eu/en/documents/assessment-report/lumykras-epar-public-assessment-report_en.pdf	CC-BY-4.0			0	accepted	https://www.ema.europa.eu/en/documents/assessment-report/lumykras-epar-public-assessment-report_en.pdf	2026-11-11
+AXP000024	adagrasib	inn	ncit	C157493	CC-BY-4.0			0	accepted	https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C157493	2026-11-11
+AXP000024	MRTX849	code	ncit	C157493	CC-BY-4.0			0	accepted	https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C157493	2026-11-11
+AXP000024	Krazati	brand	fda	DailyMed: Krazati	public-domain			0	accepted	https://dailymed.nlm.nih.gov/dailymed/search.cfm?query=krazati	2026-11-11
+AXP000025	divarasib	inn	ncit	C173995	CC-BY-4.0			0	accepted	https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C173995	2026-11-11
+AXP000025	GDC-6036	code	ncit	C173995	CC-BY-4.0			0	accepted	https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C173995	2026-11-11
+AXP000025	RG6330	code	ncit	C173995	CC-BY-4.0			0	accepted	https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C173995	2026-11-11
+AXP000026	MRTX1133	code	ncit	C200319	CC-BY-4.0			0	accepted	https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C200319	2026-11-11
+AXP000027	daraxonrasib	inn	ncit	C188048	CC-BY-4.0			0	accepted	https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C188048	2026-11-11
+AXP000027	RMC-6236	code	ncit	C188048	CC-BY-4.0			0	accepted	https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C188048	2026-11-11
+AXP000027	Rasonque	brand	press	https://www.americanpharmaceuticalreview.com/1315-News/627762-FDA-Approves-Revolution-Medicines-RASONQUE-for-Metastatic-Pancreatic-Cancer/	CC-BY-4.0			0	accepted	https://www.americanpharmaceuticalreview.com/1315-News/627762-FDA-Approves-Revolution-Medicines-RASONQUE-for-Metastatic-Pancreatic-Cancer/	2026-11-11
+AXP000028	elironrasib	inn	ncit	C189824	CC-BY-4.0			0	accepted	https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C189824	2026-11-11
+AXP000028	RMC-6291	code	ncit	C189824	CC-BY-4.0			0	accepted	https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C189824	2026-11-11
+AXP000029	zoldonrasib	inn	ncit	C201828	CC-BY-4.0			0	accepted	https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C201828	2026-11-11
+AXP000029	RMC-9805	code	ncit	C201828	CC-BY-4.0			0	accepted	https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C201828	2026-11-11
+AXP000029	RM-036	code	ncit	C201828	CC-BY-4.0			0	accepted	https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C201828	2026-11-11
+AXP000030	glecirasib	inn	ncit	C181904	CC-BY-4.0			0	accepted	https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C181904	2026-11-11
+AXP000030	JAB-21822	code	ncit	C181904	CC-BY-4.0			0	accepted	https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C181904	2026-11-11
+AXP000030	艾瑞凯	brand	press	https://www.itiger.com/news/2537916479	CC-BY-4.0	2025		0	accepted	https://www.itiger.com/news/2537916479	2026-11-11
+AXP000031	fulzerasib	inn	ncit	C199055	CC-BY-4.0			0	accepted	https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C199055	2026-11-11
+AXP000031	GFH925	code	ncit	C199055	CC-BY-4.0			0	accepted	https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C199055	2026-11-11
+AXP000031	IBI351	code	ncit	C199055	CC-BY-4.0	2021		0	accepted	https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C199055	2026-11-11
+AXP000031	Dupert	brand	press	https://www.pharmafocusasia.com/index.php/news/innovents-dupert-gains-nmpa-approval-as-chinas-first-kras-g12c-inhibitor	CC-BY-4.0	2024		0	accepted	https://www.pharmafocusasia.com/index.php/news/innovents-dupert-gains-nmpa-approval-as-chinas-first-kras-g12c-inhibitor	2026-11-11
+AXP000032	olomorasib	inn	ncit	C181751	CC-BY-4.0			0	accepted	https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C181751	2026-11-11
+AXP000032	LY3537982	code	ncit	C181751	CC-BY-4.0			0	accepted	https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C181751	2026-11-11

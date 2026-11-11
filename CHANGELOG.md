@@ -66,6 +66,11 @@ Development before v2.0.0 was untagged; see the git history for detail.
   longer counts as support for a hepatitis B tag.
 
 ### Added
+- The program registry's first 32 entries: oncolytic viruses (T-VEC,
+  teserpaturev, H101, pelareorep, DNX-2401, CG0070, LOAd703, VCN-01,
+  TILT-123, RP1, Pexa-Vec, enadenotucirev), CAR-T therapies (the approved
+  CD19 and BCMA products plus anito-cel) and KRAS-targeted agents, with 116
+  names, NCIt codes, UNIIs and Wikidata items.
 - Program registry groundwork (`registry/`, `tracker/`): a specification for
   stable program IDs (`AXP000001`...) and aliases, the empty registry files,
   and a validator that runs in CI. Released under CC BY 4.0.

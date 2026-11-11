@@ -6,8 +6,9 @@ by: development codes, INNs, brand names, former codes. It lets the
 Abstractinator link the grants, preprints, papers and trials that talk about
 the same therapy under different names.
 
-Status: **specification and tooling only; no entries yet.** The first entries
-will cover oncolytic viruses, CAR-T therapies and KRAS-targeted agents.
+Status: **32 programs, 116 names** (2026-11-11): 12 oncolytic viruses, 10
+CAR-T therapies and 10 KRAS-targeted agents. Each has its NCI Thesaurus code
+and UNII; 22 have a Wikidata item. Every name has a source link.
 
 - `SPEC.md`: what counts as a program, how IDs, merges and aliases work,
   which licences are allowed. Read this before adding anything.

@@ -44,7 +44,10 @@ PARTIAL_DATE_RE = re.compile(r"^[0-9]{4}(-[0-9]{2}(-[0-9]{2})?)?$")
 NCIT_RE = re.compile(r"^C[0-9]+$")
 QID_RE = re.compile(r"^Q[0-9]+$")
 
-_MARKS = {"®": "", "™": "", "©": ""}
+# Dropped marks, and a look-alike folded to the letter it stands for: the
+# increment sign (U+2206) is often typed for a Greek capital delta, as in
+# G47∆, and NFKC does not fold it.
+_MARKS = {"®": "", "™": "", "©": "", "\u2206": "\u0394"}
 
 
 def alias_key(name):
