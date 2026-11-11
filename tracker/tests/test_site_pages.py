@@ -223,6 +223,8 @@ class Site(unittest.TestCase):
             index = fh.read()
         self.assertIn('href="atlas.html"', index)
         self.assertIn('href="atlas-phage.html"', index)
+        self.assertIn('href="atlas-aav.html"', index)
+        self.assertTrue(os.path.isfile(os.path.join(out, "registry", "atlas-aav.html")))
         # Each atlas page carries the tab bar, marking itself as current.
         with open(os.path.join(out, "registry", "atlas-phage.html"), encoding="utf-8") as fh:
             phage = fh.read()
@@ -273,6 +275,27 @@ class AtlasFieldTest(unittest.TestCase):
         p1 = next(n for n in data["nodes"] if n["id"] == "P1")
         self.assertEqual(p1["cancers"], ["Urinary tract"])
         self.assertEqual([n["id"] for n in ap.atlas_data(d)["nodes"] if n["kind"] == "virus"], ["A1"])
+
+    def test_aav_field(self):
+        import atlas_page as ap
+        prog = lambda i, name: {"axp_id": i, "preferred_name": name, "status": "active", "sponsor": ""}
+        d = {"programs": {"V1": prog("V1", "AAV-1"), "V2": prog("V2", "AAV-2"), "L1": prog("L1", "Lenti-1")},
+             "virus": {"V1": {"role": "in_vivo_gene_transfer", "virus_family": "Parvoviridae", "strain": "AAV5",
+                              "transgenes": "F9"},
+                       "V2": {"role": "in_vivo_gene_transfer", "virus_family": "Parvoviridae", "strain": ""},
+                       "L1": {"role": "in_vivo_gene_transfer", "virus_family": "Retroviridae", "strain": "x"}},
+             "trials": {},
+             "approvals": {"V1": [{"status": "approved", "indication": "Adults with haemophilia B"}]},
+             "aliases": {}}
+        data = ap.atlas_data(d, "aav")
+        nodes = {n["id"]: n for n in data["nodes"]}
+        self.assertEqual(sorted(k for k, n in nodes.items() if n["kind"] == "virus"), ["V1", "V2"])  # AAV only
+        self.assertEqual(nodes["V1"]["family"], "AAV5")                 # capsid, not family
+        self.assertEqual(nodes["V1"]["cancers"], ["Blood"])             # from the approval's indication
+        self.assertEqual(nodes["V1"]["stage"], "approved")
+        self.assertEqual(ap.stage_of([{"status": "withdrawn"}], []), ("approved", "Approved, since withdrawn"))
+        self.assertIn(["V1", "family:aav5"], data["links"])
+        self.assertFalse(any(l[0] == "V2" and l[1].startswith("family:") for l in data["links"]))
 
 if __name__ == "__main__":
     unittest.main()

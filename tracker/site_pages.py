@@ -34,7 +34,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
 sys.path.insert(0, HERE)
 import build_registry as br  # noqa: E402  (shared CSS tokens and change labels)
-import atlas_page  # noqa: E402  (the atlases: atlas.html, atlas-phage.html)
+import atlas_page  # noqa: E402  (the atlases: atlas.html, atlas-phage.html, atlas-aav.html)
 
 DEFAULT_DB = os.path.join(REPO, "data", "registry", "registry.sqlite")
 DEFAULT_SITE = os.path.join(REPO, "www", "registry")
@@ -386,7 +386,9 @@ def index_page(d):
     body.append('<h2>Explore</h2><p><a href="atlas.html">Oncolytic virus atlas</a>: every oncolytic virus as a '
                 "map, joined to its virus family, transgenes, the cancers its trials enrol and more. "
                 '<a href="atlas-phage.html">Phage therapy atlas</a>: the same map for phage therapies, '
-                "joined to the infections their trials enrol.</p>")
+                "joined to the infections their trials enrol. "
+                '<a href="atlas-aav.html">AAV gene therapy atlas</a>: AAV products by capsid, transgene and '
+                "disease area.</p>")
     body.append("<h2>By disease</h2><ul>%s</ul>" % "".join(
         '<li><a href="disease/%s.html">%s</a></li>' % (esc(slug), esc(label)) for slug, label, _ in DISEASE_VIEWS))
     body.append('<div id="filter" hidden><label for="q">Filter programs</label><br>'

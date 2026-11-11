@@ -267,13 +267,15 @@ fluidPage(
       div(class = "atlas-feature-text",
         span(class = "atlas-feature-tag", "New \u00b7 Beta"),
         h4("Atlasinator"),
-        p("Every oncolytic virus and phage therapy in the registry as one interactive map: ",
-          "virus families, transgenes, the diseases their trials enrol, and who is behind them."),
+        p("Every oncolytic virus, phage therapy and AAV gene therapy in the registry as one interactive map: ",
+          "virus families and capsids, transgenes, the diseases they target, and who is behind them."),
         div(class = "atlas-feature-links",
           tags$a(href = "registry/atlas.html", target = "_blank", rel = "noopener",
                  class = "btn btn-sm atlas-feature-btn", "Oncolytic viruses \u2192"),
           tags$a(href = "registry/atlas-phage.html", target = "_blank", rel = "noopener",
-                 class = "btn btn-sm atlas-feature-btn", "Phage therapy \u2192")
+                 class = "btn btn-sm atlas-feature-btn", "Phage therapy \u2192"),
+          tags$a(href = "registry/atlas-aav.html", target = "_blank", rel = "noopener",
+                 class = "btn btn-sm atlas-feature-btn", "AAV gene therapy \u2192")
         )
       )
     ),

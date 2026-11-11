@@ -1,5 +1,6 @@
 """The virus atlases: registry/atlas.html (oncolytic viruses) and
-registry/atlas-phage.html (phage therapy), one page per field, with tabs.
+registry/atlas-phage.html (phage therapy) and registry/atlas-aav.html (AAV gene
+therapy), one page per field, with tabs.
 
 A map of the field drawn as a graph. Every oncolytic virus in the registry is a
 dot, coloured by how far it has got (approval, else the highest phase among
@@ -77,6 +78,22 @@ INFECTIONS = [
     ("Healthy volunteers", ["healthy"]),
 ]
 
+# What an AAV program's trials or approvals name, grouped. First match wins,
+# so the neuromuscular storage diseases (Pompe) sit with neuromuscular.
+AAV_DISEASES = [
+    ("Eye", ["retin", "macular", "vision", "choroideremia", "leber", "achromatops", "ocular", "optic neuropathy",
+             "eye disease"]),
+    ("Blood", ["haemophilia", "hemophilia", "factor viii", "factor ix"]),
+    ("Neuromuscular", ["muscular dystrophy", "duchenne", "spinal muscular atrophy", "myopathy", "pompe",
+                       "limb-girdle", "limb girdle"]),
+    ("Brain and nerves", ["parkinson", "huntington", "rett", "dravet", "decarboxylase", "aadc", "batten",
+                          "canavan", "krabbe", "epilep", "dementia", "neuronal ceroid"]),
+    ("Metabolic and lysosomal", ["lipoprotein lipase", "mucopolysacchar", "fabry", "gaucher", "glycogen storage",
+                                 "ornithine", "phenylketon", "hunter syndrome", "sanfilippo", "wilson"]),
+    ("Heart", ["heart failure", "cardiomyopathy", "danon"]),
+    ("Hearing", ["hearing", "deaf", "otoferlin"]),
+]
+
 # Each field the atlas covers: one page, one tab. The pages share the code
 # below; a field picks the programs (by virus role), the hub kinds shown, and
 # how trial conditions are grouped.
@@ -99,6 +116,20 @@ FIELDS = [
      "lead": "joined to their phage family or class, the infections their trials enrol, routes and shared sponsors",
      "groups_note": "Infections come from those trials' conditions, grouped; they appear once the weekly "
                     "trial snapshot has linked a product's trials."},
+    {"key": "aav", "page": "atlas-aav.html", "tab": "AAV gene therapy", "title": "AAV gene therapy atlas",
+     "role": "in_vivo_gene_transfer", "virus_family": "Parvoviridae", "groups": AAV_DISEASES,
+     "noun": "AAV gene therapies", "family_from": "strain", "family_label": "Capsid",
+     "unit": ["product", "products"], "item": "Product", "find": "Find a product, capsid, disease\u2026",
+     "groups_head": "Disease area",
+     "hubs": [("family", "Capsid", "#8a7fd6", True),
+              ("transgene", "Transgene", "#d4537e", False),   # mostly one product each: clutter
+              ("indication", "Disease area", "#2fa58c", True),
+              ("route", "Route", "#9a9890", True),
+              ("sponsor", "Sponsor (2+ products)", "#b07a4a", False)],
+     "lead": "joined to their capsid, transgene, the disease areas of their trials and approvals, routes "
+             "and shared sponsors",
+     "groups_note": "Disease areas come from those trials' conditions and the approvals' indications, grouped. "
+                    "Products whose capsid no source states have no capsid link."},
 ]
 
 
@@ -114,13 +145,14 @@ def _conditions(t):
         return []
 
 
-def indications_of(trials, groups=None):
-    """What a set of trials enrols, as labels from groups (INDICATIONS by
-    default: cancers), sorted."""
+def indications_of(trials, groups=None, approvals=()):
+    """What a set of trials enrols (and approvals cover), as labels from
+    groups (INDICATIONS by default: cancers), sorted."""
     groups = INDICATIONS if groups is None else groups
     found = set()
-    for t in trials:
-        texts = [c.lower() for c in _conditions(t)] + [(t.get("brief_title") or "").lower()]
+    sources = [[c.lower() for c in _conditions(t)] + [(t.get("brief_title") or "").lower()] for t in trials]
+    sources += [[(a.get("indication") or "").lower()] for a in approvals]
+    for texts in sources:
         for text in texts:
             for label, frags in groups:
                 if any(f in text for f in frags):
@@ -133,6 +165,8 @@ def stage_of(approvals, trials):
     """(key, label): approved, else the highest phase among confirmed trials."""
     if any(a["status"] in ("approved", "conditional") for a in approvals):
         return "approved", "Approved"
+    if any(a["status"] == "withdrawn" for a in approvals):   # got there, then left (Glybera)
+        return "approved", "Approved, since withdrawn"
     best = 0
     for t in trials:
         for p in (t.get("phases") or "").split("/"):
@@ -157,8 +191,10 @@ def field_of(key):
 def atlas_data(d, field="oncolytic"):
     """{"nodes": [...], "links": [[source id, target id], ...]} for one field's programs."""
     f = field_of(field)
+    def in_field(v):
+        return v.get("role") == f["role"] and (not f.get("virus_family") or v.get("virus_family") == f["virus_family"])
     programs = [p for p in d["programs"].values()
-                if p["status"] == "active" and d["virus"].get(p["axp_id"], {}).get("role") == f["role"]]
+                if p["status"] == "active" and in_field(d["virus"].get(p["axp_id"], {}))]
     sponsor_count = {}
     for p in programs:
         s = (p.get("sponsor") or "").strip()
@@ -180,9 +216,9 @@ def atlas_data(d, field="oncolytic"):
         trials = [t for t in d["trials"].get(axp, []) if t.get("link_status") == "auto"]
         stage, stage_label = stage_of(d["approvals"].get(axp, []), trials)
         names = [a["alias"] for a in d["aliases"].get(axp, []) if a.get("alias_type") in ("code", "brand")]
-        cancers = indications_of(trials, f["groups"])
+        cancers = indications_of(trials, f["groups"], d["approvals"].get(axp, []))
         node = {"id": axp, "kind": "virus", "label": p["preferred_name"], "stage": stage,
-                "stage_label": stage_label, "aka": names[:3], "family": v.get("virus_family") or "",
+                "stage_label": stage_label, "aka": names[:3], "family": v.get(f.get("family_from", "virus_family")) or "",
                 "transgenes": _split(v.get("transgenes")) if "transgene" in kinds else [], "routes": [_route_label(r) for r in _split(v.get("route"))],
                 "cancers": cancers, "sponsor": p.get("sponsor") or "", "trials": len(trials),
                 "url": "%s.html" % axp}
@@ -315,7 +351,9 @@ function fit(){
   var vis=nodes.filter(visible); if(!vis.length) return;
   function q(arr,p){arr.sort(function(a,b){return a-b;}); return arr[Math.min(arr.length-1,Math.max(0,Math.round(p*(arr.length-1))))];}
   var xs=vis.map(function(n){return n.x;}), ys=vis.map(function(n){return n.y;});
-  var x0=q(xs,0)-12, x1=q(xs,1)+80, y0=q(ys,0)-12, y1=q(ys,1)+12;
+  // Right edge: the end of the longest label shown (about 6.2 units a letter).
+  var ends=vis.map(function(n){var lab=n.kind!=='virus'||n.stage==='approved'; return n.x+radius(n)+(lab?8+n.label.length*6.2:0);});
+  var x0=q(xs,0)-12, x1=Math.max.apply(null,ends)+6, y0=q(ys,0)-12, y1=q(ys,1)+12;
   var pad=24, k=Math.min((W-2*pad)/Math.max(x1-x0,1),(H-2*pad)/Math.max(y1-y0,1),2.2);
   view.k=k; view.x=(W-(x1-x0)*k)/2-x0*k; view.y=(H-(y1-y0)*k)/2-y0*k;
 }
@@ -369,7 +407,7 @@ function select(n){
     h+='<h3><a href="'+esc(n.url)+'">'+esc(n.label)+'</a></h3>';
     if(n.aka.length) h+='<p class="muted">'+esc(n.aka.join(', '))+'</p>';
     h+='<p><b>'+esc(n.stage_label)+'</b>'+(n.trials?' · '+n.trials+' linked trial'+(n.trials===1?'':'s'):'')+'</p>';
-    if(n.family) h+='<p>Family: '+esc(n.family)+'</p>';
+    if(n.family) h+='<p>'+esc(cfg.family_label)+': '+esc(n.family)+'</p>';
     if(n.transgenes.length) h+='<p>Transgenes: '+esc(n.transgenes.join(', '))+'</p>';
     if(n.routes.length) h+='<p>Route: '+esc(n.routes.join(', '))+'</p>';
     if(n.cancers.length) h+='<p>Trials in: '+esc(n.cancers.join(', '))+'</p>';
@@ -413,7 +451,7 @@ def atlas_page(d, esc, frame, filter_js, table, field="oncolytic"):
     counts = {}
     for n in viruses:
         counts[n["stage"]] = counts.get(n["stage"], 0) + 1
-    cfg = {"stages": STAGES, "hubs": f["hubs"], "unit": f["unit"]}
+    cfg = {"stages": STAGES, "hubs": f["hubs"], "unit": f["unit"], "family_label": f.get("family_label", "Family")}
     as_json = lambda x: json.dumps(x, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
     has_tg = any(h[0] == "transgene" for h in f["hubs"])
     body = ["<style>%s</style>" % ATLAS_CSS,
@@ -455,7 +493,7 @@ def atlas_page(d, esc, frame, filter_js, table, field="oncolytic"):
             esc(search), esc(n["url"]), esc(n["label"]),
             ' <span class="muted">(%s)</span>' % esc(", ".join(n["aka"])) if n["aka"] else "",
             "".join("<td%s>%s</td>" % (" class=nw" if k == 1 else "", c) for k, c in enumerate(cells))))
-    body.append(table([f["item"], "Family", "Stage"] + (["Transgenes"] if has_tg else []) + ["Route", f["groups_head"]],
+    body.append(table([f["item"], f.get("family_label", "Family"), "Stage"] + (["Transgenes"] if has_tg else []) + ["Route", f["groups_head"]],
                       rows))
     body.append("<script>%s</script>" % filter_js)
     return frame(f["title"], body, d["meta"], "", [(None, f["title"])])
