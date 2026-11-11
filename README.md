@@ -63,7 +63,7 @@ https://mcp.abstractinator.me/mcp
 **No sign-in** for authentication. Then just ask, e.g. *"Search the Abstractinator for oncolytic
 virus trials in melanoma."* Any MCP client that supports remote (streamable HTTP) servers works too.
 
-The server exposes two tools:
+The server exposes four tools:
 
 **`search_literature(query, max_results=25, abstract_chars=1500, deep=False, offset=0, sources="")`**
 returns `total_found`, `available`, `has_more`, `source_counts`, `unavailable_sources`, and a
@@ -73,6 +73,14 @@ source-balanced list of records with `title`, `abstract`, `authors`, `publicatio
 clinical trials `trial_status`, `trial_start`, `trial_end`, `phase`, `interventions`, `intervention_other_names`, `conditions`, `lead_sponsor` and `trial_references`. Every record has every key.
 
 **`get_fulltext(pmcid, doi, max_chars=20000)`** returns the open-access full text of one article.
+
+**`program(query)`** looks up one therapy program in the program registry by its stable AXP ID or
+any name or code, and returns its aliases, linked ClinicalTrials.gov trials (each with how it was
+linked, a confidence, and `auto` or unreviewed `candidate` status) and recent changes.
+
+**`changes(since, program, modality, significance="info", limit=100)`** returns change events
+(new trials, status and phase changes, results posted...) from weekly ClinicalTrials.gov snapshots
+of the registry's trials.
 
 Tag agreement with NCBI's PubTator3 is measured in [`benchmark/pubtator.md`](benchmark/pubtator.md), on a held-out set of searches that name no organism as well as on the searches used to tune the alias lists. The figures are agreement with another model, not accuracy.
 
@@ -259,6 +267,19 @@ sudo -u shiny /usr/bin/Rscript -e 'source("R/log_utils_local.R"); print(summariz
 - `deep`: `true` for up to 250 results per source
 - Optional headers `X-CORE-Key` and `X-USPTO-Key` enable those sources for the request
 - Server-wide limit of 20 searches/minute (HTTP 429 when exceeded)
+
+`GET /program?id=<AXP ID or name>`
+
+- One program from `data/registry/registry.sqlite` (override with `ABSTRACTINATOR_REGISTRY_DB`):
+  aliases, linked trials, recent changes; a merged ID resolves to its survivor (`merged_from`)
+- An ambiguous name returns `"program": null` and `candidates`; no match is a 404, and a
+  registry not built yet a 503
+
+`GET /changes?since=YYYY-MM-DD&program=&modality=&significance=info&limit=100`
+
+- Trial change events seen on or after `since` (default 30 days ago), newest first
+- `significance`: `major` only, `minor` (major and minor) or `info` (all); `limit` 1–500
+- `/program` and `/changes` share a limit of 120 requests/minute
 
 `GET /health` returns `{"status":"ok"}`.
 

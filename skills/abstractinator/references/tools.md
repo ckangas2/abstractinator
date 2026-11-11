@@ -42,6 +42,39 @@ result; `doi` costs one extra lookup.
   nothing. Start small.
 - `status: "not_open_access"` means follow the DOI by hand.
 
+## program
+
+    program(query)
+
+One therapy program from the program registry. `query` is an AXP ID
+(`AXP000001`) or any name or code; case, spaces and hyphens do not matter.
+AXP IDs are stable; a merged ID resolves to its survivor (`merged_from`).
+
+Returns `program` (`preferred_name`, `status`, `modality`, `platform`,
+`targets`, `originator`, `sponsor`, `ncit`, `wikidata`, `unii`), `aliases`,
+`trials` and `recent_changes`. Each trial has `link_method`
+(`intervention_name`, `intervention_text`, `title`), `link_confidence` and
+`link_status`: `auto` links are counted, `candidate` links are unreviewed.
+An ambiguous name returns `program: null` and `candidates`.
+
+## changes
+
+    changes(since="", program="", modality="", significance="info", limit=100)
+
+Change events from weekly ClinicalTrials.gov snapshots of the registry's
+trials, newest first.
+
+| parameter | meaning |
+|---|---|
+| `since` | `YYYY-MM-DD`; default 30 days ago. |
+| `program` | AXP ID or name. |
+| `modality` | A therapy category, e.g. `Oncolytic virus`. |
+| `significance` | `major` only, `minor` (major and minor), or `info` (all). |
+| `limit` | 1-500. |
+
+Each event: `event_id`, `snapshot_date`, `previous_date`, `nct_id`,
+`brief_title`, `type`, `significance`, `field`, `before`, `after`, `programs`.
+
 ## Limits
 
 Shared across every user of the service: about 20 searches per minute, and a

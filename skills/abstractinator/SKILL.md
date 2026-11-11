@@ -5,8 +5,10 @@ description: Search biomedical literature on immunology, virology, infectious di
 
 # The Abstractinator
 
-Two tools on a free remote MCP server: `search_literature` finds records across
-six databases, `get_fulltext` reads one open-access article. Parameter detail
+Tools on a free remote MCP server: `search_literature` finds records across
+six databases, `get_fulltext` reads one open-access article, `program` looks up
+a therapy program by stable AXP ID or any name, and `changes` lists what
+changed in programs' trials week to week. Parameter detail
 and limits are in `references/tools.md` -- read it when you need an exact
 argument, not before.
 

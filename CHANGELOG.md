@@ -66,6 +66,21 @@ Development before v2.0.0 was untagged; see the git history for detail.
   longer counts as support for a hepatitis B tag.
 
 ### Added
+- `/program` and `/changes` in the API, and `program` and `changes` MCP
+  tools: look up a therapy program by any of its names (its IDs, names,
+  linked trials with link method and confidence, recent changes), and list
+  what changed in tracked trials since a date, by program, therapy category
+  or significance.
+- The Therapinator is back as a beta, opened from the settings menu's new
+  Beta section rather than the main tab bar.
+- Trial links and a change feed for the program registry
+  (`tracker/build_registry.py`, weekly after each snapshot): each tracked
+  trial is linked to the programs it tests, with how the link was made and
+  how confident it is; changes between weekly snapshots (status, phase,
+  results, enrolment, timelines, sponsor, new trials) are recorded per
+  program, and summarised at abstractinator.me/changes.html.
+- The uptime probe alerts when the weekly trial snapshot is missing,
+  incomplete or more than 8 days old.
 - The program registry's first 32 entries: oncolytic viruses (T-VEC,
   teserpaturev, H101, pelareorep, DNX-2401, CG0070, LOAd703, VCN-01,
   TILT-123, RP1, Pexa-Vec, enadenotucirev), CAR-T therapies (the approved

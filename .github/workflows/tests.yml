@@ -50,6 +50,9 @@ jobs:
             any::htmlwidgets
             any::DT
             any::parallelly
+            any::DBI
+            any::RSQLite
+            any::stringi
 
       # Program registry and trial snapshots: standard-library Python, so they
       # run first and fast. The validator fails the build on a bad registry row.

@@ -127,3 +127,19 @@ probe local  mcp_init     "http://localhost:8200/mcp" \
   -H 'Content-Type: application/json' \
   -H 'Accept: application/json, text/event-stream' \
   --data '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"uptime-probe","version":"1"}}}'
+
+# --- weekly trial snapshot ------------------------------------------------
+# Not a web check: is the newest ClinicalTrials.gov snapshot complete and less
+# than 8 days old? A missed week can't be fetched later, so say so promptly.
+# Logged with http_code 200/500 so the CSV keeps one shape.
+LIVE="${ABSTRACTINATOR_LIVE_DIR:-/srv/shiny-server/abstractinator}"
+if [ -r "$LIVE/data/trial_snapshots/trials.sqlite" ]; then
+  if /usr/bin/python3 "$LIVE/tracker/snapshot_trials.py" --status \
+       --db "$LIVE/data/trial_snapshots/trials.sqlite" >/dev/null 2>&1; then
+    printf '%s,%s,%s,%s,%s\n' "$TS" local snapshot "200,0,0" 0 >> "$CSV"
+    track snapshot 1 200 local
+  else
+    printf '%s,%s,%s,%s,%s\n' "$TS" local snapshot "500,0,0" 1 >> "$CSV"
+    track snapshot 0 "stale or incomplete" local
+  fi
+fi

@@ -70,9 +70,9 @@ ui <- source(file.path(APP_DIR, "app", "ui.R"), local = TRUE)$value
 # The server, split into parts by area. Each part is sourced INSIDE server()
 # with local = TRUE, so it runs exactly as if written inline: the parts share
 # input, output, session and each other's variables, in this order.
-# The Therapinator tab ("what's been tried") is still in development, so it is
-# hidden on the website. Its code, tests and the therapy tags in the API stay;
-# set TRUE to show the tab again.
+# The Therapinator tab ("what's been tried") is in beta: it is kept out of the
+# main tab bar and opened from the settings menu's Beta section instead. Set
+# TRUE to show it in the tab bar again.
 SHOW_THERAPINATOR <- FALSE
 
 SERVER_PARTS <- c("state", "landing", "search", "settings", "help_feedback",

@@ -25,8 +25,13 @@ __pycache__/
 .Rproj.user/
 # Static web assets are not data dumps
 !www/*.json
+# Benchmark outputs are published results
+!benchmark/*.csv
 # MCP Registry metadata (public; published with mcp-publisher)
 !/server.json
+
+# Generated weekly by tracker/build_registry.py
+www/changes.html
 
 # Shiny/bslib runtime cache
 app_cache/
