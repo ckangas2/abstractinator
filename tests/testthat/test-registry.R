@@ -196,3 +196,81 @@ test_that("the API reads the database the Python build writes", {
   expect_true(is.data.frame(tvec$body$grants))
   expect_equal(registry_changes(out, since = "2026-01-01")$body$count, 0L)
 })
+
+# --- chips on search results (R/registry_chips.R) ---------------------------
+source(file.path(repo_root, "R", "registry_chips.R"))
+
+test_that("names are found across spellings, the way the weekly linker finds them", {
+  keys <- registry_window_keys("A phase 1 trial of MRTX 1133 in <i>KRAS</i> G12D cancer")
+  expect_true("MRTX1133" %in% keys)
+  expect_true("KRAS" %in% keys)                         # markup is not a word
+  expect_false("SPAN" %in% registry_window_keys("<span style='x'>No abstract</span>"))
+  expect_identical(registry_window_keys(NA), character(0))
+  expect_identical(registry_window_keys(""), character(0))
+})
+
+test_that("a short name must be written as itself", {
+  expect_true(registry_as_written("ON-01", "Patients received ON-01 intratumorally."))
+  expect_true(registry_as_written("ON-01", "a trial of ON 01."))
+  expect_true(registry_as_written("T-VEC", "T-Vec was given"))           # hyphenated, any case
+  expect_false(registry_as_written("ON-01", "Enrolled based on 01 March data."))
+  expect_false(registry_as_written("ON-01", "On 01 March"))              # spaced needs the same case
+  expect_false(registry_as_written("ON-01", "MON-01 is something else"))
+})
+
+test_that("the stage is approval, else the highest confirmed trial phase", {
+  expect_equal(registry_stage_label(c("PHASE1/PHASE2", "PHASE3"), FALSE), "phase 3")
+  expect_equal(registry_stage_label("PHASE2", TRUE), "approved")
+  expect_equal(registry_stage_label("EARLY_PHASE1", FALSE), "early phase 1")
+  expect_equal(registry_stage_label(character(0), FALSE), "")
+})
+
+test_that("results get chips by the registry's linking rules", {
+  skip_if_not_installed("RSQLite")
+  skip_if_not_installed("DBI")
+  path <- tempfile(fileext = ".sqlite")
+  con <- DBI::dbConnect(RSQLite::SQLite(), path)
+  DBI::dbWriteTable(con, "program", data.frame(
+    axp_id = c("AXP000001", "AXP000002", "AXP000003"), status = "active",
+    preferred_name = c("talimogene laherparepvec", "ON-01", "other thing"),
+    modality = "Oncolytic virus"))
+  DBI::dbWriteTable(con, "alias", data.frame(
+    axp_id = c("AXP000001", "AXP000001", "AXP000002", "AXP000003"),
+    alias = c("talimogene laherparepvec", "T-VEC", "ON-01", "Shared"),
+    alias_key = c("TALIMOGENELAHERPAREPVEC", "TVEC", "ON01", "SHARED"),
+    alias_type = c("preferred", "code", "preferred", "synonym"),
+    ambiguous = c(0L, 0L, 0L, 1L)))
+  DBI::dbWriteTable(con, "virus", data.frame(axp_id = "AXP000001", virus_family = "Orthoherpesviridae"))
+  DBI::dbWriteTable(con, "approval", data.frame(axp_id = "AXP000001", status = "approved"))
+  DBI::dbWriteTable(con, "trial", data.frame(nct_id = "NCT1", phases = "PHASE1/PHASE2"))
+  DBI::dbWriteTable(con, "trial_link", data.frame(nct_id = "NCT1", axp_id = "AXP000002", status = "auto"))
+  DBI::dbDisconnect(con)
+
+  index <- registry_chip_index(path)
+  expect_false(is.null(index))
+  html <- registry_programs_html(
+    titles = c("Phase III trial of T-VEC in melanoma",
+               "Enrolled based on 01 March data",
+               "A cohort study",
+               "Shared mechanisms",
+               "ON-01 in glioma"),
+    abstracts = c("",
+                  "",
+                  "Patients received talimogene laherparepvec.",       # an INN in the abstract counts
+                  "",
+                  ""),
+    index = index)
+  expect_match(html[1], 'href="registry/AXP000001.html"', fixed = TRUE)
+  expect_match(html[1], "T-VEC · approved", fixed = TRUE)
+  expect_match(html[1], "Orthoherpesviridae", fixed = TRUE)            # in the tooltip
+  expect_equal(html[2], "")                                            # "on 01" is not ON-01
+  expect_match(html[3], "AXP000001", fixed = TRUE)
+  expect_equal(html[4], "")                                            # ambiguous names never chip
+  expect_match(html[5], "ON-01 · phase 2", fixed = TRUE)          # stage from a confirmed trial
+
+  # A short code only in an abstract waits for review, so no chip.
+  expect_equal(registry_programs_html("A study", "T-VEC was used", index = index), "")
+  # No database: no chips, no error.
+  expect_identical(registry_programs_html(c("T-VEC", "x"), c("", ""), index = NULL), c("", ""))
+  expect_null(registry_chip_index(file.path(tempdir(), "no-such-registry.sqlite")))
+})

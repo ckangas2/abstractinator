@@ -35,10 +35,17 @@ alias_key <- function(x) {
   stringi::stri_replace_all_regex(x, "[^\\p{L}\\p{N}]", "")
 }
 
-# The database file: ABSTRACTINATOR_REGISTRY_DB, else under the app root.
+# The database file: ABSTRACTINATOR_REGISTRY_DB; else under the state
+# directory, ABSTRACTINATOR_DATA_DIR or /var/lib/abstractinator where it
+# exists (bigtop, where Shiny Server doesn't pass environment variables); else
+# under the app root's data/ (a laptop checkout).
 registry_db_path <- function(root = getwd()) {
   p <- Sys.getenv("ABSTRACTINATOR_REGISTRY_DB", "")
-  if (nzchar(p)) p else file.path(root, "data", "registry", "registry.sqlite")
+  if (nzchar(p)) return(p)
+  for (d in c(Sys.getenv("ABSTRACTINATOR_DATA_DIR", ""), "/var/lib/abstractinator")) {
+    if (nzchar(d) && dir.exists(d)) return(file.path(d, "registry", "registry.sqlite"))
+  }
+  file.path(root, "data", "registry", "registry.sqlite")
 }
 
 # What the API sends back: an HTTP status and a body to serialise.

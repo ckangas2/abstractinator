@@ -70,6 +70,13 @@ dt_options <- list(
                badge += ' <span style=\"color: #b388ff; font-weight: bold; font-size: 0.75em; border: 1px solid #b388ff; border-radius: 4px; padding: 1px 4px; margin-left: 6px; vertical-align: middle; white-space: nowrap;\">' + bacteria.toUpperCase() + '</span>';
             }
             
+            // G. Registry programs the record names (row[36], built in R by
+            // R/registry_chips.R): a chip per program linking to its page.
+            var programs = row[36];
+            if (programs) {
+               badge += ' <span class=\"program-chips\">' + programs + '</span>';
+            }
+
             // --- 2. CREATE TITLE LINK ---
             var titleHtml = '';
             if (url) {

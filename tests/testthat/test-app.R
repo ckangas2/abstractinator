@@ -48,6 +48,12 @@ test_that("the results every tab reads keep the columns the Therapinator and rep
   needed <- c("primary_modality", "modality_hits_combined", "Interventions", "Conditions",
               "Phase", "TrialStatus", "TrialStart", "MergedFrom", "NCTId", "Source")
   for (col in needed) expect_match(sel, paste0("\\b", col, "\\b"), info = col)
+  # The title renderer (app/dt_options.R) reads the registry chips from row[36]:
+  # RegistryPrograms must stay the 37th column.
+  cols <- trimws(strsplit(sub("^select\\(", "", sub("\\)$", "", sel)), ",")[[1]])
+  expect_equal(which(cols == "RegistryPrograms"), 37L)
+  dt <- paste(readLines(file.path(repo_root, "app/dt_options.R"), warn = FALSE), collapse = "\n")
+  expect_match(dt, "row[36]", fixed = TRUE)
 })
 
 test_that("server code calls shiny::validate, never the bare name", {

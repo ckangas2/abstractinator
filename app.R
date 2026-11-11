@@ -51,6 +51,11 @@ PATHOGEN_POOLS <- list(
                     label = "Bacteria", icon = "bacterium", known_label = "\U0001F9A0 Bacteria Only")
 )
 
+# Program registry: chips on results that name a registered program
+# (R/registry_chips.R; reads registry.sqlite, quietly does nothing without it).
+source("R/registry.R")
+source("R/registry_chips.R")
+
 # --- SEARCH ENGINE ---
 source("R/engine.R")
 load_engine()

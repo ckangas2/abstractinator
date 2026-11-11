@@ -66,6 +66,11 @@ Development before v2.0.0 was untagged; see the git history for detail.
   longer counts as support for a hepatitis B tag.
 
 ### Added
+- Search results that name a registered program get a chip beside the title
+  (name and stage, e.g. "T-VEC · approved") linking to its registry page. The
+  app recognises names with the weekly linker's own rules, so a chip appears
+  only where the registry would count the link as confirmed
+  (`R/registry_chips.R`).
 - Registry web pages at abstractinator.me/registry/: an index by virus
   family, a page per program (names, virus, approvals, trials, changes,
   papers, grants, how to cite) and a pancreatic cancer view; linked from the

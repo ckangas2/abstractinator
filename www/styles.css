@@ -2542,3 +2542,20 @@ a.landing-card-link:focus-visible .landing-card {
   /* --- Plotinator: hide plotly's toolbar, which overlaps the title on a phone --- */
   #allArticlesPlotOutput .modebar-container { display: none !important; }
 }
+
+/* --- Registry program chips beside a result's title (R/registry_chips.R) --- */
+.program-chips { white-space: normal; }
+.program-chip {
+  display: inline-block;
+  color: #ffd54f;
+  border: 1px solid #ffd54f;
+  border-radius: 4px;
+  padding: 1px 5px;
+  margin: 2px 0 0 6px;
+  font-size: 0.75em;
+  font-weight: bold;
+  vertical-align: middle;
+  white-space: nowrap;
+  text-decoration: none;
+}
+.program-chip:hover, .program-chip:focus { background: rgba(255, 213, 79, 0.15); color: #ffe082; text-decoration: none; }

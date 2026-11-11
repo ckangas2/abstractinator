@@ -303,6 +303,11 @@
             MergedFrom             = if ("MergedFrom" %in% names(.)) MergedFrom else NA_character_,
             GrantID                = if ("GrantID" %in% names(.)) GrantID else NA_character_
           ) %>%
+
+          # Chips for registered programs the title or abstract names, with the
+          # registry's own linking rules (R/registry_chips.R). HTML, "" where none;
+          # the title renderer in app/dt_options.R draws them from row[36].
+          mutate(RegistryPrograms = registry_programs_html(Title, Abstract)) %>%
           
           # --- UPDATE SELECT ---
           # Column order is a contract: the table's JS reads row[5] URL, row[6] DOI,
@@ -317,7 +322,8 @@
                  bacteria_hits_combined, SortDate, ItemKey,
                  HasAbstract, PMCID, IsOpenAccess,
                  primary_modality, modality_hits_combined, Interventions, Conditions,
-                 Phase, TrialStatus, TrialStart, TrialEnd, MergedFrom, GrantID)
+                 Phase, TrialStatus, TrialStart, TrialEnd, MergedFrom, GrantID,
+                 RegistryPrograms)
       )
       
       output$resultsDisplay <- DT::renderDataTable({
@@ -341,7 +347,7 @@
         o$order <- list(list(23, "desc"), list(21, "desc"))
         o$columnDefs <- c(
           if (is.null(dt_options$columnDefs)) list() else dt_options$columnDefs,
-          list(list(targets = 23:35, visible = FALSE))
+          list(list(targets = 23:36, visible = FALSE))
         )
         o
       }),
@@ -353,7 +359,8 @@
                    "Bacteria Hits", "SortDate", "ItemKey",
                    "HasAbstract", "PMCID", "IsOpenAccess",
                    "Therapy", "Therapy Hits", "Interventions", "Conditions", "Phase",
-                   "TrialStatus", "TrialStart", "TrialEnd", "MergedFrom", "GrantID"),
+                   "TrialStatus", "TrialStart", "TrialEnd", "MergedFrom", "GrantID",
+                   "Programs"),
       rownames = FALSE,
       escape = FALSE,
       selection = 'none',
