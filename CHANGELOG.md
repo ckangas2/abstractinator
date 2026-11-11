@@ -9,6 +9,14 @@ Development before v2.0.0 was untagged; see the git history for detail.
 ## [Unreleased]
 
 ### Fixed
+- Three more AAV citations that did not resolve: EMA has renamed Durveqtix to
+  Beqvez, so fidanacogene elaparvovec's EPAR links now point at
+  `.../EPAR/beqvez`; and botaretigene sparoparvovec's facts moved off a J&J
+  page that has gone and a Retina Today page that refuses robots, onto two
+  reviews that say the same and do answer.
+- The reference checker now waits out a 429 on EMA's published lists as
+  patiently as it does on a citation. The whole run leans on those two files,
+  so losing one to a momentary throttle cost four programs their acceptance.
 - EMA links are no longer fetched one by one. Its medicine pages answer 429
   to any robot however slowly we knock, so the checker now confirms them
   against the two JSON lists EMA publishes of its medicine pages and EPAR

@@ -103,21 +103,38 @@ def _pause(host):
 
 def _read_json(url):
     """The whole of a published JSON file (fetch() caps its reads, so this does
-    its own request). None if it cannot be read."""
+    its own request). None if it cannot be read.
+
+    These files are the fallback for a host that refuses robots, so a 429 here
+    is worth waiting out: the whole run depends on them, where a single
+    citation does not."""
     host = urllib.parse.urlsplit(url).netloc
+    name = url.rsplit("/", 1)[-1]
     req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT,
                                                "Accept": "application/json"})
-    for attempt in range(RETRIES + 1):
+    wait = THROTTLE_BACKOFF
+    for attempt in range(THROTTLE_RETRIES + 1):
         _pause(host)
         try:
             with urllib.request.urlopen(req, timeout=TIMEOUT * 4) as resp:
                 return json.loads(resp.read().decode("utf-8"))
+        except urllib.error.HTTPError as e:
+            if attempt >= THROTTLE_RETRIES:
+                say("     could not read %s (HTTP %d)" % (name, e.code))
+                return None
+            after = e.headers.get("Retry-After") if e.headers else None
+            pause = min(float(after) if after and str(after).isdigit() else wait,
+                        THROTTLE_MAX_WAIT)
+            say("     HTTP %d reading %s, waiting %ds (try %d of %d)"
+                % (e.code, name, round(pause), attempt + 1, THROTTLE_RETRIES))
+            time.sleep(pause)
+            wait = min(wait * 2, THROTTLE_MAX_WAIT)
         except Exception as e:
-            if attempt < RETRIES:
-                time.sleep(5.0 * (attempt + 1))
-                continue
-            say("     could not read %s (%s)" % (url.rsplit("/", 1)[-1], type(e).__name__))
-            return None
+            if attempt >= THROTTLE_RETRIES:
+                say("     could not read %s (%s)" % (name, type(e).__name__))
+                return None
+            time.sleep(min(wait, THROTTLE_MAX_WAIT))
+            wait = min(wait * 2, THROTTLE_MAX_WAIT)
 
 
 def ema_index():

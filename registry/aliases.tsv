@@ -604,9 +604,9 @@ AXP000253	AMT-061	former_code	curator	EMA EPAR Hemgenix	CC-BY-4.0			0	proposed	h
 AXP000254	Elevidys	brand	fda	FDA BLA 125781 review summary	public-domain			0	accepted	https://www.fda.gov/media/179485/download	2026-11-11
 AXP000254	SRP-9001	code	fda	FDA BLA 125781 review summary	public-domain			0	accepted	https://www.fda.gov/media/179485/download	2026-11-11
 AXP000255	Beqvez	brand	fda	FDA RMAT approvals list	public-domain			0	proposed	https://www.fda.gov/vaccines-blood-biologics/cellular-gene-therapy-products/cber-regenerative-medicine-advanced-therapy-rmat-approvals	2026-11-11
-AXP000255	Durveqtix	brand	curator	EMA EPAR Durveqtix	CC-BY-4.0			0	proposed	https://www.ema.europa.eu/en/medicines/human/EPAR/durveqtix	2026-11-11
-AXP000255	SPK-9001	former_code	curator	EMA EPAR Durveqtix	CC-BY-4.0			0	proposed	https://www.ema.europa.eu/en/medicines/human/EPAR/durveqtix	2026-11-11
-AXP000255	PF-06838435	former_code	curator	EMA EPAR Durveqtix	CC-BY-4.0			0	proposed	https://www.ema.europa.eu/en/medicines/human/EPAR/durveqtix	2026-11-11
+AXP000255	Durveqtix	brand	curator	EMA EPAR Beqvez (previously Durveqtix)	CC-BY-4.0			0	proposed	https://www.ema.europa.eu/en/medicines/human/EPAR/beqvez	2026-11-11
+AXP000255	SPK-9001	former_code	curator	EMA EPAR Beqvez (previously Durveqtix)	CC-BY-4.0			0	proposed	https://www.ema.europa.eu/en/medicines/human/EPAR/beqvez	2026-11-11
+AXP000255	PF-06838435	former_code	curator	EMA EPAR Beqvez (previously Durveqtix)	CC-BY-4.0			0	proposed	https://www.ema.europa.eu/en/medicines/human/EPAR/beqvez	2026-11-11
 AXP000256	BBM-H901	code	press	Belief BioMed / Takeda China approval release	CC-BY-4.0			0	accepted	https://www.biospectrumasia.com/news/25/25865/china-approves-first-hemophilia-b-gene-therapy.html	2026-11-11
 AXP000256	XinJiuning	brand	press	Cyagen note on the NMPA approval	CC-BY-4.0			0	accepted	https://www.cyagen.com/us/en/community/technical-bulletin/aav-gene-therapy-drug.html	2026-11-11
 AXP000257	ABBV-RGX-314	code	ctgov	NCT04704921	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT04704921	2026-11-11
@@ -615,9 +615,9 @@ AXP000257	sura-vec	synonym	ctgov	NCT05407636	public-domain			0	accepted	https://
 AXP000258	ixo-vec	synonym	ctgov	NCT06856577	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT06856577	2026-11-11
 AXP000258	ADVM-022	former_code	ctgov	NCT03748784	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT03748784	2026-11-11
 AXP000259	4D-150	code	ctgov	NCT05197270	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT05197270	2026-11-11
-AXP000260	bota-vec	synonym	curator	J&J medical information page	CC-BY-4.0			0	proposed	https://jnjmedicalconnect.com/products/botaretigene-sparoparvovec/medical-content/lumeos-phase-3-clinical-trial	2026-11-11
-AXP000260	MGT009	former_code	curator	Retina Today review of IRD gene therapy trials	CC-BY-4.0			0	proposed	https://retinatoday.com/articles/2023-july-aug/the-latest-in-gene-therapy-clinical-trials-for-ird	2026-11-11
-AXP000260	AAV-RPGR	former_code	curator	Retina Today review of IRD gene therapy trials	CC-BY-4.0			0	proposed	https://retinatoday.com/articles/2023-july-aug/the-latest-in-gene-therapy-clinical-trials-for-ird	2026-11-11
+AXP000260	bota-vec	synonym	curator	Retinal Physician review of IRD gene therapies	CC-BY-4.0			0	proposed	https://retinalphysician.com/issues/2025/october/gene-therapies-for-inherited-retinal-diseases/	2026-11-11
+AXP000260	MGT009	former_code	curator	Ophthalmology Management review of retinal gene therapy	CC-BY-4.0			0	proposed	https://ophthalmologymanagement.com/issues/2023/july/gene-therapy-for-retinal-diseases/	2026-11-11
+AXP000260	AAV-RPGR	former_code	curator	Ophthalmology Management review of retinal gene therapy	CC-BY-4.0			0	proposed	https://ophthalmologymanagement.com/issues/2023/july/gene-therapy-for-retinal-diseases/	2026-11-11
 AXP000261	AGTC-501	code	curator	CGTLive snapshot of ophthalmic cell and gene therapies	CC-BY-4.0			0	accepted	https://cgtlive.com/view/a-snapshot-of-ophthalmologic-therapies-in-development	2026-11-11
 AXP000261	laru-zova	synonym	curator	Retinal Physician review of IRD gene therapies	CC-BY-4.0			0	accepted	https://retinalphysician.com/issues/2025/october/gene-therapies-for-inherited-retinal-diseases/	2026-11-11
 AXP000262	OCU400	code	ctgov	NCT06388200	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT06388200	2026-11-11
