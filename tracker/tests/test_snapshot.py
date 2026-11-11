@@ -239,6 +239,26 @@ class Snapshot(unittest.TestCase):
         self.assertEqual(snap.status(self.db, today="2026-11-20", log=out.append), 0)
         self.assertEqual(snap.status(self.db, today="2026-12-01", log=out.append), 1)   # stale
 
+    def test_registry_name_queries(self):
+        qs = snap.registry_queries()
+        self.assertTrue(qs and all(f == "intr" for _, _, f in qs))
+        joined = " ".join(q for _, q, _ in qs)
+        for name in ('"Pexa-Vec"', '"ONYX-015"', '"talimogene laherparepvec"', '"MRTX1133"'):
+            self.assertIn(name, joined)
+        self.assertTrue(all(q.count(" OR ") < snap.REGISTRY_BATCH for _, q, _ in qs))
+        self.assertEqual(len({qid for qid, _, _ in qs}), len(qs))
+
+    def test_intervention_queries_use_their_field(self):
+        api = FakeAPI({"Pexa-Vec": [study("NCT09")]})
+        api_calls = api.calls
+
+        def get(params):
+            assert "query.intr" in params and "query.term" not in params
+            return api({"query.term": params["query.intr"], **{k: v for k, v in params.items() if k != "query.intr"}})
+        snap.take_snapshot(self.db, [("reg", "Pexa-Vec", "intr")], today="2026-11-15", get=get, log=self.logs.append)
+        self.assertEqual(db_rows(self.db, "SELECT nct_id, matched_queries FROM observation"), [("NCT09", '["reg"]')])
+        self.assertEqual(len(api_calls), 1)
+
     def test_scope_file(self):
         rows = snap.read_scope(snap.DEFAULT_SCOPE)
         self.assertEqual([q for q, _ in rows], ["oncolytic", "car_t", "kras"])

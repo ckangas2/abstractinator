@@ -62,6 +62,10 @@ MAX_WINDOW = 8               # a name may span up to this many words
 
 MAJOR_STATUSES = {"TERMINATED", "WITHDRAWN", "SUSPENDED", "COMPLETED", "ACTIVE_NOT_RECRUITING"}
 SLIP_DAYS = 90
+# A trial seen for the first time is "new" only if it was registered recently;
+# an older trial that just came into scope (a name was added to the registry)
+# isn't news.
+NEW_TRIAL_DAYS = 30
 ENROLLMENT_CHANGE = 0.20
 
 SCHEMA = """
@@ -251,7 +255,9 @@ def changes_between(snap, a_day, b_day):
     out = []
     for nct, (hb, rb) in b.items():
         if nct not in a:
-            if complete.get(a_day):
+            posted = _month_or_day(json.loads(rb).get("first_post_date"))
+            since = dt.date.fromisoformat(a_day) - dt.timedelta(days=NEW_TRIAL_DAYS)
+            if complete.get(a_day) and posted and posted >= since:
                 out.append((nct, "trial.new", "minor", None, None, None))
             continue
         ha, ra = a[nct]

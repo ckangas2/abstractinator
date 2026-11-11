@@ -29,6 +29,10 @@ Usage:
 Options:
     --db FILE      the database (default: <repo>/data/trial_snapshots/trials.sqlite)
     --scope FILE   query list (default: tracker/snapshot_scope.tsv)
+    --no-registry-names
+                   skip the intervention searches for every program-registry
+                   name (on by default, so every registered program's trials
+                   are followed even if they never use the topic's keywords)
 """
 
 import argparse
@@ -276,11 +280,14 @@ def http_get_json(params, retries=3, timeout=120):
             raise RuntimeError("network error: %s" % e)
 
 
-def fetch_query(query, use_fields, page_size=PAGE_SIZE, max_pages=None, get=http_get_json):
-    """All studies matching one query. Returns (studies, total_count, pages, used_fields)."""
+def fetch_query(query, use_fields, page_size=PAGE_SIZE, max_pages=None, get=http_get_json, field="term"):
+    """All studies matching one query. Returns (studies, total_count, pages, used_fields).
+
+    field is the API's search area: "term" (anywhere in the record) or "intr"
+    (interventions only)."""
     studies, token, pages, total = [], None, 0, None
     while True:
-        params = {"format": "json", "query.term": query, "pageSize": page_size, "countTotal": "true"}
+        params = {"format": "json", "query." + field: query, "pageSize": page_size, "countTotal": "true"}
         if use_fields:
             params["fields"] = FIELDS
         if token:
@@ -316,6 +323,45 @@ def read_scope(path):
     if len({q for q, _ in out}) != len(out):
         raise SystemExit("duplicate query_id in %s" % path)
     return out
+
+
+REGISTRY_BATCH = 15          # names per intervention query
+REGISTRY_MIN_KEY = 3         # shorter names are too likely to match something else
+
+
+def registry_queries(registry_dir=None, batch=REGISTRY_BATCH):
+    """Intervention searches for every name in the program registry.
+
+    The keyword queries in snapshot_scope.tsv miss trials that never use the
+    topic's words (ONYX-015's trials don't say "oncolytic"), so every
+    registered program is also followed by name: its preferred name and its
+    accepted aliases, searched among trial interventions, a batch at a time.
+    Returns [(query_id, query, "intr")].
+    """
+    sys.path.insert(0, HERE)
+    import registry as reg
+    registry_dir = registry_dir or os.path.join(REPO, "registry")
+    programs, _ = reg.read_tsv(os.path.join(registry_dir, "programs.tsv"), reg.PROGRAM_COLUMNS)
+    aliases, _ = reg.read_tsv(os.path.join(registry_dir, "aliases.tsv"), reg.ALIAS_COLUMNS)
+    names = [p["preferred_name"] for p in programs if p["status"] == "active"]
+    names += [a["alias"] for a in aliases if a["status"] == "accepted"]
+    by_key = {}
+    for n in names:
+        n = " ".join(n.replace('"', " ").split())
+        k = reg.alias_key(n)
+        if len(k) >= REGISTRY_MIN_KEY and k not in by_key:
+            by_key[k] = n
+    terms = sorted(by_key.values(), key=str.lower)
+    out = []
+    for i in range(0, len(terms), batch):
+        q = " OR ".join('"%s"' % t for t in terms[i:i + batch])
+        out.append(("registry_%02d" % (len(out) + 1), q, "intr"))
+    return out
+
+
+def scope_entry(entry):
+    """(query_id, query, field) from a scope tuple; field defaults to "term"."""
+    return (tuple(entry) + ("term",))[:3]
 
 
 # --- writing ------------------------------------------------------------------
@@ -383,11 +429,11 @@ def take_snapshot(db_path, scope, today=None, get=http_get_json, log=print):
             return 0
         started = dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds")
         records, raw, per_query, use_fields = {}, {}, [], True
-        for qid, query in scope:
-            entry = {"query_id": qid, "query": query, "total_count": None, "fetched": 0,
+        for qid, query, field in map(scope_entry, scope):
+            entry = {"query_id": qid, "query": query, "field": field, "total_count": None, "fetched": 0,
                      "pages": 0, "complete": False, "error": None}
             try:
-                studies, total, pages, use_fields = fetch_query(query, use_fields, get=get)
+                studies, total, pages, use_fields = fetch_query(query, use_fields, get=get, field=field)
                 entry.update(total_count=total, fetched=len(studies), pages=pages,
                              complete=(total is None or len(studies) >= total))
             except Exception as e:  # one failed query must not lose the others
@@ -498,10 +544,10 @@ def status(db_path, today=None, log=print):
 
 
 def dry_run(scope, get=http_get_json, log=print):
-    for qid, query in scope:
-        studies, total, pages, used = fetch_query(query, True, page_size=5, max_pages=1, get=get)
+    for qid, query, field in map(scope_entry, scope):
+        studies, total, pages, used = fetch_query(query, True, page_size=5, max_pages=1, get=get, field=field)
         log("%-12s %s trials match; field list accepted: %s" % (qid, total, used))
-        if studies:
+        if studies and field == "term":
             log(json.dumps(canonical(studies[0]), indent=2, ensure_ascii=False))
         time.sleep(PAUSE_SECONDS)
     return 0
@@ -514,12 +560,16 @@ def main(argv=None):
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--status", action="store_true")
     ap.add_argument("--import-legacy", metavar="DIR")
+    ap.add_argument("--no-registry-names", action="store_true",
+                    help="only the keyword queries in the scope file")
     args = ap.parse_args(argv)
     if args.status:
         return status(args.db)
     if args.import_legacy:
         return import_legacy(args.db, args.import_legacy)
     scope = read_scope(args.scope)
+    if not args.no_registry_names:
+        scope = scope + registry_queries()
     if args.dry_run:
         return dry_run(scope)
     return take_snapshot(args.db, scope)

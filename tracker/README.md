@@ -44,8 +44,12 @@ or absent, and rows are only ever added. Check the latest:
 python3 tracker/snapshot_trials.py --status
 ```
 
-Changing `snapshot_scope.tsv` changes which trials are followed from the next
-run on; trials that drop out of scope simply stop appearing.
+What is followed: the keyword queries in `snapshot_scope.tsv`, plus an
+intervention search for every name in the program registry (in batches of
+15), so each registered program's trials are followed even when they never
+use the topic's keywords. Adding a program or a name to the registry widens
+the next snapshot automatically. Trials that come into scope this way are not
+reported as "new" unless they were registered within the last 30 days.
 
 ## Registry database and digest
 

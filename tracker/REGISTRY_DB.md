@@ -91,7 +91,7 @@ Event types:
 
 | type | significance | when |
 |---|---|---|
-| `trial.new` | minor | a trial appears for the first time (not on the very first snapshot) |
+| `trial.new` | minor | a trial appears for the first time and was first posted within 30 days before the previous snapshot (older trials that merely came into scope are not events) |
 | `trial.status_changed` | major if to TERMINATED, WITHDRAWN, SUSPENDED, COMPLETED or ACTIVE_NOT_RECRUITING; else minor | overall_status differs |
 | `trial.phase_changed` | major | phases differ |
 | `trial.results_posted` | major | has_results false → true |

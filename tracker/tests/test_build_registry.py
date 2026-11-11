@@ -19,8 +19,10 @@ snap.PAUSE_SECONDS = 0
 REPO_REGISTRY = os.path.join(os.path.dirname(os.path.dirname(HERE)), "registry")
 
 
-def trial(nct, name, other=(), title="A study", **kw):
+def trial(nct, name, other=(), title="A study", posted=None, **kw):
     s = study(nct, other_names=other, **kw)
+    if posted:
+        s["protocolSection"]["statusModule"]["studyFirstPostDateStruct"]["date"] = posted
     s["protocolSection"]["armsInterventionsModule"]["interventions"] = [
         {"type": "BIOLOGICAL", "name": name, "otherNames": list(other)}]
     s["protocolSection"]["identificationModule"]["briefTitle"] = title
@@ -141,7 +143,8 @@ class Build(unittest.TestCase):
               trial("NCT02", "Sotorasib", title="AMG 510 study", updated="2026-11-15"),   # bookkeeping only
               trial("NCT03", "Placebo", title="MRTX1133 in pancreatic cancer"),
               trial("NCT04", "Radiotherapy", other=("Radiotherapy",)),
-              trial("NCT05", "Adagrasib", title="New KRAS trial")]
+              trial("NCT05", "Adagrasib", title="New KRAS trial", posted="2026-11-13"),
+              trial("NCT07", "Sotorasib", title="Old trial newly in scope")]   # posted 2024: no event
         self.take("2026-11-15", w2)
         self.build()
         links = {(n, a): (m, s) for n, a, m, s in rows(self.out, "SELECT nct_id, axp_id, method, status FROM trial_link")}
@@ -167,7 +170,7 @@ class Build(unittest.TestCase):
             review = fh.read()
         self.assertIn("NCT03", review)
         # A third week: an incomplete snapshot reports no new or dropped trials.
-        self.take("2026-11-22", [trial("NCT06", "Divarasib")], fail=())
+        self.take("2026-11-22", [trial("NCT06", "Divarasib", posted="2026-11-20")], fail=())
         con = sqlite3.connect(self.snapdb)
         con.execute("UPDATE snapshot SET complete = 0 WHERE snapshot_date = '2026-11-22'")
         con.commit()
