@@ -207,6 +207,20 @@ class Site(unittest.TestCase):
         with contextlib.redirect_stdout(io.StringIO()):
             br.main(args + ["--page", os.path.join(out, "changes.html"), "--site", os.path.join(out, "registry")])
         self.assertTrue(os.path.isfile(os.path.join(out, "registry", "AXP000001.html")))
+        # The atlas: written with the rest, its embedded data parses, and the
+        # index links to it.
+        with open(os.path.join(out, "registry", "atlas.html"), encoding="utf-8") as fh:
+            atlas = fh.read()
+        import json, re
+        data = json.loads(re.search(r'id="atlas-data">(.*?)</script>', atlas, re.S).group(1))
+        kinds = {n["kind"] for n in data["nodes"]}
+        self.assertIn("virus", kinds)
+        self.assertIn("family", kinds)
+        ids = {n["id"] for n in data["nodes"]}
+        self.assertTrue(all(a in ids and b in ids for a, b in data["links"]))
+        self.assertNotIn("<script src", atlas)                    # loads nothing from elsewhere
+        with open(os.path.join(out, "registry", "index.html"), encoding="utf-8") as fh:
+            self.assertIn('href="atlas.html"', fh.read())
         with open(os.path.join(out, "changes.html"), encoding="utf-8") as fh:
             self.assertIn('href="registry/index.html"', fh.read())
         shutil.rmtree(out)

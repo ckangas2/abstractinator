@@ -219,7 +219,11 @@
       # tracker/site_pages.py). A plain link: it opens in a new tab.
       tags$br(),
       tags$a(href = "registry/index.html", target = "_blank", rel = "noopener",
-             icon("book"), " Registry")
+             icon("book"), " Registry"),
+      # The registry's map of oncolytic viruses (tracker/atlas_page.py).
+      tags$br(),
+      tags$a(href = "registry/atlas.html", target = "_blank", rel = "noopener",
+             icon("diagram-project"), " Virus atlas (beta)")
       ) # End settings-modal
     )) # End modalDialog and showModal
   })

@@ -70,6 +70,10 @@ Development before v2.0.0 was untagged; see the git history for detail.
   longer counts as support for a hepatitis B tag.
 
 ### Added
+- Oncolytic virus atlas (beta, registry/atlas.html): every oncolytic virus in
+  the registry as a graph, joined to its virus family, transgenes, the cancers
+  its trials enrol, routes and shared sponsors, with a searchable table below.
+  Self-contained (no outside scripts); rebuilt weekly with the registry pages.
 - Therapinator (beta): cards for the registered programs a search's results
   name, most-named first, with each one's virus family, stage and how many
   papers, trials, grants and preprints name it.
