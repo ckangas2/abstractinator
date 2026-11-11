@@ -11,3 +11,5 @@ talimogene laherparepvec	TALIMOGENELAHERPAREPVEC	INN with a space
 IL-15/IL-15Rα	IL15IL15RΑ	Greek letters kept (uppercased)
 CG0070	CG0070	zero kept
  (LN-144) 	LN144	brackets and outer spaces dropped
+G47∆	G47Δ	increment sign read as Greek delta
+G47Δ	G47Δ	Greek delta kept

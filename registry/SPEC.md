@@ -16,8 +16,10 @@ followed through every sponsor, licence deal and rename it has.
   cetuximab links to two programs.
 - A changed construct is a new program: an oncolytic adenovirus with a new
   transgene, a CAR with a different binder, costimulatory domain or cell
-  source (autologous vs allogeneic). A new formulation or route of the same
-  molecule is not.
+  source (autologous vs allogeneic). So is the same construct made by a
+  different manufacturing process when the product has its own INN
+  (brexucabtagene autoleucel vs axicabtagene ciloleucel). A new formulation
+  or route of the same molecule is not.
 - A platform (a virus backbone, a CAR scaffold) is recorded in `platform`,
   not as a program of its own.
 - An approved product keeps its program: approval is a stage, not a new entity.
@@ -98,8 +100,9 @@ whether or not it is listed.
 
 ## 5. Matching names
 
-Names are compared by a **key**: ®, ™ and © removed, then Unicode NFKC,
-uppercased, then every character that is not a letter or digit removed.
+Names are compared by a **key**: ®, ™ and © removed, the increment sign ∆
+read as the Greek letter Δ, then Unicode NFKC, uppercased, then every
+character that is not a letter or digit removed.
 `MRTX-1133`, `MRTX 1133` and `mrtx1133` share the key `MRTX1133`;
 `Pexa-Vec` and `PexaVec` share `PEXAVEC`.
 
