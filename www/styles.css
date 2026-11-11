@@ -2581,3 +2581,55 @@ a.landing-card-link:focus-visible .landing-card {
 .program-card .pc-name { color: #ffd54f; font-weight: bold; overflow-wrap: anywhere; }
 .program-card .pc-meta { font-size: 0.85em; opacity: 0.8; }
 .program-card .pc-count { font-size: 0.85em; }
+
+/* ==========================================================================
+   ATLAS SHOWCASE (landing page, below the feature cards)
+   ========================================================================== */
+.atlas-feature {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  max-width: 820px;
+  margin: 28px auto 0;
+  padding: 18px 24px;
+  text-align: left;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  background: rgba(30, 30, 30, 0.4);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+.atlas-feature-art { flex: 0 0 200px; display: block; }
+.atlas-feature-art svg { display: block; width: 100%; height: auto; }
+.atlas-feature-art .l line { stroke: #aaa; stroke-opacity: 0.3; stroke-width: 0.8; }
+.atlas-feature-art .h { fill: rgba(0, 0, 0, 0.35); stroke: var(--accent-primary); stroke-width: 2; }
+.atlas-feature-text h4 { margin: 4px 0 6px; }
+.atlas-feature-text p { color: #aaa; margin: 0 0 12px; }
+.atlas-feature-tag {
+  display: inline-block;
+  font-size: 0.72em;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent-primary);
+  border: 1px solid var(--accent-primary);
+  border-radius: 20px;
+  padding: 1px 9px;
+}
+.atlas-feature-links { display: flex; flex-wrap: wrap; gap: 8px; }
+.atlas-feature-btn,
+.atlas-feature-btn:focus {
+  border: 1px solid var(--accent-primary);
+  color: var(--accent-primary);
+  border-radius: 20px;
+  background: transparent;
+}
+.atlas-feature-btn:hover {
+  background: var(--accent-primary);
+  color: #111;
+}
+@media (max-width: 600px) {
+  .atlas-feature { flex-direction: column; text-align: center; padding: 16px; }
+  .atlas-feature-art { flex-basis: auto; width: 180px; }
+  .atlas-feature-links { justify-content: center; }
+}

@@ -497,3 +497,24 @@ defs .g-bulb { animation: none; }
 .gotham .hamburger-btn {
   border-color: color-mix(in srgb, var(--g-accent) 40%, transparent) !important;
 }
+
+/* Atlas showcase: a neon panel on the skyline's colours. */
+.gotham .atlas-feature {
+  background: rgba(10, 6, 18, 0.55) !important;
+  border-color: color-mix(in srgb, var(--g-accent) 35%, transparent) !important;
+  box-shadow: 0 0 18px color-mix(in srgb, var(--g-glow) 18%, transparent) !important;
+}
+.gotham .atlas-feature-text h4 {
+  font-family: 'Saira Stencil One', sans-serif !important;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--g-ink) !important;
+  text-shadow: 0 0 5px var(--g-glow), 0 0 14px var(--g-glow-mid);
+}
+.gotham .atlas-feature-text p { color: var(--g-muted) !important; }
+.gotham .atlas-feature-tag,
+.gotham .atlas-feature-btn { color: var(--g-accent); border-color: color-mix(in srgb, var(--g-accent) 60%, transparent); }
+.gotham .atlas-feature-btn:hover { background: var(--g-accent); color: var(--g-bg-3); }
+.gotham .atlas-feature-art .h { stroke: var(--g-glow); filter: drop-shadow(0 0 3px var(--g-glow)); }
+.gotham .atlas-feature-art .l line { stroke: var(--g-accent); }

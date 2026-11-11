@@ -256,6 +256,27 @@ fluidPage(
                      "Let your AI assistant search The Abstractinator and read open-access full text via MCP. Connector URL: https://mcp.abstractinator.me/mcp")
       )
     }),
+
+    # Atlas showcase (beta): the registry's graph pages, one tab per field
+    # (tracker/atlas_page.py). Wider than the tool cards because it is a place
+    # to go rather than a tool for the search above. The picture is decorative.
+    div(class = "atlas-feature",
+      tags$a(class = "atlas-feature-art", href = "registry/atlas.html", target = "_blank", rel = "noopener",
+             tabindex = "-1", `aria-hidden` = "true",
+             HTML(paste(readLines("app/partials/atlas-thumb.svg", warn = FALSE), collapse = ""))),
+      div(class = "atlas-feature-text",
+        span(class = "atlas-feature-tag", "New \u00b7 Beta"),
+        h4("Atlasinator"),
+        p("Every oncolytic virus and phage therapy in the registry as one interactive map: ",
+          "virus families, transgenes, the diseases their trials enrol, and who is behind them."),
+        div(class = "atlas-feature-links",
+          tags$a(href = "registry/atlas.html", target = "_blank", rel = "noopener",
+                 class = "btn btn-sm atlas-feature-btn", "Oncolytic viruses \u2192"),
+          tags$a(href = "registry/atlas-phage.html", target = "_blank", rel = "noopener",
+                 class = "btn btn-sm atlas-feature-btn", "Phage therapy \u2192")
+        )
+      )
+    ),
     
     # --- Share links (plain links: no tracking scripts or third-party widgets) ---
     local({
