@@ -405,8 +405,10 @@ tag_modality <- function(df, weight_title = 20, weight_abstract = 3) {
   if (is.null(df) || nrow(df) == 0 || !exists("modality_alias_list")) return(df)
   title <- as.character(df$Title)
   title[is.na(title)] <- ""
-  if ("Interventions" %in% names(df)) {
-    iv <- as.character(df$Interventions)
+  # A trial's other intervention names (development codes, brand names) count
+  # too: "Pexa-Vec" may be the only name the alias list knows.
+  for (cl in intersect(c("Interventions", "InterventionOtherNames"), names(df))) {
+    iv <- as.character(df[[cl]])
     iv[is.na(iv)] <- ""
     title <- trimws(paste(title, iv, sep = ". "))
   }

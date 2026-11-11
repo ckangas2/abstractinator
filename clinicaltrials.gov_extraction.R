@@ -17,6 +17,30 @@ format_ctgov_interventions <- function(x) {
   if (length(out)) paste(out, collapse = "; ") else NA_character_
 }
 
+# Other names the registry lists for the interventions, as "Pexa-Vec; JX-594".
+# Development codes and brand names often appear only here, so they are the
+# best free source of a therapy's aliases (and the program registry's).
+format_ctgov_other_names <- function(x) {
+  if (is.null(x) || !is.data.frame(x) || nrow(x) == 0 || !"otherNames" %in% names(x)) return(NA_character_)
+  nm <- trimws(as.character(unlist(x$otherNames)))
+  nm <- unique(nm[!is.na(nm) & nzchar(nm)])
+  if (length(nm)) paste(nm, collapse = "; ") else NA_character_
+}
+
+# Papers the registration cites, as "PMID 12345678 (Result); PMID 2345678
+# (Background)". RESULT and DERIVED references report the trial itself;
+# BACKGROUND ones are earlier work the sponsor cited when registering it.
+format_ctgov_references <- function(x) {
+  if (is.null(x) || !is.data.frame(x) || nrow(x) == 0 || !"pmid" %in% names(x)) return(NA_character_)
+  pmid <- trimws(as.character(x$pmid))
+  type <- if ("type" %in% names(x)) as.character(x$type) else rep(NA_character_, length(pmid))
+  keep <- !is.na(pmid) & nzchar(pmid)
+  if (!any(keep)) return(NA_character_)
+  type <- ifelse(is.na(type[keep]) | !nzchar(type[keep]), "",
+                 paste0(" (", sub("^(.)", "\\U\\1", tolower(type[keep]), perl = TRUE), ")"))
+  paste(unique(paste0("PMID ", pmid[keep], type)), collapse = "; ")
+}
+
 # The conditions a trial studies, as "Pancreatic Cancer; Metastatic Disease".
 format_ctgov_conditions <- function(x) {
   x <- trimws(as.character(unlist(x)))
@@ -120,6 +144,9 @@ get_clinical_trials_data <- function(search_term, limit = 10000) {
     if (is.null(interventions_list)) interventions_list <- vector("list", nrow(studies_chunk))
     conditions_list <- studies_chunk$protocolSection$conditionsModule$conditions
     if (is.null(conditions_list)) conditions_list <- vector("list", nrow(studies_chunk))
+    references_list <- studies_chunk$protocolSection$referencesModule$references
+    if (is.null(references_list)) references_list <- vector("list", nrow(studies_chunk))
+    last_updates <- studies_chunk$protocolSection$statusModule$lastUpdatePostDateStruct$date
     
     # "PHASE2" -> "Phase 2"; "EARLY_PHASE1" -> "Early Phase 1"; a registration
     # of c("PHASE1","PHASE2") -> "Phase 1/Phase 2". CT.gov also uses the literal
@@ -184,8 +211,12 @@ get_clinical_trials_data <- function(search_term, limit = 10000) {
       phase_val <- format_ctgov_phase(
         tryCatch(phases_list[[i]], error = function(e) NULL)
       )
-      interventions_val <- format_ctgov_interventions(
-        tryCatch(interventions_list[[i]], error = function(e) NULL))
+      iv_i <- tryCatch(interventions_list[[i]], error = function(e) NULL)
+      interventions_val <- format_ctgov_interventions(iv_i)
+      other_names_val <- format_ctgov_other_names(iv_i)
+      references_val <- format_ctgov_references(
+        tryCatch(references_list[[i]], error = function(e) NULL))
+      last_update_val <- if (!is.null(last_updates) && length(last_updates) >= i) as.character(last_updates[i]) else NA_character_
       conditions_val <- format_ctgov_conditions(
         tryCatch(conditions_list[[i]], error = function(e) NULL))
       
@@ -206,7 +237,11 @@ get_clinical_trials_data <- function(search_term, limit = 10000) {
         NCTId = id_val,
         Phase = phase_val,
         Interventions = interventions_val,
+        InterventionOtherNames = other_names_val,
         Conditions = conditions_val,
+        LeadSponsor = if (length(lead_sponsor_name) == 1) as.character(lead_sponsor_name) else NA_character_,
+        TrialReferences = references_val,
+        TrialLastUpdate = last_update_val,
         AdverseEvents = NA_character_, # Keeping simple for speed
         SeriousAdverseEvents = NA_character_,
         Source = "clinicaltrials.gov"

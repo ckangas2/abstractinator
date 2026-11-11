@@ -1,0 +1,13 @@
+The Abstractinator program registry (the files in this directory)
+
+To the extent possible under law, the contributors have waived all copyright
+and related or neighboring rights to this registry under the Creative Commons
+CC0 1.0 Universal Public Domain Dedication:
+https://creativecommons.org/publicdomain/zero/1.0/legalcode
+
+Exception: rows of aliases.tsv whose `licence` column is not `CC0-1.0` keep
+the licence named there. Rows marked `CC-BY-4.0` come from the NCI Thesaurus
+(see README.md for attribution); rows marked `public-domain` come from US
+government sources.
+
+The code elsewhere in this repository is under the MIT licence (../LICENSE).

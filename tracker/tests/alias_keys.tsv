@@ -1,0 +1,13 @@
+name	key	note
+MRTX1133	MRTX1133	code as written
+MRTX-1133	MRTX1133	hyphen between prefix and number
+mrtx 1133	MRTX1133	case and space
+Imlygic®	IMLYGIC	registered mark dropped
+Kymriah™	KYMRIAH	trademark dropped
+Pexa-Vec	PEXAVEC	internal hyphen
+T-VEC	TVEC	short code
+talimogene laherparepvec	TALIMOGENELAHERPAREPVEC	INN with a space
+ＭＲＴＸ１１３３	MRTX1133	full-width characters (NFKC)
+IL-15/IL-15Rα	IL15IL15RΑ	Greek letters kept (uppercased)
+CG0070	CG0070	zero kept
+ (LN-144) 	LN144	brackets and outer spaces dropped

@@ -20,6 +20,36 @@ test_that("trial interventions and conditions are read from the registry's shape
   expect_true(is.na(format_ctgov_conditions(character(0))))
 })
 
+test_that("trial other names and cited papers are kept", {
+  js <- '{"studies":[{"protocolSection":{
+            "armsInterventionsModule":{"interventions":[
+              {"type":"BIOLOGICAL","name":"Pexastimogene devacirepvec","otherNames":["Pexa-Vec","JX-594"]},
+              {"type":"DRUG","name":"Cemiplimab","otherNames":["JX-594"]},
+              {"type":"DRUG","name":"Placebo"}]},
+            "referencesModule":{"references":[
+              {"pmid":"12345678","type":"RESULT","citation":"a"},
+              {"type":"BACKGROUND","citation":"no pmid"},
+              {"pmid":"2345678","type":"BACKGROUND","citation":"b"}]}}},
+          {"protocolSection":{"armsInterventionsModule":{"interventions":[{"type":"DRUG","name":"X"}]}}}]}'
+  st <- jsonlite::fromJSON(js)$studies
+  iv <- st$protocolSection$armsInterventionsModule$interventions
+  expect_equal(format_ctgov_other_names(iv[[1]]), "Pexa-Vec; JX-594")
+  expect_true(is.na(format_ctgov_other_names(iv[[2]])))
+  expect_true(is.na(format_ctgov_other_names(NULL)))
+  refs <- st$protocolSection$referencesModule$references
+  expect_equal(format_ctgov_references(refs[[1]]),
+               "PMID 12345678 (Result); PMID 2345678 (Background)")
+  expect_true(is.na(format_ctgov_references(refs[[2]])))
+  expect_true(is.na(format_ctgov_references(NULL)))
+})
+
+test_that("a trial is tagged from its interventions' other names", {
+  df <- data.frame(Title = "A study in advanced renal cell carcinoma", Abstract = "",
+                   Interventions = "Experimental agent (Biological)",
+                   InterventionOtherNames = "Pexa-Vec; SJ-600", stringsAsFactors = FALSE)
+  expect_equal(tag_modality(df)$primary_modality, "Oncolytic virus")
+})
+
 tag_mod <- function(title, abstract = "", interventions = NA_character_) {
   df <- data.frame(Title = title, Abstract = abstract, Interventions = interventions,
                    stringsAsFactors = FALSE)

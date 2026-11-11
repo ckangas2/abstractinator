@@ -70,7 +70,7 @@ returns `total_found`, `available`, `has_more`, `source_counts`, `unavailable_so
 source-balanced list of records with `title`, `abstract`, `authors`, `publication_date`, `doi`,
 `pmid`, `url`, `source`, `primary_cell`, `primary_virus`, `primary_bacteria`, `primary_modality`,
 `is_bioinformatics`, `is_retracted`, for open-access articles `pmcid` and `is_open_access`, and for
-clinical trials `trial_status`, `trial_start`, `trial_end`, `phase`, `interventions` and `conditions`. Every record has every key.
+clinical trials `trial_status`, `trial_start`, `trial_end`, `phase`, `interventions`, `intervention_other_names`, `conditions`, `lead_sponsor` and `trial_references`. Every record has every key.
 
 **`get_fulltext(pmcid, doi, max_chars=20000)`** returns the open-access full text of one article.
 
