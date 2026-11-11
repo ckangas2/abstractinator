@@ -75,6 +75,12 @@ Development before v2.0.0 was untagged; see the git history for detail.
   longer counts as support for a hepatitis B tag.
 
 ### Added
+- Every AAV gene therapy approved anywhere, 9 programs in the registry
+  (AXP000248-AXP000256) with 17 approval rows: Glybera, Luxturna, Zolgensma
+  (with its intrathecal form Itvisma), Upstaza/Kebilidi, Roctavian, Hemgenix,
+  Elevidys, Beqvez/Durveqtix and China's dalnacogene ponparvovec. Capsid,
+  transgene and route come from each product's label; the names ship as
+  `proposed`.
 - 33 phage therapy programs in the registry (AXP000215-AXP000247): every
   bacteriophage product found with a registered trial or published human use,
   from Stafal (the one phage medicine with an EU marketing authorisation)
