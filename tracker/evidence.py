@@ -48,6 +48,7 @@ Options:
 """
 
 import argparse
+import unicodedata
 import xml.etree.ElementTree as ET
 import datetime as dt
 import html
@@ -178,19 +179,51 @@ def _clean(text):
     return " ".join(html.unescape(re.sub(r"<[^>]+>", " ", str(text))).split())
 
 
+SHORT_KEY = 5     # names with a key this short must be written as themselves (see _as_written)
+
+_JOIN = r"[\-\u2010-\u2015_./]*"      # hyphens and the like: any letter case
+_SPACED = r"[\s\-\u2010-\u2015_./]*"  # also spaces: same letter case only
+
+
+def _as_written(alias, text):
+    """Is a short name written in the text as itself? Joined or hyphenated in
+    any letter case ("ON-01", "ON01", "T-Vec" for T-VEC), or split by spaces
+    in the same case ("ON 01"). Not "on 01 January" or "On 01 March", which
+    squash to the same key."""
+    def norm(t):
+        return unicodedata.normalize("NFKC", t.replace("\u2206", "\u0394"))   # increment sign as Greek delta
+    chars = [re.escape(c) for c in norm(alias["alias"]) if c.isalnum()]
+    text = norm(text)
+
+    def found(sep, flags):
+        return re.search(r"(?<![^\W_])" + sep.join(chars) + r"(?![^\W_])", text, flags) is not None
+    return found(_JOIN, re.IGNORECASE) or found(_SPACED, 0)
+
+
 def best_hits(index, fields):
     """Which programs a record names, and where: {axp_id: (field, alias row)}.
 
     fields is [(field, text or list of texts)] (a list is matched item by
     item, so project terms don't run into each other). Per program, the best
     evidence wins: title over abstract over terms, then a name that would be
-    linked automatically over one left for review, then the longer name."""
+    linked automatically over one left for review, then the longer name.
+
+    Two guards against names that match by accident: a name with a key of
+    SHORT_KEY characters or fewer must be written as itself (words like
+    "on 01" squash to the key of "ON-01"; see _as_written); and an ambiguous name
+    never counts in project terms, which are thesaurus tags with synonyms
+    (NIH tags every West Nile virus grant "Egypt 101 virus")."""
     best = {}
     for field, texts in fields:
         if isinstance(texts, str) or texts is None:
             texts = [texts]
         for text in texts:
-            for alias in index.inside(_clean(text)):
+            text = _clean(text)
+            for alias in index.inside(text):
+                if field == "terms" and alias["ambiguous"]:
+                    continue
+                if len(alias["alias_key"]) <= SHORT_KEY and not _as_written(alias, text):
+                    continue
                 rank = (-FIELD_ORDER[field], br.evidence_status(alias, field) == "auto",
                         not alias["ambiguous"], len(alias["alias_key"]), alias["alias"])
                 cur = best.get(alias["axp_id"])

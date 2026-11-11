@@ -86,7 +86,11 @@ characters), it searches:
 Each record that comes back is checked here with the same word matching
 as trial titles (`window_keys`), never trusting the search engine's own
 matching; `field` says where the name was (`title` beats `abstract` beats
-`terms`). It stores hits, not judgements: `build_registry.py` decides which
+`terms`). Two guards: a name with a key of 5 characters or fewer must be
+written as itself (joined or hyphenated in any case, or spaced in the same
+case: "ON-01", "T-Vec", but not "on 01 January"); and an ambiguous name never
+counts in RePORTER's project terms, which are thesaurus tags with synonyms
+(every West Nile virus grant is tagged "Egypt 101 virus"). It stores hits, not judgements: `build_registry.py` decides which
 are `auto` and which `candidate`.
 
 What is stored: titles, journal, year, publication kind and identifiers

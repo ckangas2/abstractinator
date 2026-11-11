@@ -245,6 +245,29 @@ class Pieces(unittest.TestCase):
         q = ev.pubmed_query(["JX-594", "T-VEC"])
         self.assertTrue(q.startswith('("JX-594"[tiab] OR "T-VEC"[tiab]) AND ("Clinical Trial"[pt] OR '))
 
+    def test_short_names_must_be_written_as_themselves(self):
+        a = {"alias": "ON-01", "alias_key": "ON01"}
+        for text in ("ON-01 in glioma", "a trial of ON 01.", "(ON01)", "ON\u201101", "On-01", "on01"):
+            self.assertTrue(ev._as_written(a, text), text)
+        for text in ("based on 01 January", "On 01 March", "MON-01", "ON-012"):
+            self.assertFalse(ev._as_written(a, text), text)
+        self.assertTrue(ev._as_written({"alias": "T-VEC", "alias_key": "TVEC"}, "T-Vec was given"))
+        self.assertTrue(ev._as_written({"alias": "ADV-tk", "alias_key": "ADVTK"}, "ADV-TK therapy"))
+        self.assertTrue(ev._as_written({"alias": "G47\u2206", "alias_key": "G47\u0394"}, "G47\u0394 in glioma"))
+
+    def test_guards_in_matching(self):
+        rows = [
+            {"axp_id": "AXP1", "alias": "ON-01", "alias_key": "ON01", "alias_type": "preferred", "ambiguous": 0},
+            {"axp_id": "AXP2", "alias": "Egypt 101 virus", "alias_key": "EGYPT101VIRUS", "alias_type": "synonym",
+             "ambiguous": 1},
+        ]
+        index = br.AliasIndex(rows)
+        self.assertEqual(ev.best_hits(index, [("abstract", "Enrolled based on 01 March data.")]), {})
+        self.assertEqual(set(ev.best_hits(index, [("abstract", "Patients got ON-01.")])), {"AXP1"})
+        # A thesaurus tag doesn't count for an ambiguous name; the same name in an abstract does.
+        self.assertEqual(ev.best_hits(index, [("terms", ["West Nile virus", "Egypt 101 virus"])]), {})
+        self.assertEqual(set(ev.best_hits(index, [("abstract", "the Egypt 101 virus strain")])), {"AXP2"})
+
     def test_400_is_not_retried(self):
         def urlopen(req, timeout=None):
             raise urllib.error.HTTPError(req.full_url, 400, "bad", {}, io.BytesIO(b"nope"))
