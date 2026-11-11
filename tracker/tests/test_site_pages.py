@@ -66,10 +66,13 @@ class Site(unittest.TestCase):
         con = sqlite3.connect(cls.db)
         con.execute("INSERT INTO paper VALUES ('11111111','T-VEC in melanoma','J Clin Oncol',2015,"
                     "'clinical_trial',NULL,NULL)")
+        con.execute("INSERT INTO paper VALUES ('44444444','T-VEC in a mouse model','Mol Ther',2019,"
+                    "'other',NULL,NULL)")
         con.executemany("INSERT INTO paper_link VALUES (?,?,?,?,?,?,?)", [
             (tvec, "11111111", "title", "T-VEC", None, 0.85, "auto"),
             (tvec, "22222222", "trial_reference", "NCT01", "NCT01", 0.9, "auto"),   # no paper row yet
-            (tvec, "33333333", "abstract", "JS1", None, 0.6, "candidate")])
+            (tvec, "33333333", "abstract", "JS1", None, 0.6, "candidate"),
+            (tvec, "44444444", "title", "T-VEC", None, 0.85, "auto")])
         con.execute("INSERT INTO grant_award VALUES ('R01CA000001','Oncolytic HSV biology','Univ','Smith, J',"
                     "2010,2014,'javascript:alert(1)')")
         con.execute("INSERT INTO grant_link VALUES (?,?,?,?,?,?)",
@@ -129,6 +132,11 @@ class Site(unittest.TestCase):
         self.assertIn("T-VEC in melanoma", page)
         self.assertIn('href="https://pubmed.ncbi.nlm.nih.gov/22222222/"', page)
         self.assertLess(page.index("<details>"), page.index("33333333"))
+        # a preclinical paper goes under "Other papers", after the clinical ones;
+        # a results paper with no details yet counts as clinical
+        self.assertLess(page.index("<h2>Clinical papers</h2>"), page.index("22222222"))
+        self.assertLess(page.index("22222222"), page.index("<h2>Other papers</h2>"))
+        self.assertLess(page.index("<h2>Other papers</h2>"), page.index("T-VEC in a mouse model"))
         # a grant whose url isn't http(s) links to RePORTER instead
         self.assertIn('href="https://reporter.nih.gov/project-details/R01CA000001"', page)
         self.assertNotIn("javascript:", page)

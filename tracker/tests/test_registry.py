@@ -8,6 +8,7 @@ import shutil
 import sys
 import tempfile
 import unittest
+from unittest import mock
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.dirname(HERE))
@@ -206,6 +207,34 @@ class Modalities(unittest.TestCase):
         self.assertIn("Microbiome therapy", names)
         self.assertEqual(len(names), len(set(names)))
         self.assertGreaterEqual(len(names), 20)
+
+
+
+class DataDir(unittest.TestCase):
+    """State paths come from reg.data_dir, so ABSTRACTINATOR_DATA_DIR moves
+    them all at once (no module reloads here: reloading resets settings other
+    test modules have patched)."""
+
+    def test_env_overrides_the_repo_data_folder(self):
+        with mock.patch.dict(os.environ, {"ABSTRACTINATOR_DATA_DIR": "/var/lib/abstractinator"}):
+            self.assertEqual(reg.data_dir("evidence", "evidence.sqlite"),
+                             "/var/lib/abstractinator/evidence/evidence.sqlite")
+        env = dict(os.environ)
+        env.pop("ABSTRACTINATOR_DATA_DIR", None)
+        with mock.patch.dict(os.environ, env, clear=True):
+            self.assertEqual(reg.data_dir("x"), os.path.join(reg.REPO, "data", "x"))
+
+    def test_every_state_default_goes_through_it(self):
+        import build_registry, evidence, snapshot_trials
+        self.assertEqual(snapshot_trials.DEFAULT_DB, reg.data_dir("trial_snapshots", "trials.sqlite"))
+        self.assertEqual(evidence.DEFAULT_OUT, reg.data_dir("evidence", "evidence.sqlite"))
+        self.assertEqual(build_registry.DEFAULT_OUT, reg.data_dir("registry", "registry.sqlite"))
+        self.assertEqual(build_registry.DEFAULT_SNAPSHOTS, reg.data_dir("trial_snapshots", "trials.sqlite"))
+        self.assertEqual(build_registry.DEFAULT_EVIDENCE, reg.data_dir("evidence", "evidence.sqlite"))
+        # The registry TSVs and the web pages stay in the checkout.
+        for path in (build_registry.DEFAULT_REGISTRY, build_registry.DEFAULT_SITE, build_registry.DEFAULT_PAGE):
+            self.assertTrue(path.startswith(reg.REPO + os.sep), path)
+            self.assertNotIn(os.sep + "data" + os.sep, path)
 
 
 if __name__ == "__main__":

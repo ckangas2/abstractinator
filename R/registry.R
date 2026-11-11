@@ -203,7 +203,7 @@ registry_program <- function(path, query) {
       params = list(id))
     trials$has_results <- trials$has_results == 1
 
-    # Clinical papers: results papers its trials cite, and papers that name it
+    # Papers: results papers its trials cite, and papers of every kind that name it
     # (tracker/evidence.py). A link can exist before its paper's details have
     # been fetched, hence the LEFT JOIN: missing details are NA (null).
     papers <- DBI::dbGetQuery(con, paste(
@@ -211,7 +211,9 @@ registry_program <- function(path, query) {
       "l.method AS link_method, l.confidence AS link_confidence, l.status AS link_status, l.nct_id",
       "FROM paper_link l LEFT JOIN paper p ON p.pmid = l.pmid",
       "WHERE l.axp_id = ?",
-      "ORDER BY l.status = 'auto' DESC, p.year IS NULL, p.year DESC, l.confidence DESC, l.pmid",
+      "ORDER BY l.status = 'auto' DESC,",
+      "(p.kind IN ('clinical_trial', 'case_report', 'clinical_other') OR l.method = 'trial_reference') DESC,",
+      "p.year IS NULL, p.year DESC, l.confidence DESC, l.pmid",
       "LIMIT ?"), params = list(id, REGISTRY_MAX_PAPERS))
 
     # NIH grants that name it, newest first (by last fiscal year).

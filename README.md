@@ -76,7 +76,7 @@ clinical trials `trial_status`, `trial_start`, `trial_end`, `phase`, `interventi
 
 **`program(query)`** looks up one therapy program in the program registry by its stable AXP ID or
 any name or code, and returns its aliases, linked ClinicalTrials.gov trials (each with how it was
-linked, a confidence, and `auto` or unreviewed `candidate` status), the clinical papers (PubMed)
+linked, a confidence, and `auto` or unreviewed `candidate` status), the papers (PubMed, clinical first)
 and NIH grants (RePORTER) that name it, linked the same way, and recent changes.
 
 **`changes(since, program, modality, significance="info", limit=100)`** returns change events
@@ -271,7 +271,8 @@ sudo -u shiny /usr/bin/Rscript -e 'source("R/log_utils_local.R"); print(summariz
 
 `GET /program?id=<AXP ID or name>`
 
-- One program from `data/registry/registry.sqlite` (override with `ABSTRACTINATOR_REGISTRY_DB`):
+- One program from the registry database (`/var/lib/abstractinator/registry/registry.sqlite`
+  on bigtop; set by the service unit, override with `ABSTRACTINATOR_REGISTRY_DB`):
   its virus or vector (for virus-based programs), approvals, aliases, linked trials, recent changes; a merged ID resolves to its survivor (`merged_from`)
 - `papers` (up to 200; `pmid`, `title`, `journal`, `year`, `kind`, `link_method`, `link_confidence`,
   `link_status`, `nct_id`; auto links first, then newest) and `grants` (up to 100, newest first;

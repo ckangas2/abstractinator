@@ -22,6 +22,15 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
 DEFAULT_DIR = os.path.join(REPO, "registry")
 
+
+def data_dir(*parts):
+    """A path under the state directory: $ABSTRACTINATOR_DATA_DIR, else
+    <repo>/data. State (snapshots, evidence, the built database) lives there,
+    so it can sit outside the git checkout; the registry TSVs and the web
+    pages stay in the repo."""
+    base = os.environ.get("ABSTRACTINATOR_DATA_DIR") or os.path.join(REPO, "data")
+    return os.path.join(base, *parts)
+
 PROGRAM_COLUMNS = [
     "axp_id", "status", "replaced_by", "preferred_name", "modality", "platform",
     "targets", "originator", "sponsor", "ncit", "wikidata", "unii",

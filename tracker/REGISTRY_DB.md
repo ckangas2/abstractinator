@@ -1,8 +1,9 @@
 # registry.sqlite: the derived database
 
 Built by `tracker/build_registry.py` from `registry/*.tsv` and the trial
-snapshot database, into `data/registry/registry.sqlite` in the live copy
-(gitignored). It is rebuilt from scratch on every run and swapped in by an
+snapshot database, into `registry/registry.sqlite` under the state directory
+(`$ABSTRACTINATOR_DATA_DIR`, `/var/lib/abstractinator` on bigtop; gitignored
+`<repo>/data` when unset). It is rebuilt from scratch on every run and swapped in by an
 atomic rename, so readers (the API) open it read-only and never see a
 half-written file. Nothing in it is hand-edited: change the TSVs instead.
 
@@ -75,7 +76,9 @@ inside an intervention name and the title names it too. Codes seen only in a
 title, short names and ambiguous names stay `candidate`.
 
 ### paper, paper_link
-Clinical papers about programs. `paper` (pmid PRIMARY KEY, title, journal,
+Papers of every kind that name programs (clinical first on pages and in the
+API: `kind` clinical_trial, case_report or clinical_other, or a
+`trial_reference` link). `paper` (pmid PRIMARY KEY, title, journal,
 year INTEGER, kind, doi, pmcid) holds metadata fetched by `tracker/evidence.py`
 (absent until it has run: a link may have no `paper` row yet). `kind` is one
 of `clinical_trial`, `case_report`, `clinical_other`, `review`, `other`.
@@ -96,7 +99,8 @@ matched, confidence, status), with the same rules as papers.
 
 ## evidence.sqlite (input, written by tracker/evidence.py on bigtop)
 
-`data/evidence/evidence.sqlite`, rebuilt weekly before the registry build.
+`evidence/evidence.sqlite` under the state directory, rebuilt weekly before
+the registry build.
 It stores search hits, not judgements: build_registry decides auto/candidate.
 Abstracts are never stored (licensing): `field` records where the name was found.
 
@@ -163,7 +167,7 @@ Event types:
 ```
 - `virus` is null for programs that aren't virus-based; `approvals` is `[]` when none.
 - `papers`: `[{pmid, title, journal, year, kind, link_method, link_confidence, link_status, nct_id}]`,
-  auto links first then by year (newest first), max 200; `grants`: `[{core_project_num, title, org, pi,
+  auto links first, then clinical papers, then by year (newest first), max 200; `grants`: `[{core_project_num, title, org, pi,
   first_fy, last_fy, url, link_method, link_confidence, link_status}]`, newest first, max 100.
 - A merged ID resolves to its survivor and says so in `merged_from`.
 - A name matching several programs (ambiguous alias) returns 200 with

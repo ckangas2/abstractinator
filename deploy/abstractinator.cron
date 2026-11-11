@@ -3,6 +3,10 @@
 # Format:   minute hour day-of-month month day-of-week USER command
 SHELL=/bin/bash
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+# State (snapshots, evidence, the built database) lives outside the git
+# checkout, so a re-clone or `git clean` can't delete history that can't be
+# re-fetched. Logs likewise. Both are owned by shiny.
+ABSTRACTINATOR_DATA_DIR=/var/lib/abstractinator
 
 # Every day at 4:15am: pull new bioRxiv/medRxiv preprints into biorxiv_local_db/
 15 4 * * * shiny cd /srv/shiny-server/abstractinator && /usr/bin/Rscript update_biorxiv_db.R >> logs/biorxiv_update.log 2>&1
@@ -20,7 +24,9 @@ PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 # evidence fetch leaves last week's file in place for the build.
 # python3 -u so progress reaches the logs as it happens. The evidence fetch
 # gives up after 45 minutes on its own (writing nothing); timeout is the backstop.
+# After the snapshot, keep_snapshots.sh copies the snapshot database aside: it
+# is the one file that can't be rebuilt from the registry and the APIs.
 # History can't be fetched later, so a missed week is lost; the uptime probe
 # alerts on a stale snapshot or evidence file. Check by hand:
 #   python3 tracker/snapshot_trials.py --status; python3 tracker/evidence.py --status
-30 23 * * 0 shiny cd /srv/shiny-server/abstractinator && /usr/bin/python3 -u tracker/snapshot_trials.py >> logs/trial_snapshots.log 2>&1; /usr/bin/timeout 60m /usr/bin/python3 -u tracker/evidence.py >> logs/evidence.log 2>&1; /usr/bin/python3 -u tracker/build_registry.py >> logs/registry_build.log 2>&1
+30 23 * * 0 shiny cd /srv/shiny-server/abstractinator && /usr/bin/python3 -u tracker/snapshot_trials.py >> /var/log/abstractinator/trial_snapshots.log 2>&1; deploy/keep_snapshots.sh >> /var/log/abstractinator/trial_snapshots.log 2>&1; /usr/bin/timeout 60m /usr/bin/python3 -u tracker/evidence.py >> /var/log/abstractinator/evidence.log 2>&1; /usr/bin/python3 -u tracker/build_registry.py >> /var/log/abstractinator/registry_build.log 2>&1

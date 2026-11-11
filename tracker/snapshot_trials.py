@@ -60,7 +60,10 @@ STALE_DAYS = 8               # --status fails when the newest snapshot is older
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
-DEFAULT_DB = os.path.join(REPO, "data", "trial_snapshots", "trials.sqlite")
+sys.path.insert(0, HERE)
+import registry as reg  # noqa: E402  (data_dir, read_tsv)
+
+DEFAULT_DB = reg.data_dir("trial_snapshots", "trials.sqlite")
 DEFAULT_SCOPE = os.path.join(HERE, "snapshot_scope.tsv")
 
 # Only the parts of a record the canonical fields come from. If the API ever
@@ -338,8 +341,6 @@ def registry_queries(registry_dir=None, batch=REGISTRY_BATCH):
     accepted aliases, searched among trial interventions, a batch at a time.
     Returns [(query_id, query, "intr")].
     """
-    sys.path.insert(0, HERE)
-    import registry as reg
     registry_dir = registry_dir or os.path.join(REPO, "registry")
     programs, _ = reg.read_tsv(os.path.join(registry_dir, "programs.tsv"), reg.PROGRAM_COLUMNS)
     aliases, _ = reg.read_tsv(os.path.join(registry_dir, "aliases.tsv"), reg.ALIAS_COLUMNS)

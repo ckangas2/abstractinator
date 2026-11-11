@@ -180,6 +180,8 @@ class Build(unittest.TestCase):
         with open(dest, encoding="utf-8") as fh:
             review = fh.read()
         self.assertIn("NCT03", review)
+        self.assertEqual(review.split("\n")[0].split("\t")[0], "kind")
+        self.assertTrue(any(l.startswith("trial\t") for l in review.splitlines()[1:]))
         with self.assertRaises(SystemExit):                     # never overwrites
             br.export_review(self.out, dest, log=self.logs.append)
         # A third week: an incomplete snapshot reports no new or dropped trials.

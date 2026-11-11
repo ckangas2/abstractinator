@@ -10,6 +10,10 @@ User=shiny
 WorkingDirectory=/srv/shiny-server/abstractinator
 Environment=ABSTRACTINATOR_API_PORT=%i
 Environment=ABSTRACTINATOR_API_PROCESSES=3
+# State lives outside the git checkout (see tracker/README.md, "Where the
+# files live"); without this the API would look under <repo>/data.
+Environment=ABSTRACTINATOR_DATA_DIR=/var/lib/abstractinator
+Environment=ABSTRACTINATOR_REGISTRY_DB=/var/lib/abstractinator/registry/registry.sqlite
 ExecStart=/usr/bin/Rscript agent/run_api.R
 Restart=on-failure
 RestartSec=5

@@ -417,6 +417,15 @@ def trial_rows(trials, with_method=False):
 TRIAL_HEADERS = ["Trial", "Title", "Status", "Phase", "Start", "Primary completion", "#Enrolment", "Conditions"]
 
 
+CLINICAL_KINDS = ("clinical_trial", "case_report", "clinical_other")
+MAX_OTHER_PAPERS = 100
+
+
+def is_clinical(p):
+    """A clinical paper: tagged clinical by PubMed, or a results paper a linked trial cites."""
+    return p.get("kind") in CLINICAL_KINDS or p.get("method") == "trial_reference"
+
+
 def paper_rows(papers):
     rows = []
     for p in papers:
@@ -568,8 +577,16 @@ def program_page(d, p):
 
     papers = sorted(d["papers"].get(axp, []), key=lambda x: (-(x.get("year") or 0), x["pmid"]))
     if papers:
+        heads = ["PubMed", "Title", "Journal", "Year", "Linked by"]
+        clinical = [x for x in papers if is_clinical(x)]
+        other = [x for x in papers if not is_clinical(x)]
         body.append("<h2>Clinical papers</h2>")
-        body += auto_then_candidates(papers, paper_rows, ["PubMed", "Title", "Journal", "Year", "Linked by"], "papers")
+        body += auto_then_candidates(clinical, paper_rows, heads, "clinical papers")
+        if other:
+            body.append("<h2>Other papers</h2>")
+            body.append('<p class="muted">Preclinical studies, reviews and other papers that name it'
+                        "%s.</p>" % (", newest %d shown" % MAX_OTHER_PAPERS if len(other) > MAX_OTHER_PAPERS else ""))
+            body += auto_then_candidates(other[:MAX_OTHER_PAPERS], paper_rows, heads, "other papers")
     grants = sorted(d["grants"].get(axp, []), key=lambda x: (-(x.get("last_fy") or 0), x["core_project_num"]))
     if grants:
         body.append("<h2>NIH grants</h2>")

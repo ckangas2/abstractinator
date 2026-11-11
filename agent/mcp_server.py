@@ -656,7 +656,8 @@ async def program(
     "auto" links are counted; "candidate" links are unreviewed and may be
     wrong, so check the trial before relying on one.
 
-    papers (up to 200, auto links first, then newest) are clinical papers:
+    papers (up to 200: auto links first, then clinical papers, then newest)
+    are papers of every kind that name it:
     pmid, title, journal, year, kind (clinical_trial, case_report,
     clinical_other, review, other), link_method (trial_reference: a results
     paper cited by a linked trial, whose nct_id is given; title; abstract),
@@ -664,14 +665,14 @@ async def program(
     grants: core_project_num, title, org, pi, first_fy, last_fy, url,
     link_method (title, abstract or terms), link_confidence and link_status.
     Details not yet fetched are null. Both are found by the program's names
-    (Europe PMC and NIH RePORTER, refreshed weekly), with the same auto and
+    (PubMed and NIH RePORTER, refreshed weekly), with the same auto and
     candidate rules as trials.
 
     A name shared by several programs returns program null and a candidates
     list of {axp_id, preferred_name}: ask again with the right AXP ID. An
     unknown name returns an error. Use search_literature for a wider search of
     the literature; this tool is the program's identity, names, trials and
-    the clinical papers and grants that name it.
+    the papers and grants that name it.
     """
     if not query.strip():
         return {"error": "Supply an AXP ID or a program name."}

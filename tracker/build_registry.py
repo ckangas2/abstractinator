@@ -55,11 +55,11 @@ sys.path.insert(0, HERE)
 import registry as reg  # noqa: E402
 
 DEFAULT_REGISTRY = os.path.join(REPO, "registry")
-DEFAULT_SNAPSHOTS = os.path.join(REPO, "data", "trial_snapshots", "trials.sqlite")
-DEFAULT_OUT = os.path.join(REPO, "data", "registry", "registry.sqlite")
+DEFAULT_SNAPSHOTS = reg.data_dir("trial_snapshots", "trials.sqlite")
+DEFAULT_OUT = reg.data_dir("registry", "registry.sqlite")
 DEFAULT_PAGE = os.path.join(REPO, "www", "changes.html")
 DEFAULT_SITE = os.path.join(REPO, "www", "registry")
-DEFAULT_EVIDENCE = os.path.join(REPO, "data", "evidence", "evidence.sqlite")
+DEFAULT_EVIDENCE = reg.data_dir("evidence", "evidence.sqlite")
 
 SCHEMA_VERSION = "3"   # 2: virus and approval tables; 3: trial conditions, papers and grants
 
@@ -611,28 +611,57 @@ def write_page(db_path, page_path, log=print):
 
 
 REVIEW_SQL = """
-SELECT l.axp_id, p.preferred_name, l.nct_id, l.method, l.matched, t.brief_title
+SELECT 'trial' AS kind, l.axp_id, p.preferred_name, l.nct_id AS ref, l.method, l.matched,
+       t.brief_title AS title, '' AS extra
 FROM trial_link l JOIN program p ON p.axp_id = l.axp_id LEFT JOIN trial t ON t.nct_id = l.nct_id
-WHERE l.status = 'candidate' ORDER BY p.preferred_name, l.nct_id
+WHERE l.status = 'candidate'
 """
+
+REVIEW_PAPER_SQL = """
+SELECT 'paper' AS kind, l.axp_id, p.preferred_name, l.pmid AS ref, l.method, l.matched,
+       a.title, COALESCE(a.kind, '') AS extra
+FROM paper_link l JOIN program p ON p.axp_id = l.axp_id LEFT JOIN paper a ON a.pmid = l.pmid
+WHERE l.status = 'candidate'
+"""
+
+REVIEW_GRANT_SQL = """
+SELECT 'grant' AS kind, l.axp_id, p.preferred_name, l.core_project_num AS ref, l.method, l.matched,
+       g.title, COALESCE(g.org, '') AS extra
+FROM grant_link l JOIN program p ON p.axp_id = l.axp_id
+LEFT JOIN grant_award g ON g.core_project_num = l.core_project_num
+WHERE l.status = 'candidate'
+"""
+
+REVIEW_HEADERS = ["kind", "axp_id", "program", "reference", "method", "matched", "title", "extra"]
 
 
 def export_review(db_path, dest, log=print):
-    """Write the candidate links in an existing registry database to dest (TSV).
-    Reads the database read-only; refuses to overwrite an existing file."""
+    """Write the candidate links in an existing registry database to dest (TSV):
+    trials, and papers and grants when those tables exist. Reads the database
+    read-only; refuses to overwrite an existing file."""
     if os.path.exists(dest):
         raise SystemExit("%s already exists; not overwriting" % dest)
     con = sqlite3.connect("file:%s?mode=ro" % db_path, uri=True)
     try:
-        rows = con.execute(REVIEW_SQL).fetchall()
+        tables = {r[0] for r in con.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+        rows = []
+        for table, sql in (("trial_link", REVIEW_SQL), ("paper_link", REVIEW_PAPER_SQL),
+                           ("grant_link", REVIEW_GRANT_SQL)):
+            if table in tables:
+                rows += con.execute(sql).fetchall()
     finally:
         con.close()
+    rows.sort(key=lambda r: (r[0], str(r[2]), str(r[3])))
     os.makedirs(os.path.dirname(os.path.abspath(dest)), exist_ok=True)
     with open(dest, "w", encoding="utf-8") as fh:
-        fh.write("axp_id\tprogram\tnct_id\tmethod\tmatched\ttrial_title\n")
+        fh.write("\t".join(REVIEW_HEADERS) + "\n")
         for row in rows:
             fh.write("\t".join(" ".join(str(x or "").split()) for x in row) + "\n")
-    log("%d candidate links -> %s" % (len(rows), dest))
+    counts = {}
+    for row in rows:
+        counts[row[0]] = counts.get(row[0], 0) + 1
+    log("%d candidate links (%s) -> %s"
+        % (len(rows), ", ".join("%d %s" % (n, k) for k, n in sorted(counts.items())) or "none", dest))
     return len(rows)
 
 

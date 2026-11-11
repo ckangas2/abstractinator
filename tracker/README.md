@@ -8,16 +8,30 @@ log. Nothing to install.
 | `registry.py` | alias keys and the registry validator (`validate`, `next-id`, `key`) |
 | `snapshot_trials.py` | weekly ClinicalTrials.gov snapshot of the tracked topics |
 | `snapshot_scope.tsv` | the queries that define "tracked topics" |
-| `evidence.py` | weekly search of PubMed and NIH RePORTER for the clinical papers and grants that name each program |
-| `build_registry.py` | builds `data/registry/registry.sqlite` (programs, names, trial links, what changed) and the `www/changes.html` digest; layout in `REGISTRY_DB.md` |
+| `evidence.py` | weekly search of PubMed and NIH RePORTER for the papers and grants that name each program |
+| `build_registry.py` | builds `registry.sqlite` under the state directory (programs, names, trial links, what changed) and the `www/changes.html` digest; layout in `REGISTRY_DB.md` |
 | `site_pages.py` | writes the registry's web pages (`www/registry/`) from that database |
 | `tests/` | `python3 -m unittest discover -s tracker/tests` (no network) |
+
+## Where the files live
+
+The registry TSVs and the web pages (`www/changes.html`, `www/registry/`) are
+part of the checkout. **State** is not: the snapshot, evidence and built
+databases live under `$ABSTRACTINATOR_DATA_DIR` (`/var/lib/abstractinator` on
+bigtop, set in the cron file), falling back to `<repo>/data` when that isn't
+set, so a `git clean` or a re-clone can't delete it. `reg.data_dir()` is the
+one place that decides this; logs go to `/var/log/abstractinator`.
+
+The snapshot database is the only state that can't be rebuilt, since
+ClinicalTrials.gov serves today's record and not last week's.
+`deploy/keep_snapshots.sh` runs right after each snapshot and keeps the
+newest 8 weekly copies, gzipped, in `$ABSTRACTINATOR_DATA_DIR/backups`.
 
 ## Trial snapshots
 
 Runs every Sunday night from `deploy/abstractinator.cron` as the `shiny` user,
-writing to one SQLite database in the live copy (gitignored):
-`data/trial_snapshots/trials.sqlite`.
+writing to one SQLite database outside the checkout (see above):
+`$ABSTRACTINATOR_DATA_DIR/trial_snapshots/trials.sqlite`.
 
 | table | one row per | holds |
 |---|---|---|
@@ -56,16 +70,19 @@ reported as "new" unless they were registered within the last 30 days.
 ## Papers and grants (evidence)
 
 `evidence.py` runs in the same Sunday cron line, after the snapshot and
-before the registry build, and writes `data/evidence/evidence.sqlite`
+before the registry build, and writes `evidence/evidence.sqlite` under the state directory
 (gitignored; tables in `REGISTRY_DB.md`). For every active program's
 preferred name and accepted aliases (except names whose alias key is under 4
 characters), it searches:
 
-- **clinical papers** in [PubMed](https://www.ncbi.nlm.nih.gov/books/NBK25501/)
+- **papers** in [PubMed](https://www.ncbi.nlm.nih.gov/books/NBK25501/)
   (E-utilities: `esearch` for the PMIDs, up to 9,999 per search, then
-  `efetch` XML in batches of 200, both as POST): records whose title or
-  abstract has the name, of clinical publication types only, 20 names per
-  query: `("a"[tiab] OR ...) AND ("Clinical Trial"[pt] OR ... OR "Case Reports"[pt] ...)`.
+  `efetch` XML in batches of 200, both as POST): records of every type whose
+  title or abstract has the name, 20 names per query: `("a"[tiab] OR ...)`;
+  a search with more than 9,999 hits is split in half until it fits. Each
+  paper's `kind` comes from its publication types, so pages can show
+  clinical papers first. `--clinical-only` restricts the search to clinical
+  publication types: `... AND ("Clinical Trial"[pt] OR ... OR "Case Reports"[pt] ...)`.
   `--papers-from europepmc` uses the
   [Europe PMC REST API](https://europepmc.org/RestfulWebService) instead
   (`resultType=core`, 1000 per page, cursorMark paging), with the same
@@ -113,7 +130,8 @@ the APIs without writing anything: `python3 tracker/evidence.py --dry-run`.
 ## Registry database and digest
 
 `build_registry.py` runs right after each snapshot (same cron line) and can be
-run by hand any time. It rebuilds `data/registry/registry.sqlite` from scratch:
+run by hand any time. It rebuilds `registry/registry.sqlite` (under the state
+directory) from scratch:
 
 - **trial links**: a trial links to a program when one of the program's names
   is an intervention's name or other name (`auto`, confidence 0.95), appears
@@ -122,8 +140,9 @@ run by hand any time. It rebuilds `data/registry/registry.sqlite` from scratch:
   and brands, `candidate` for codes). Ambiguous names only ever give
   candidates. To review them, export them into your
   reports folder: `python3 tracker/build_registry.py --export-review
-  ~/abstractinator-reports/link_review-$(date +%F).tsv`. Accepted fixes go
-  into the registry (a missing name, or `ambiguous = 1`).
+  ~/abstractinator-reports/link_review-$(date +%F).tsv` (one file, with the
+  candidate papers and grants too; the `kind` column says which). Accepted
+  fixes go into the registry (a missing name, or `ambiguous = 1`).
 - **change events** between each pair of consecutive snapshots: status,
   phase, results posted, enrolment (±20% or estimated → actual), primary
   completion slipping by more than 90 days, sponsor, intervention added, new

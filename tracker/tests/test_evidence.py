@@ -242,7 +242,8 @@ class Pieces(unittest.TestCase):
         self.assertEqual(rec, {"pmid": "7", "title": "A JX 594 case", "abstract": "Abs & more",
                                "journal": "Lancet Oncol", "year": 2011, "pub_types": ["Case Reports"],
                                "doi": "10.1/7", "pmcid": "PMC7"})
-        q = ev.pubmed_query(["JX-594", "T-VEC"])
+        self.assertEqual(ev.pubmed_query(["JX-594", "T-VEC"]), '("JX-594"[tiab] OR "T-VEC"[tiab])')
+        q = ev.pubmed_query(["JX-594", "T-VEC"], clinical_only=True)
         self.assertTrue(q.startswith('("JX-594"[tiab] OR "T-VEC"[tiab]) AND ("Clinical Trial"[pt] OR '))
 
     def test_short_names_must_be_written_as_themselves(self):
@@ -319,7 +320,7 @@ class Fetching(unittest.TestCase):
         self.assertFalse([c for c in apis.calls if c[0] == ev.EPMC_API])
         terms = [c[2]["term"] for c in apis.calls if c[0] == ev.ESEARCH_API]
         self.assertTrue(any('"JX-594"[tiab]' in t for t in terms))
-        self.assertTrue(all('"Case Reports"[pt]' in t for t in terms))
+        self.assertFalse(any("[pt]" in t for t in terms))                  # every paper type
         # Abstracts are never stored.
         with open(self.out, "rb") as fh:
             blob = fh.read()
@@ -346,6 +347,24 @@ class Fetching(unittest.TestCase):
         apis = FakeAPIs({"JX-594": many})
         recs, total, requests = ev.fetch_pubmed('"JX-594"[tiab]', http=apis, batch=2)
         self.assertEqual((len(recs), total, requests), (5, 5, 4))           # 1 esearch + 3 efetch
+
+    def test_pubmed_splits_a_search_that_is_too_big(self):
+        many = [paper(str(6000 + i), "JX-594 report %d" % i) for i in range(5)]
+        apis = FakeAPIs({"JX-594": many, "T-VEC": [paper("7001", "T-VEC report")]})
+        names = [n for n in ev.load_names(REPO_REGISTRY) if n["alias"] in ("JX-594", "T-VEC")]
+        with mock.patch.object(ev, "PUBMED_MAX", 4):
+            papers, hits, complete = ev.collect_papers_pubmed(names, http=apis, log=self.logs.append)
+        self.assertTrue(any("splitting" in l for l in self.logs))
+        self.assertIn("7001", papers)                  # the half without JX-594 is complete
+        self.assertFalse(complete)                     # JX-594 alone still has 5 > 4
+        self.assertTrue(any("only 4 fetched" in l for l in self.logs))
+
+    def test_clinical_only_option(self):
+        apis = standard_apis()
+        self.assertEqual(ev.fetch_all(self.out, REPO_REGISTRY, http=apis, log=self.logs.append,
+                                      clinical_only=True), 0)
+        terms = [c[2]["term"] for c in apis.calls if c[0] == ev.ESEARCH_API]
+        self.assertTrue(terms and all('"Case Reports"[pt]' in t for t in terms))
 
     def test_pubmed_over_the_cap_is_incomplete(self):
         apis = FakeAPIs(standard_apis().papers, standard_apis().projects, pubmed_count=ev.PUBMED_MAX + 1)

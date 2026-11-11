@@ -70,7 +70,7 @@ import build_registry as br  # noqa: E402  (window_keys, AliasIndex, evidence_st
 
 SCHEMA_VERSION = "1"
 USER_AGENT = "AbstractinatorEvidence/1 (+https://abstractinator.me)"
-DEFAULT_OUT = os.path.join(REPO, "data", "evidence", "evidence.sqlite")
+DEFAULT_OUT = reg.data_dir("evidence", "evidence.sqlite")
 DEFAULT_REGISTRY = os.path.join(REPO, "registry")
 
 EPMC_API = "https://www.ebi.ac.uk/europepmc/webservices/rest/search"
@@ -318,10 +318,12 @@ def http_json(url, params=None, body=None, retries=4, timeout=60, sleep=time.sle
 
 # --- PubMed (NCBI E-utilities) --------------------------------------------------------
 
-def pubmed_query(terms):
-    """("a"[tiab] OR "b"[tiab] ...) AND ("Clinical Trial"[pt] OR ...): the same
-    names and clinical publication types as the Europe PMC query."""
+def pubmed_query(terms, clinical_only=False):
+    """("a"[tiab] OR "b"[tiab] ...), papers of every type; with clinical_only,
+    AND ("Clinical Trial"[pt] OR ...), the clinical publication types."""
     names = " OR ".join('"%s"[tiab]' % t for t in terms)
+    if not clinical_only:
+        return "(%s)" % names
     types = " OR ".join('"%s"[pt]' % t for t in CLINICAL_PUB_TYPES)
     return "(%s) AND (%s)" % (names, types)
 
@@ -358,9 +360,11 @@ def parse_pubmed_xml(text):
     return out
 
 
-def fetch_pubmed(query, http=http_json, max_ids=PUBMED_MAX, batch=EFETCH_BATCH, max_fetch=None):
-    """Records for one search: esearch for the ids, efetch them in batches.
-    Returns (records, hit_count, requests)."""
+def fetch_pubmed(query, http=http_json, max_ids=None, batch=None, max_fetch=None):
+    """Records for one search: esearch for the ids (at most PUBMED_MAX), efetch
+    them in batches of EFETCH_BATCH. Returns (records, hit_count, requests)."""
+    max_ids = max_ids or PUBMED_MAX
+    batch = batch or EFETCH_BATCH
     data = http(ESEARCH_API, form={"db": "pubmed", "term": query, "retmode": "json", "retmax": max_ids})
     res = data.get("esearchresult") or {}
     if res.get("ERROR"):
@@ -377,15 +381,28 @@ def fetch_pubmed(query, http=http_json, max_ids=PUBMED_MAX, batch=EFETCH_BATCH, 
     return records, total, requests
 
 
-def collect_papers_pubmed(names, http=http_json, log=say, max_batches=None, max_fetch=None):
-    """As collect_papers, from PubMed. Returns (papers, hits, complete)."""
+def collect_papers_pubmed(names, http=http_json, log=say, max_batches=None, max_fetch=None,
+                          clinical_only=False):
+    """As collect_papers, from PubMed. Returns (papers, hits, complete).
+    A search with more hits than esearch returns (PUBMED_MAX) is split in
+    half until it fits; a single name that still doesn't fit is fetched in
+    part and the run marked incomplete."""
     index = br.AliasIndex(names)
     papers, hits, complete = {}, {}, True
-    batches = epmc_batches(search_terms(names))[:max_batches]
-    for i, terms in enumerate(batches, 1):
-        records, total, _ = fetch_pubmed(pubmed_query(terms), http=http, max_fetch=max_fetch)
+    queue = epmc_batches(search_terms(names))[:max_batches]
+    i = 0
+    while queue:
+        terms = queue.pop(0)
+        i += 1
+        records, total, _ = fetch_pubmed(pubmed_query(terms, clinical_only), http=http, max_fetch=max_fetch)
+        if total > PUBMED_MAX and len(terms) > 1:
+            half = len(terms) // 2
+            queue[:0] = [terms[:half], terms[half:]]
+            log("pubmed: %d names give %d papers, more than one search returns; splitting" % (len(terms), total))
+            continue
         if total > PUBMED_MAX:
             complete = False
+            log("pubmed: %r gives %d papers; only %d fetched" % (terms[0], total, len(records)))
         kept = 0
         for rec in records:
             found = best_hits(index, [("title", rec["title"]), ("abstract", rec["abstract"])])
@@ -397,16 +414,18 @@ def collect_papers_pubmed(names, http=http_json, log=say, max_batches=None, max_
             papers[row[0]] = row
             for axp, (field, alias) in found.items():
                 _offer(hits, (row[0], axp), field, alias)
-        log("pubmed    %3d/%d: %4d names, %5s hits, %5d fetched, %5d name a program"
-            % (i, len(batches), len(terms), total, len(records), kept))
+        log("pubmed    %3d (%d to go): %4d names, %5s hits, %5d fetched, %5d name a program"
+            % (i, len(queue), len(terms), total, len(records), kept))
     return papers, hits, complete
 
 
 # --- Europe PMC ---------------------------------------------------------------------
 
-def epmc_query(terms):
-    """(TITLE:"a" OR ABSTRACT:"a" OR TITLE:"b" ...) AND SRC:MED AND (PUB_TYPE:"..." OR ...)"""
+def epmc_query(terms, clinical_only=True):
+    """(TITLE:"a" OR ABSTRACT:"a" OR TITLE:"b" ...) AND SRC:MED [AND (PUB_TYPE:"..." OR ...)]"""
     names = " OR ".join('TITLE:"%s" OR ABSTRACT:"%s"' % (t, t) for t in terms)
+    if not clinical_only:
+        return "(%s) AND SRC:MED" % names
     types = " OR ".join('PUB_TYPE:"%s"' % t for t in CLINICAL_PUB_TYPES)
     return "(%s) AND SRC:MED AND (%s)" % (names, types)
 
@@ -486,14 +505,14 @@ def fetch_epmc(query, http=http_json, page_size=EPMC_PAGE_SIZE, max_pages=None):
     return records, total, pages
 
 
-def collect_papers(names, http=http_json, log=say, max_batches=None, page_size=EPMC_PAGE_SIZE,
+def collect_papers(names, http=http_json, log=say, max_batches=None, page_size=EPMC_PAGE_SIZE, clinical_only=False,
                    max_pages=None):
     """Search every name; returns (papers {pmid: row}, hits {(pmid, axp): (field, alias)}, complete)."""
     index = br.AliasIndex(names)
     papers, hits, complete = {}, {}, True
     batches = epmc_batches(search_terms(names))[:max_batches]
     for i, terms in enumerate(batches, 1):
-        records, total, pages = fetch_epmc(epmc_query(terms), http=http, page_size=page_size,
+        records, total, pages = fetch_epmc(epmc_query(terms, clinical_only), http=http, page_size=page_size,
                                            max_pages=max_pages)
         if total is not None and len(records) < total and not max_pages:
             complete = False
@@ -676,6 +695,7 @@ def write_db(out, papers, paper_hits, grants, grant_hits, complete, fetched_at):
 
 
 def fetch_all(out, registry_dir=DEFAULT_REGISTRY, http=http_json, log=say, now=None, papers_from="pubmed",
+              clinical_only=False,
               budget=TIME_BUDGET):
     """Fetch both sources and write the database. Returns the exit code:
     0 written and complete, 3 written but incomplete, 1 nothing written.
@@ -688,9 +708,9 @@ def fetch_all(out, registry_dir=DEFAULT_REGISTRY, http=http_json, log=say, now=N
         % (len(names), len(search_terms(names)), len({n["axp_id"] for n in names})))
     try:
         if papers_from == "europepmc":
-            papers, phits, p_ok = collect_papers(names, http=http, log=log)
+            papers, phits, p_ok = collect_papers(names, http=http, log=log, clinical_only=clinical_only)
         else:
-            papers, phits, p_ok = collect_papers_pubmed(names, http=http, log=log)
+            papers, phits, p_ok = collect_papers_pubmed(names, http=http, log=log, clinical_only=clinical_only)
         grants, ghits, g_ok = collect_grants(names, http=http, log=log)
     except (FetchError, BadRequest) as e:
         log("ERROR %s; nothing written, %s left as it was" % (e, out))
@@ -732,18 +752,20 @@ def status(path, today=None, log=say):
     return 0 if ok else 1
 
 
-def dry_run(registry_dir=DEFAULT_REGISTRY, http=http_json, log=say, papers_from="pubmed"):
+def dry_run(registry_dir=DEFAULT_REGISTRY, http=http_json, log=say, papers_from="pubmed", clinical_only=False):
     """The first batch of each source, one small page; prints counts and samples, writes nothing."""
     names = load_names(registry_dir)
     log("%d names (%d searched spellings)" % (len(names), len(search_terms(names))))
     first = epmc_batches(search_terms(names))[0]
     try:
         if papers_from == "europepmc":
-            log("europepmc query: %s" % epmc_query(first)[:400])
-            papers, phits, _ = collect_papers(names, http=http, log=log, max_batches=1, page_size=25, max_pages=1)
+            log("europepmc query: %s" % epmc_query(first, clinical_only)[:400])
+            papers, phits, _ = collect_papers(names, http=http, log=log, max_batches=1, page_size=25, max_pages=1,
+                                              clinical_only=clinical_only)
         else:
-            log("pubmed query: %s" % pubmed_query(first)[:400])
-            papers, phits, _ = collect_papers_pubmed(names, http=http, log=log, max_batches=1, max_fetch=25)
+            log("pubmed query: %s" % pubmed_query(first, clinical_only)[:400])
+            papers, phits, _ = collect_papers_pubmed(names, http=http, log=log, max_batches=1, max_fetch=25,
+                                                     clinical_only=clinical_only)
         for (pmid, axp), (field, alias) in sorted(phits.items())[:3]:
             log("  PMID %s -> %s by %r in %s: %s" % (pmid, axp, alias["alias"], field, papers[pmid][1]))
         grants, ghits, _ = collect_grants(names, http=http, log=log, max_batches=1, limit=25, max_pages=1)
@@ -766,12 +788,15 @@ def main(argv=None):
                     help="where clinical papers are searched (default pubmed)")
     ap.add_argument("--budget-minutes", type=int, default=TIME_BUDGET // 60,
                     help="stop (writing nothing) after this long")
+    ap.add_argument("--clinical-only", action="store_true",
+                    help="only clinical publication types (default: every type, labelled by kind)")
     args = ap.parse_args(argv)
     if args.status:
         return status(args.out, log=say)
     if args.dry_run:
-        return dry_run(args.registry, papers_from=args.papers_from)
-    return fetch_all(args.out, args.registry, papers_from=args.papers_from, budget=args.budget_minutes * 60)
+        return dry_run(args.registry, papers_from=args.papers_from, clinical_only=args.clinical_only)
+    return fetch_all(args.out, args.registry, papers_from=args.papers_from, budget=args.budget_minutes * 60,
+                     clinical_only=args.clinical_only)
 
 
 if __name__ == "__main__":

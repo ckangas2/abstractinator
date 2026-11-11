@@ -133,9 +133,12 @@ probe local  mcp_init     "http://localhost:8200/mcp" \
 # than 8 days old? A missed week can't be fetched later, so say so promptly.
 # Logged with http_code 200/500 so the CSV keeps one shape.
 LIVE="${ABSTRACTINATOR_LIVE_DIR:-/srv/shiny-server/abstractinator}"
-if [ -r "$LIVE/data/trial_snapshots/trials.sqlite" ]; then
+# State lives in ABSTRACTINATOR_DATA_DIR (/var/lib/abstractinator on bigtop),
+# or under the checkout when that isn't set.
+DATA="${ABSTRACTINATOR_DATA_DIR:-$LIVE/data}"
+if [ -r "$DATA/trial_snapshots/trials.sqlite" ]; then
   if /usr/bin/python3 "$LIVE/tracker/snapshot_trials.py" --status \
-       --db "$LIVE/data/trial_snapshots/trials.sqlite" >/dev/null 2>&1; then
+       --db "$DATA/trial_snapshots/trials.sqlite" >/dev/null 2>&1; then
     printf '%s,%s,%s,%s,%s\n' "$TS" local snapshot "200,0,0" 0 >> "$CSV"
     track snapshot 1 200 local
   else
@@ -148,9 +151,9 @@ fi
 # Same idea for tracker/evidence.py (papers and grants that name each
 # program): complete and less than 8 days old. Unlike the snapshot, a missed
 # week can be fetched again, so this is a nudge rather than lost data.
-if [ -r "$LIVE/data/evidence/evidence.sqlite" ]; then
+if [ -r "$DATA/evidence/evidence.sqlite" ]; then
   if /usr/bin/python3 "$LIVE/tracker/evidence.py" --status \
-       --out "$LIVE/data/evidence/evidence.sqlite" >/dev/null 2>&1; then
+       --out "$DATA/evidence/evidence.sqlite" >/dev/null 2>&1; then
     printf '%s,%s,%s,%s,%s\n' "$TS" local evidence "200,0,0" 0 >> "$CSV"
     track evidence 1 200 local
   else
