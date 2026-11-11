@@ -70,6 +70,12 @@ Development before v2.0.0 was untagged; see the git history for detail.
   longer counts as support for a hepatitis B tag.
 
 ### Added
+- Registry routes for gene and cell therapy and for local phage dosing:
+  `intracochlear`, `intracisternal`, `suprachoroidal`, `intramyocardial`,
+  `intracoronary`, `intraarticular` and `intraurethral` (SPEC `virus.route`).
+- A "Phage therapy" therapy category in `aliases.R`, for phage treatment
+  only: a bare "phage" stays with the Bacteriophage virus category, and
+  phage display is not a therapy.
 - Oncolytic virus atlas (beta, registry/atlas.html): every oncolytic virus in
   the registry as a graph, joined to its virus family, transgenes, the cancers
   its trials enrol, routes and shared sponsors, with a searchable table below.

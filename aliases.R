@@ -364,5 +364,11 @@ modality_alias_list <- list(
                    "azithromycin", "amoxicillin"),
   "Microbiome therapy" = c("fecal microbiota transplantation", "faecal microbiota transplantation",
                            "fecal microbiota transplant", "FMT", "live biotherapeutic",
-                           "live biotherapeutics", "probiotic", "probiotics")
+                           "live biotherapeutics", "probiotic", "probiotics"),
+  # Therapeutic use only: "phage" alone is the virus (Bacteriophage, on the
+  # virus axis), and phage display is a research tool.
+  "Phage therapy" = c("phage therapy", "phage therapies", "bacteriophage therapy",
+                      "bacteriophage therapies", "phage treatment", "bacteriophage treatment",
+                      "phage cocktail", "phage cocktails", "therapeutic phage", "therapeutic phages",
+                      "therapeutic bacteriophage", "therapeutic bacteriophages")
 )
