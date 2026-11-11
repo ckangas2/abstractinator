@@ -69,6 +69,9 @@ Development before v2.0.0 was untagged; see the git history for detail.
 - The weekly trial snapshot also searches trial interventions for every name
   in the program registry, so each program's trials are followed even when
   they never say "oncolytic" (ONYX-015's, for example).
+- Uncertain trial links are exported on demand into your own reports folder
+  (`build_registry.py --export-review FILE`) instead of being written next to
+  the database on the server.
 - Oncolytic virus census: the program registry now lists 120 therapeutic
   viruses given to humans (from the 1950s to 2026, worldwide), each with its
   virus family, strain, replication, engineering, transgenes, route and

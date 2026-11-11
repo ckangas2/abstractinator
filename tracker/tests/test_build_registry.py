@@ -166,9 +166,14 @@ class Build(unittest.TestCase):
         self.assertIn("1 major and 1 minor", page)
         self.assertIn("pexastimogene devacirepvec", page)
         self.assertIn("NCT01", page)
-        with open(os.path.join(self.dir, "registry", "link_review.tsv"), encoding="utf-8") as fh:
+        self.assertFalse(os.path.exists(os.path.join(self.dir, "registry", "link_review.tsv")))
+        dest = os.path.join(self.dir, "reports", "link_review.tsv")
+        self.assertEqual(br.export_review(self.out, dest, log=self.logs.append), 1)
+        with open(dest, encoding="utf-8") as fh:
             review = fh.read()
         self.assertIn("NCT03", review)
+        with self.assertRaises(SystemExit):                     # never overwrites
+            br.export_review(self.out, dest, log=self.logs.append)
         # A third week: an incomplete snapshot reports no new or dropped trials.
         self.take("2026-11-22", [trial("NCT06", "Divarasib", posted="2026-11-20")], fail=())
         con = sqlite3.connect(self.snapdb)

@@ -10,8 +10,11 @@ What it works out:
     registry's names against each trial's interventions and title;
   * what changed between consecutive snapshots (change_event): new trials,
     status and phase changes, results posted, enrolment and timeline changes;
-  * a weekly digest page (www/changes.html), and a review list of uncertain
-    trial links (data/registry/link_review.tsv).
+  * a weekly digest page (www/changes.html).
+
+Uncertain ("candidate") trial links are exported on demand, by whoever wants
+to review them, into their own reports folder (--export-review), rather than
+written next to the database.
 
 Everything is recomputed from its sources on each run; nothing in the output
 is edited by hand. The new database is built under a temporary name and
@@ -26,6 +29,10 @@ Options:
     --snapshots FILE  snapshot database (default: <repo>/data/trial_snapshots/trials.sqlite)
     --out FILE        output database (default: <repo>/data/registry/registry.sqlite)
     --page FILE       digest page (default: <repo>/www/changes.html; "" to skip)
+    --export-review FILE
+                      don't build: write the existing database's candidate
+                      links to FILE for review, e.g.
+                      ~/abstractinator-reports/link_review-$(date +%F).tsv
 """
 
 import argparse
@@ -378,13 +385,6 @@ def build(registry_dir, snapshots, out, today=None, log=print):
     db.close()
     os.replace(tmp, out)
 
-    review_path = os.path.join(os.path.dirname(os.path.abspath(out)), "link_review.tsv")
-    with open(review_path + ".tmp", "w", encoding="utf-8") as fh:
-        fh.write("axp_id\tprogram\tnct_id\tmethod\tmatched\ttrial_title\n")
-        for row in sorted(review):
-            fh.write("\t".join(" ".join(str(x).split()) for x in row) + "\n")
-    os.replace(review_path + ".tmp", review_path)
-
     log("built %s: %d programs, %d names, %d trial links (%d to review), %d change events; latest snapshot %s"
         % (os.path.basename(out), len(programs), len(alias_rows), n_links, len(review), n_events, latest or "none"))
     return out
@@ -481,13 +481,44 @@ def write_page(db_path, page_path, log=print):
     log("wrote %s" % page_path)
 
 
+REVIEW_SQL = """
+SELECT l.axp_id, p.preferred_name, l.nct_id, l.method, l.matched, t.brief_title
+FROM trial_link l JOIN program p ON p.axp_id = l.axp_id LEFT JOIN trial t ON t.nct_id = l.nct_id
+WHERE l.status = 'candidate' ORDER BY p.preferred_name, l.nct_id
+"""
+
+
+def export_review(db_path, dest, log=print):
+    """Write the candidate links in an existing registry database to dest (TSV).
+    Reads the database read-only; refuses to overwrite an existing file."""
+    if os.path.exists(dest):
+        raise SystemExit("%s already exists; not overwriting" % dest)
+    con = sqlite3.connect("file:%s?mode=ro" % db_path, uri=True)
+    try:
+        rows = con.execute(REVIEW_SQL).fetchall()
+    finally:
+        con.close()
+    os.makedirs(os.path.dirname(os.path.abspath(dest)), exist_ok=True)
+    with open(dest, "w", encoding="utf-8") as fh:
+        fh.write("axp_id\tprogram\tnct_id\tmethod\tmatched\ttrial_title\n")
+        for row in rows:
+            fh.write("\t".join(" ".join(str(x or "").split()) for x in row) + "\n")
+    log("%d candidate links -> %s" % (len(rows), dest))
+    return len(rows)
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--registry", default=DEFAULT_REGISTRY)
     ap.add_argument("--snapshots", default=DEFAULT_SNAPSHOTS)
     ap.add_argument("--out", default=DEFAULT_OUT)
     ap.add_argument("--page", default=DEFAULT_PAGE)
+    ap.add_argument("--export-review", metavar="FILE",
+                    help="don't build; write the candidate links of the existing database to FILE")
     args = ap.parse_args(argv)
+    if args.export_review:
+        export_review(args.out, os.path.expanduser(args.export_review))
+        return 0
     out = build(args.registry, args.snapshots, args.out)
     if args.page:
         write_page(out, args.page)
