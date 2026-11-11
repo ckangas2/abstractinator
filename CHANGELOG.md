@@ -72,7 +72,8 @@ Development before v2.0.0 was untagged; see the git history for detail.
 - Weekly ClinicalTrials.gov snapshots of oncolytic-virus, CAR-T and KRAS
   trials (`tracker/snapshot_trials.py`, Sundays via cron), keeping each
   trial's status, phase, enrolment, dates, interventions and sponsor so that
-  changes can be detected later. Contact details are not stored.
+  changes can be detected later. Stored in one SQLite database where each
+  version of a trial is kept once. Contact details are not stored.
 - Trials keep their interventions' other names (development codes, brand
   names), lead sponsor, cited PMIDs and last-update date; API/MCP results
   gain `intervention_other_names`, `lead_sponsor` and `trial_references`.
