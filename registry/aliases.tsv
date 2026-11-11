@@ -311,237 +311,237 @@ AXP000139	RGV005	code	ctgov	NCT07398963	public-domain			0	accepted	https://clini
 AXP000139	CD19-CAR novel oncolytic vaccinia virus	synonym	ctgov	NCT07398963	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT07398963	2026-11-11
 AXP000003	Recombinant Human Adenovirus Type 5 Injection	synonym	ctgov	NCT05113290	public-domain			1	accepted	https://clinicaltrials.gov/study/NCT05113290	2026-11-11
 AXP000098	vvDD-hIL2-2-RG-1	synonym	ctgov	NCT07001592	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT07001592	2026-11-11
-AXP000141	Gendicine	brand	ncit	C85485	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C85485?include=synonyms	2026-11-11
-AXP000141	Genkaxin	brand	ncit	C85485	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C85485?include=synonyms	2026-11-11
-AXP000141	rAd-p53	code	ncit	C85485	CC-BY-4.0			1	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C85485?include=synonyms	2026-11-11
-AXP000141	Recombinant Adenovirus Encoding p53	synonym	ncit	C85485	CC-BY-4.0			1	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C85485?include=synonyms	2026-11-11
-AXP000142	contusugene ladenovec	inn	ncit	C2471	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C2471?include=synonyms	2026-11-11
-AXP000142	Advexin	brand	ncit	C2471	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C2471?include=synonyms	2026-11-11
-AXP000142	INGN 201	code	ncit	C2471	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C2471?include=synonyms	2026-11-11
-AXP000142	RPR/INGN-201	former_code	ncit	C2471	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C2471?include=synonyms	2026-11-11
-AXP000142	Ad5CMV p53 Gene	synonym	ncit	C2471	CC-BY-4.0			1	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C2471?include=synonyms	2026-11-11
-AXP000142	Ad-p53	synonym	ncit	C2471	CC-BY-4.0			1	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C2471?include=synonyms	2026-11-11
-AXP000143	nadofaragene firadenovec	inn	ncit	C71011	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C71011?include=synonyms	2026-11-11
-AXP000143	nadofaragene firadenovec-vncg	usan	fda	BLA 125700	public-domain			0	proposed	https://www.fda.gov/vaccines-blood-biologics/cellular-gene-therapy-products/adstiladrin	2026-11-11
-AXP000143	Adstiladrin	brand	fda	BLA 125700	public-domain			0	proposed	https://www.fda.gov/vaccines-blood-biologics/cellular-gene-therapy-products/adstiladrin	2026-11-11
-AXP000143	Instiladrin	former_name	ncit	C71011	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C71011?include=synonyms	2026-11-11
-AXP000143	rAd-IFN/Syn3	code	ncit	C71011	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C71011?include=synonyms	2026-11-11
-AXP000143	SCH 721015	former_code	ncit	C71011	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C71011?include=synonyms	2026-11-11
-AXP000143	TR-002	former_code	ncit	C71011	CC-BY-4.0			1	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C71011?include=synonyms	2026-11-11
-AXP000144	aglatimagene besadenovec	inn	ncit	C73996	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C73996?include=synonyms	2026-11-11
-AXP000144	CAN-2409	code	ncit	C73996	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C73996?include=synonyms	2026-11-11
-AXP000144	ProstAtak	brand	ncit	C73996	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C73996?include=synonyms	2026-11-11
-AXP000144	GliAtak	brand	ncit	C73996	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C73996?include=synonyms	2026-11-11
-AXP000144	Virafir	brand	ncit	C73996	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C73996?include=synonyms	2026-11-11
-AXP000144	ADV-tk	code	ncit	C73996	CC-BY-4.0			1	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C73996?include=synonyms	2026-11-11
-AXP000145	ofranergene obadenovec	inn	ncit	C71539	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C71539?include=synonyms	2026-11-11
-AXP000145	VB-111	code	ncit	C71539	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C71539?include=synonyms	2026-11-11
-AXP000145	GT-111	former_code	ncit	C71539	CC-BY-4.0			1	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C71539?include=synonyms	2026-11-11
-AXP000145	Ofra-Vec	brand	press	cgtlive	CC-BY-4.0			0	proposed	https://cgtlive.com/view/ofra-vec-continues-to-show-no-benefit-in-platinum-resistant-ovarian-cancer	2026-11-11
-AXP000146	Ad-RTS-hIL-12	code	ncit	C143953	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C143953?include=synonyms	2026-11-11
-AXP000146	INXN-2001	code	ncit	C143953	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C143953?include=synonyms	2026-11-11
-AXP000146	Ad-RTS-hIL-12 + veledimex	synonym	ncit	C143953	CC-BY-4.0			1	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C143953?include=synonyms	2026-11-11
-AXP000147	sitimagene ceradenovec	inn	ncit	C162553	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C162553?include=synonyms	2026-11-11
-AXP000147	EG-009	code	ncit	C162553	CC-BY-4.0			1	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C162553?include=synonyms	2026-11-11
-AXP000147	Cerepro	brand	press	EMA Cerepro page	CC-BY-4.0			0	proposed	https://www.ema.europa.eu/en/medicines/human/EPAR/cerepro	2026-11-11
-AXP000148	E10A	code	ncit	C61492	CC-BY-4.0			1	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C61492?include=synonyms	2026-11-11
-AXP000148	Ad-rhENDO	code	ncit	C61492	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C61492?include=synonyms	2026-11-11
-AXP000148	Adenovirus Encoding Recombinant Human Endostatin	synonym	ncit	C61492	CC-BY-4.0			1	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C61492?include=synonyms	2026-11-11
-AXP000149	ASN-002	code	ncit	C66972	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C66972?include=synonyms	2026-11-11
-AXP000149	TG1042	former_code	ncit	C66972	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C66972?include=synonyms	2026-11-11
-AXP000149	Ad-IFNg	synonym	ncit	C66972	CC-BY-4.0			1	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C66972?include=synonyms	2026-11-11
-AXP000150	golnerminogene pradenovec	inn	ncit	C26444	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C26444?include=synonyms	2026-11-11
-AXP000150	TNFerade	brand	ncit	C26444	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C26444?include=synonyms	2026-11-11
-AXP000150	ADgv EGR.TNF.11D	code	ncit	C26444	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C26444?include=synonyms	2026-11-11
-AXP000150	Ad 5-TNF Alpha	synonym	ncit	C26444	CC-BY-4.0			1	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C26444?include=synonyms	2026-11-11
-AXP000151	alferminogene tadenovec	inn	ncit	C184852	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C184852?include=synonyms	2026-11-11
-AXP000151	Generx	brand	press	biospace	CC-BY-4.0			0	proposed	https://www.biospace.com/angionetics-generx-ad5fgf-4-gene-therapy-biologic-receives-fda-clearance-for-u-s-phase-3-clinical-study-as-a-new-single-dose-treatment-for-coron	2026-11-11
-AXP000151	Ad5FGF-4	code	press	biospace	CC-BY-4.0			0	proposed	https://www.biospace.com/angionetics-generx-ad5fgf-4-gene-therapy-biologic-receives-fda-clearance-for-u-s-phase-3-clinical-study-as-a-new-single-dose-treatment-for-coron	2026-11-11
-AXP000152	SCH-58500	code	ncit	C2423	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C2423?include=synonyms	2026-11-11
-AXP000152	ACN53	code	ncit	C2423	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C2423?include=synonyms	2026-11-11
-AXP000152	rAd/p53	synonym	ncit	C2423	CC-BY-4.0			1	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C2423?include=synonyms	2026-11-11
-AXP000153	INGN 241	code	ncit	C48368	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C48368?include=synonyms	2026-11-11
-AXP000153	Ad-MDA-7	code	ncit	C48368	CC-BY-4.0			1	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C48368?include=synonyms	2026-11-11
-AXP000153	Adenovector Encoding MDA7	synonym	ncit	C48368	CC-BY-4.0			1	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C48368?include=synonyms	2026-11-11
-AXP000154	ETBX-011	code	ncit	C91373	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C91373?include=synonyms	2026-11-11
-AXP000154	Ad5 CEA Vaccine	synonym	ncit	C91373	CC-BY-4.0			1	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C91373?include=synonyms	2026-11-11
-AXP000154	Adenoviral Vector Ad5-CEA(6D) Vaccine	synonym	ncit	C91373	CC-BY-4.0			1	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C91373?include=synonyms	2026-11-11
-AXP000155	ETBX-021	code	ncit	C150517	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C150517?include=synonyms	2026-11-11
-AXP000155	Ad5 [E1-, E2b-]-HER2/neu Vaccine	synonym	ncit	C150517	CC-BY-4.0			1	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C150517?include=synonyms	2026-11-11
-AXP000155	Adenovirus Type 5 E1/E2b-deleted HER2/neu Vaccine ETBX-021	synonym	ncit	C150517	CC-BY-4.0			1	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C150517?include=synonyms	2026-11-11
-AXP000156	ETBX-051	code	ncit	C143034	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C143034?include=synonyms	2026-11-11
-AXP000156	Ad5-brachyury vaccine	synonym	ncit	C143034	CC-BY-4.0			1	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C143034?include=synonyms	2026-11-11
-AXP000156	Adenoviral Brachyury Vaccine ETBX-051	synonym	ncit	C143034	CC-BY-4.0			1	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C143034?include=synonyms	2026-11-11
-AXP000157	ETBX-061	code	ncit	C143035	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C143035?include=synonyms	2026-11-11
-AXP000157	Ad5-MUC1 vaccine	synonym	ncit	C143035	CC-BY-4.0			1	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C143035?include=synonyms	2026-11-11
-AXP000157	Adenoviral MUC1 Vaccine ETBX-061	synonym	ncit	C143035	CC-BY-4.0			1	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C143035?include=synonyms	2026-11-11
-AXP000158	ETBX-071	code	ncit	C148142	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C148142?include=synonyms	2026-11-11
-AXP000158	Adenoviral PSA Vaccine ETBX-071	synonym	ncit	C148142	CC-BY-4.0			1	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C148142?include=synonyms	2026-11-11
-AXP000158	Adenoviral PSA Prostate Cancer Vaccine ETBX-071	synonym	ncit	C148142	CC-BY-4.0			1	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C148142?include=synonyms	2026-11-11
-AXP000159	zopapogene imadenovec	inn	ncit	C207022	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C207022?include=synonyms	2026-11-11
-AXP000159	zopapogene imadenovec-drba	usan	fda	STN 125832	public-domain			0	proposed	https://www.fda.gov/vaccines-blood-biologics/papzimeos	2026-11-11
-AXP000159	Papzimeos	brand	fda	STN 125832	public-domain			0	proposed	https://www.fda.gov/vaccines-blood-biologics/papzimeos	2026-11-11
-AXP000159	PRGN-2012	code	ncit	C207022	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C207022?include=synonyms	2026-11-11
-AXP000159	Gorilla-derived Adenovirus-expressing HPV-6/11 Vaccine PRGN-2012	synonym	ncit	C207022	CC-BY-4.0			1	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C207022?include=synonyms	2026-11-11
-AXP000160	PRGN-2009	code	ncit	C172914	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C172914?include=synonyms	2026-11-11
-AXP000160	Gorilla-derived Adenovirus-expressing HPV-16/18 E6/E7 Vaccine	synonym	ncit	C172914	CC-BY-4.0			1	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C172914?include=synonyms	2026-11-11
-AXP000161	lutadenovec autogene	inn	ncit	C156925	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C156925?include=synonyms	2026-11-11
-AXP000161	GRT-C901	code	ncit	C156925	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C156925?include=synonyms	2026-11-11
-AXP000161	Adenoviral Tumor-specific Neoantigen Priming Vaccine GRT-C901	synonym	ncit	C156925	CC-BY-4.0			1	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C156925?include=synonyms	2026-11-11
-AXP000162	GRT-C903	code	ncit	C165514	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C165514?include=synonyms	2026-11-11
-AXP000162	Shared Neoantigen Priming Cancer Vaccine GRT-C903	synonym	ncit	C165514	CC-BY-4.0			1	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C165514?include=synonyms	2026-11-11
-AXP000163	NOUS-209	code	press	Nouscom	CC-BY-4.0			0	proposed	https://www.cancer.gov/publications/dictionaries/cancer-drug	2026-11-11
-AXP000163	GAd20-209-FSP	code	ncit	C162805	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C162805?include=synonyms	2026-11-11
-AXP000163	GAd-209-FSP	code	ncit	C162805	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C162805?include=synonyms	2026-11-11
-AXP000163	MVA-209-FSP	code	ncit	C162806	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C162806?include=synonyms	2026-11-11
-AXP000164	Ad5-hGCC-PADRE	code	ncit	C112005	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C112005?include=synonyms	2026-11-11
-AXP000164	Adenovirus 5-Human Guanylyl Cyclase C-PADRE Vaccine	synonym	ncit	C112005	CC-BY-4.0			1	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C112005?include=synonyms	2026-11-11
-AXP000165	Ad-MAGEA3	code	ncit	C119614	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C119614?include=synonyms	2026-11-11
-AXP000165	AdMA3	code	ncit	C119614	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C119614?include=synonyms	2026-11-11
-AXP000165	Adenovirus/MAGE-A3	synonym	ncit	C119614	CC-BY-4.0			1	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C119614?include=synonyms	2026-11-11
-AXP000166	AdVTMM2-transduced Dendritic Cell Vaccine	synonym	ncit	C102753	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C102753?include=synonyms	2026-11-11
-AXP000166	AdVTMM2	code	ncit	C102753	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C102753?include=synonyms	2026-11-11
-AXP000167	ChAdOx1 nCoV-19	code	wikidata		CC0-1.0			0	proposed	https://en.wikipedia.org/wiki/Oxford%E2%80%93AstraZeneca_COVID-19_vaccine	2026-11-11
-AXP000167	AZD1222	code	wikidata		CC0-1.0			0	proposed	https://en.wikipedia.org/wiki/Oxford%E2%80%93AstraZeneca_COVID-19_vaccine	2026-11-11
-AXP000167	Vaxzevria	brand	wikidata		CC0-1.0			0	proposed	https://en.wikipedia.org/wiki/Oxford%E2%80%93AstraZeneca_COVID-19_vaccine	2026-11-11
-AXP000167	Covishield	brand	wikidata		CC0-1.0			0	proposed	https://en.wikipedia.org/wiki/Oxford%E2%80%93AstraZeneca_COVID-19_vaccine	2026-11-11
-AXP000168	Ad26.COV2.S	code	wikidata		CC0-1.0			0	proposed	https://en.wikipedia.org/wiki/Janssen_COVID-19_vaccine	2026-11-11
-AXP000168	JNJ-78436735	code	wikidata		CC0-1.0			0	proposed	https://en.wikipedia.org/wiki/Janssen_COVID-19_vaccine	2026-11-11
-AXP000168	Ad26COVS1	code	wikidata		CC0-1.0			0	proposed	https://en.wikipedia.org/wiki/Janssen_COVID-19_vaccine	2026-11-11
-AXP000168	VAC31518	code	wikidata		CC0-1.0			0	proposed	https://en.wikipedia.org/wiki/Janssen_COVID-19_vaccine	2026-11-11
-AXP000168	Jcovden	brand	wikidata		CC0-1.0			0	proposed	https://en.wikipedia.org/wiki/Janssen_COVID-19_vaccine	2026-11-11
-AXP000168	COVID-19 Vaccine Janssen	former_name	wikidata		CC0-1.0			0	proposed	https://en.wikipedia.org/wiki/Janssen_COVID-19_vaccine	2026-11-11
-AXP000169	Ad5-nCoV	code	wikidata		CC0-1.0			0	proposed	https://en.wikipedia.org/wiki/Convidecia	2026-11-11
-AXP000169	Convidecia	brand	wikidata		CC0-1.0			0	proposed	https://en.wikipedia.org/wiki/Convidecia	2026-11-11
-AXP000169	Convidecia Air	brand	wikidata		CC0-1.0			0	proposed	https://en.wikipedia.org/wiki/Convidecia	2026-11-11
-AXP000169	PakVac	brand	wikidata		CC0-1.0			1	proposed	https://en.wikipedia.org/wiki/Convidecia	2026-11-11
-AXP000170	Gam-COVID-Vac	code	wikidata		CC0-1.0			0	proposed	https://en.wikipedia.org/wiki/Sputnik_V_COVID-19_vaccine	2026-11-11
-AXP000170	Sputnik V	brand	wikidata		CC0-1.0			0	proposed	https://en.wikipedia.org/wiki/Sputnik_V_COVID-19_vaccine	2026-11-11
-AXP000170	Gam-COVID-Vac-Lyo	code	wikidata		CC0-1.0			0	proposed	https://en.wikipedia.org/wiki/Sputnik_V_COVID-19_vaccine	2026-11-11
-AXP000170	Gam-COVID-Vac-M	code	wikidata		CC0-1.0			0	proposed	https://en.wikipedia.org/wiki/Sputnik_V_COVID-19_vaccine	2026-11-11
-AXP000171	Sputnik Light	brand	wikidata		CC0-1.0			0	proposed	https://en.wikipedia.org/wiki/Sputnik_V_COVID-19_vaccine	2026-11-11
-AXP000171	Gam-COVID-Vac component I	synonym	wikidata		CC0-1.0			1	proposed	https://en.wikipedia.org/wiki/Sputnik_V_COVID-19_vaccine	2026-11-11
-AXP000172	Ad26.ZEBOV	code	press	EMA Zabdeno EPAR	CC-BY-4.0			0	proposed	https://www.ema.europa.eu/en/medicines/human/EPAR/zabdeno	2026-11-11
-AXP000172	Zabdeno	brand	press	EMA Zabdeno EPAR	CC-BY-4.0			0	proposed	https://www.ema.europa.eu/en/medicines/human/EPAR/zabdeno	2026-11-11
-AXP000172	Ad26.ZEBOV-GP	code	press	EMA Zabdeno EPAR	CC-BY-4.0			0	proposed	https://www.ema.europa.eu/en/medicines/human/EPAR/zabdeno	2026-11-11
-AXP000173	Ad5-EBOV	code	press	Nature outlook	CC-BY-4.0			0	proposed	https://www.nature.com/articles/d42473-018-00219-5	2026-11-11
-AXP000173	Ad5-EBOV vaccine	synonym	press	Nature outlook	CC-BY-4.0			1	proposed	https://www.nature.com/articles/d42473-018-00219-5	2026-11-11
-AXP000174	Ad26.Mos4.HIV	code	press	NIAID news release	CC-BY-4.0			0	proposed	https://www.niaid.nih.gov/node/18624	2026-11-11
-AXP000174	Ad26.Mos4.HIV-1	code	press	NIAID news release	CC-BY-4.0			1	proposed	https://www.niaid.nih.gov/node/18624	2026-11-11
-AXP000175	Ad26.RSV.preF	code	ctgov	NCT04908683	public-domain			0	proposed	https://clinicaltrials.gov/study/NCT04908683	2026-11-11
-AXP000175	Ad26.RSV.preF-based vaccine	synonym	ctgov	NCT04908683	public-domain			1	proposed	https://clinicaltrials.gov/study/NCT04908683	2026-11-11
-AXP000176	BBV154	code	press	BioSpectrum India	CC-BY-4.0			0	proposed	https://www.biospectrumindia.com/news/22/21919/bharat-biotechs-covid-19-intranasal-vaccine-gets-emergency-use-approval.html	2026-11-11
-AXP000176	iNCOVACC	brand	press	BioSpectrum India	CC-BY-4.0			0	proposed	https://www.biospectrumindia.com/news/22/21919/bharat-biotechs-covid-19-intranasal-vaccine-gets-emergency-use-approval.html	2026-11-11
-AXP000176	ChAd-SARS-CoV-2-S	code	press	BioSpectrum India	CC-BY-4.0			1	proposed	https://www.biospectrumindia.com/news/22/21919/bharat-biotechs-covid-19-intranasal-vaccine-gets-emergency-use-approval.html	2026-11-11
-AXP000177	GRAd-COV2	code	ctgov	NCT04791423	public-domain			0	proposed	https://api.ai-analytics.org/clinical/NCT04791423.md	2026-11-11
-AXP000177	ReiThera COVID-19 vaccine	synonym	ctgov	NCT04791423	public-domain			1	proposed	https://api.ai-analytics.org/clinical/NCT04791423.md	2026-11-11
-AXP000178	rilimogene galvacirepvec	inn	ncit	C38681	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C38681?include=synonyms	2026-11-11
-AXP000178	rilimogene glafolivec	inn	ncit	C29560	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C29560?include=synonyms	2026-11-11
-AXP000178	PROSTVAC	code	ncit	C132990	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C132990?include=synonyms	2026-11-11
-AXP000178	PROSTVAC-VF	code	ncit	C132990	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C132990?include=synonyms	2026-11-11
-AXP000178	PROSTVAC-VF/TRICOM	code	ncit	C132990	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C132990?include=synonyms	2026-11-11
-AXP000178	PSA-TRICOM	synonym	curator		CC-BY-4.0			0	proposed	https://en.wikipedia.org/wiki/Prostvac	2026-11-11
-AXP000178	rV-PSA-TRICOM	synonym	ncit	C38681	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C38681?include=synonyms	2026-11-11
-AXP000178	rF-PSA-TRICOM	synonym	ncit	C29560	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C29560?include=synonyms	2026-11-11
-AXP000179	inalimarev	inn	ncit	C29317	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C29317?include=synonyms	2026-11-11
-AXP000179	falimarev	inn	ncit	C29316	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C29316?include=synonyms	2026-11-11
-AXP000179	PANVAC	code	curator	NCT00088660	CC-BY-4.0			1	proposed	https://ctv.veeva.com/study/panvac-vf-vaccine-for-the-treatment-of-metastatic-pancreatic-cancer-after-failing-a-gemcitabine-con	2026-11-11
-AXP000179	PANVAC-VF	code	ctgov	NCT00088660	public-domain			0	proposed	https://ctv.veeva.com/study/panvac-vf-vaccine-for-the-treatment-of-metastatic-pancreatic-cancer-after-failing-a-gemcitabine-con	2026-11-11
-AXP000179	PANVAC-V	code	ncit	C29317	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C29317?include=synonyms	2026-11-11
-AXP000179	PANVAC-F	code	ncit	C29316	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C29316?include=synonyms	2026-11-11
-AXP000179	TBC-PAN-003	code	ctgov	NCT00088660	public-domain			0	proposed	https://ctv.veeva.com/study/panvac-vf-vaccine-for-the-treatment-of-metastatic-pancreatic-cancer-after-failing-a-gemcitabine-con	2026-11-11
-AXP000180	CV301	code	ncit	C131129	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C131129?include=synonyms	2026-11-11
-AXP000180	CVAC-301	code	ncit	C131129	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C131129?include=synonyms	2026-11-11
-AXP000180	CV301-V/F	code	ncit	C131129	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C131129?include=synonyms	2026-11-11
-AXP000180	MVA-BN-CV301	code	ncit	C143059	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C143059?include=synonyms	2026-11-11
-AXP000180	FPV-CV301	code	ncit	C141298	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C141298?include=synonyms	2026-11-11
-AXP000180	PANVAC	synonym	ncit	C131129	CC-BY-4.0			1	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C131129?include=synonyms	2026-11-11
-AXP000181	TG4010	code	ncit	C2241	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C2241?include=synonyms	2026-11-11
-AXP000181	MVA-MUC1-IL2	synonym	ncit	C2241	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C2241?include=synonyms	2026-11-11
-AXP000182	TG4001	code	ncit	C88326	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C88326?include=synonyms	2026-11-11
-AXP000182	MVA-HPV-IL2	synonym	ncit	C88326	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C88326?include=synonyms	2026-11-11
-AXP000182	MVA-HPV16E6/E7-IL2	synonym	ncit	C88326	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C88326?include=synonyms	2026-11-11
-AXP000182	RO5217790	former_code	ncit	C88326	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C88326?include=synonyms	2026-11-11
-AXP000182	RG3484	former_code	ncit	C88326	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C88326?include=synonyms	2026-11-11
-AXP000183	TG4050	code	ncit	C171392	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C171392?include=synonyms	2026-11-11
-AXP000184	TroVax	brand	ncit	C49087	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C49087?include=synonyms	2026-11-11
-AXP000184	OXB-301	code	ncit	C49087	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C49087?include=synonyms	2026-11-11
-AXP000184	MVA-5T4	code	ncit	C49087	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C49087?include=synonyms	2026-11-11
-AXP000185	MVA-BN-Brachyury	code	ncit	C148400	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C148400?include=synonyms	2026-11-11
-AXP000185	BN-Brachyury	code	curator	C148400	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C148400?include=synonyms	2026-11-11
-AXP000185	FPV-Brachyury-TRICOM	code	ncit	C148402	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C148402?include=synonyms	2026-11-11
-AXP000185	MVA Brachyury-TRICOM	synonym	ncit	C116777	CC-BY-4.0			1	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C116777?include=synonyms	2026-11-11
-AXP000186	MVA-BN-HER2	code	ncit	C71758	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C71758?include=synonyms	2026-11-11
-AXP000186	BN-HER2	code	curator	C71758	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C71758?include=synonyms	2026-11-11
-AXP000187	p53MVA	code	ncit	C116868	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C116868?include=synonyms	2026-11-11
-AXP000187	MVA-p53	code	ncit	C116868	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C116868?include=synonyms	2026-11-11
-AXP000188	ALVAC-CEA-B7.1	code	ncit	C1977	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C1977?include=synonyms	2026-11-11
-AXP000188	ALVAC-B7-CEA	synonym	ncit	C2742	CC-BY-4.0			1	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C2742?include=synonyms	2026-11-11
-AXP000188	ALVAC-CEA (6D)-B7.1	synonym	ncit	C29982	CC-BY-4.0			1	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C29982?include=synonyms	2026-11-11
-AXP000189	vCP2292	code	ncit	C79832	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C79832?include=synonyms	2026-11-11
-AXP000189	ALVAC(2)-NY-ESO-1(M)/TRICOM	code	ncit	C79832	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C79832?include=synonyms	2026-11-11
-AXP000190	TA-HPV	code	ncit	C2403	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C2403?include=synonyms	2026-11-11
-AXP000190	Human Papillomavirus Tumor Antigen Vaccine	synonym	ncit	C2403	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C2403?include=synonyms	2026-11-11
-AXP000191	MVA E2	code	paper	25275724	CC-BY-4.0			0	proposed	https://pmc.ncbi.nlm.nih.gov/articles/PMC4270165	2026-11-11
-AXP000191	MVA E2 therapeutic vaccine	synonym	paper	25275724	CC-BY-4.0			0	proposed	https://pmc.ncbi.nlm.nih.gov/articles/PMC4270165	2026-11-11
-AXP000192	MQ710	code	ncit	C199613	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C199613?include=synonyms	2026-11-11
-AXP000192	MVAdeltaE5R-Flt3L-OX40L	synonym	ncit	C199613	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C199613?include=synonyms	2026-11-11
-AXP000193	beremagene geperpavec	inn	ncit	C174623	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C174623?include=synonyms	2026-11-11
-AXP000193	beremagene geperpavec-svdt	synonym	ncit	C174623	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C174623?include=synonyms	2026-11-11
-AXP000193	B-VEC	code	ncit	C174623	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C174623?include=synonyms	2026-11-11
-AXP000193	KB103	code	ncit	C174623	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C174623?include=synonyms	2026-11-11
-AXP000193	Vyjuvek	brand	fda	BLA 125774	public-domain			0	proposed	https://www.fda.gov/vaccines-blood-biologics/vyjuvek	2026-11-11
-AXP000194	KB407	code	press		CC-BY-4.0			0	proposed	https://ir.krystalbio.com/node/7941	2026-11-11
-AXP000194	CORAL-1	synonym	press	NCT05504837	CC-BY-4.0			1	proposed	https://ir.krystalbio.com/node/10101	2026-11-11
-AXP000195	KB408	code	press		CC-BY-4.0			0	proposed	https://ir.krystalbio.com/node/7941	2026-11-11
-AXP000195	SERPENTINE-1	synonym	press	NCT06049082	CC-BY-4.0			1	proposed	https://ir.krystalbio.com/node/10101	2026-11-11
-AXP000196	KB707	code	press		CC-BY-4.0			0	proposed	https://pipelinereview.com/?p=118969	2026-11-11
-AXP000196	KYANITE-1	synonym	press	NCT06228326	CC-BY-4.0			1	proposed	https://pipelinereview.com/?p=118969	2026-11-11
-AXP000196	OPAL-1	synonym	press	NCT05970497	CC-BY-4.0			1	proposed	https://ir.krystalbio.com/node/10101	2026-11-11
-AXP000197	KB801	code	press	NCT06999733	CC-BY-4.0			0	proposed	https://ir.krystalbio.com/node/10816	2026-11-11
-AXP000197	EMERALD-1	synonym	press	NCT06999733	CC-BY-4.0			1	proposed	https://ir.krystalbio.com/node/10816	2026-11-11
-AXP000198	KB105	code	press		CC-BY-4.0			0	proposed	https://ir.krystalbio.com/node/7451	2026-11-11
-AXP000199	KB301	code	press	NCT04540900	CC-BY-4.0			0	proposed	https://ir.krystalbio.com/node/10301	2026-11-11
-AXP000199	PEARL-1	synonym	press	NCT04540900	CC-BY-4.0			1	proposed	https://ir.krystalbio.com/node/10301	2026-11-11
-AXP000200	NP2	code	paper	21796661	CC-BY-4.0			1	proposed	https://deepblue.lib.umich.edu/bitstream/2027.42/86983/1/22446_ftp.pdf	2026-11-11
-AXP000200	NP2 enkephalin	synonym	paper	21796661	CC-BY-4.0			0	proposed	https://deepblue.lib.umich.edu/bitstream/2027.42/86983/1/22446_ftp.pdf	2026-11-11
-AXP000201	MVA-BN-Filo	code	curator	EMEA/H/C/005343	CC-BY-4.0			0	proposed	https://www.ema.europa.eu/en/medicines/human/EPAR/mvabea	2026-11-11
-AXP000201	Mvabea	brand	curator	EMEA/H/C/005343	CC-BY-4.0			0	proposed	https://www.ema.europa.eu/en/medicines/human/EPAR/mvabea	2026-11-11
-AXP000202	vCP1521	code	paper	34029515	CC-BY-4.0			0	proposed	https://pmc.ncbi.nlm.nih.gov/articles/PMC8449712	2026-11-11
-AXP000202	ALVAC-HIV vCP1521	code	paper	34029515	CC-BY-4.0			0	proposed	https://pmc.ncbi.nlm.nih.gov/articles/PMC8449712	2026-11-11
-AXP000203	vCP2438	code	paper	34029515	CC-BY-4.0			0	proposed	https://pmc.ncbi.nlm.nih.gov/articles/PMC8449712	2026-11-11
-AXP000203	ALVAC-HIV vCP2438	code	paper	34029515	CC-BY-4.0			0	proposed	https://pmc.ncbi.nlm.nih.gov/articles/PMC8449712	2026-11-11
-AXP000203	ALVAC-HIV (subtype C)	synonym	press		CC-BY-4.0			1	proposed	https://www.nih.gov/news-events/news-releases/experimental-hiv-vaccine-regimen-ineffective-preventing-hiv	2026-11-11
-AXP000204	MVA-BN-RSV	code	press		CC-BY-4.0			0	proposed	https://www.bavarian-nordic.com/investor/news/news.aspx?news=6808	2026-11-11
-AXP000204	MVA-RSV	synonym	paper		CC-BY-4.0			1	proposed	https://pmc.ncbi.nlm.nih.gov/articles/PMC9238321/	2026-11-11
-AXP000204	VANIR	synonym	press		CC-BY-4.0			1	proposed	https://www.bavarian-nordic.com/investor/news/news.aspx?news=6808	2026-11-11
-AXP000205	Ervebo	brand	fda	STN 125690	public-domain			0	proposed	https://www.fda.gov/vaccines-blood-biologics/ervebo	2026-11-11
-AXP000205	rVSVΔG-ZEBOV-GP	synonym	curator	EPAR Ervebo	CC-BY-4.0			0	proposed	https://www.ema.europa.eu/en/medicines/human/EPAR/ervebo	2026-11-11
-AXP000205	rVSV-ZEBOV	synonym	curator	EPAR Ervebo	CC-BY-4.0			0	proposed	https://www.ema.europa.eu/en/medicines/human/EPAR/ervebo	2026-11-11
-AXP000205	Ebola Zaire Vaccine, Live	synonym	fda	STN 125690	public-domain			1	proposed	https://www.fda.gov/vaccines-blood-biologics/ervebo	2026-11-11
-AXP000206	Dengvaxia	brand	curator	EPAR Dengvaxia	CC-BY-4.0			0	proposed	https://www.ema.europa.eu/en/medicines/human/EPAR/dengvaxia	2026-11-11
-AXP000206	CYD-TDV	code	curator		CC-BY-4.0			0	proposed	https://www.ema.europa.eu/en/medicines/human/EPAR/dengvaxia	2026-11-11
-AXP000206	Dengue Tetravalent Vaccine, Live	synonym	fda	STN 125682	public-domain			1	proposed	https://www.fda.gov/vaccines-blood-biologics/dengvaxia	2026-11-11
-AXP000207	Imojev	brand	curator	WHO PQ Imojev MD	CC-BY-4.0			0	proposed	https://extranet.who.int/prequal/vaccines/p/imojev-md	2026-11-11
-AXP000207	Imojev MD	brand	curator	WHO PQ Imojev MD	CC-BY-4.0			0	proposed	https://extranet.who.int/prequal/vaccines/p/imojev-md	2026-11-11
-AXP000207	ChimeriVax-JE	former_code	curator		CC-BY-4.0			0	proposed	https://www.nps.org.au/assets/94ea7bc16d0652c2-03a2ddeea681-14fe892adb3e78bae0728edf6cf466278960f49ef6ccb16c8a3ec49a9075.pdf	2026-11-11
-AXP000207	JE-CV	code	curator		CC-BY-4.0			0	proposed	https://www.nps.org.au/assets/94ea7bc16d0652c2-03a2ddeea681-14fe892adb3e78bae0728edf6cf466278960f49ef6ccb16c8a3ec49a9075.pdf	2026-11-11
-AXP000208	MV-CHIK	code	curator	Belgian biosafety notification, phase III	CC-BY-4.0			0	proposed	https://www.biosafety.be/content/phase-iii-randomized-observer-blinded-placebo-controlled-multi-center-study-evaluate-safety	2026-11-11
-AXP000208	V184	code	ctgov	NCT03807843	public-domain			0	proposed	https://ctv.veeva.com/study/chikungunya-vaccine-v184-study-in-previously-exposed-adults-v184006	2026-11-11
-AXP000209	NDV-HXP-S	code	paper	medRxiv 2022.02.08.22270676	CC-BY-4.0			0	proposed	https://medrxiv.org/content/10.1101/2022.02.08.22270676v1.full	2026-11-11
-AXP000209	Patria	brand	press	COFEPRIS emergency-use authorisation, June 2024	CC-BY-4.0			0	proposed	https://politica.expansion.mx/mexico/2024/06/06/cofepris-aprueba-vacuna-patria-contra-covid-para-uso-en-emergencias	2026-11-11
-AXP000209	ButanVac	synonym	curator		CC-BY-4.0			1	proposed	https://medrxiv.org/content/10.1101/2022.02.08.22270676v1.full	2026-11-11
-AXP000209	HXP-GPOVac	synonym	curator		CC-BY-4.0			1	proposed	https://medrxiv.org/content/10.1101/2022.02.08.22270676v1.full	2026-11-11
-AXP000210	Rexin-G	code	ncit	C49082	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/search?term=Rexin-G&type=contains&include=synonyms	2026-11-11
-AXP000210	DeltaRex-G	synonym	ncit	C49082	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/search?term=Rexin-G&type=contains&include=synonyms	2026-11-11
-AXP000210	Mx-dnG1	code	ncit	C49082	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/search?term=Rexin-G&type=contains&include=synonyms	2026-11-11
-AXP000210	Retrovector Encoding Mutant Anti-Cyclin G1	synonym	ncit	C49082	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/search?term=Rexin-G&type=contains&include=synonyms	2026-11-11
-AXP000211	Strimvelis	brand	curator	EPAR Strimvelis	CC-BY-4.0			0	proposed	https://www.ema.europa.eu/en/medicines/human/EPAR/strimvelis	2026-11-11
-AXP000211	GSK2696273	code	curator	Strimvelis EPAR public assessment report	CC-BY-4.0			0	proposed	https://ema.europa.eu/en/documents/assessment-report/strimvelis-epar-public-assessment-report_en.pdf	2026-11-11
-AXP000212	Zalmoxis	brand	curator	EPAR Zalmoxis	CC-BY-4.0			0	proposed	https://www.ema.europa.eu/en/medicines/human/EPAR/zalmoxis	2026-11-11
-AXP000212	TK cells	synonym	curator	HAS transparency opinion, Zalmoxis	CC-BY-4.0			1	proposed	https://has-sante.fr/upload/docs/application/pdf/2019-01/zalmoxis_pic_ins_avis3_modifiele15012019_ct16901.pdf	2026-11-11
-AXP000213	AVX701	code	ncit	C70644	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/search?term=AVX701&type=contains&include=synonyms	2026-11-11
-AXP000213	CEA(6D) VRP	synonym	ncit	C70644	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/search?term=AVX701&type=contains&include=synonyms	2026-11-11
-AXP000214	AVX901	code	ncit	C99903	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/search?term=AVX901&type=contains&include=synonyms	2026-11-11
-AXP000214	VRP-HER2	synonym	ncit	C99903	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/search?term=AVX901&type=contains&include=synonyms	2026-11-11
-AXP000214	HER2 ECDTM VRP	synonym	ncit	C99903	CC-BY-4.0			0	proposed	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/search?term=AVX901&type=contains&include=synonyms	2026-11-11
+AXP000141	Gendicine	brand	ncit	C85485	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C85485?include=synonyms	2026-11-11
+AXP000141	Genkaxin	brand	ncit	C85485	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C85485?include=synonyms	2026-11-11
+AXP000141	rAd-p53	code	ncit	C85485	CC-BY-4.0			1	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C85485?include=synonyms	2026-11-11
+AXP000141	Recombinant Adenovirus Encoding p53	synonym	ncit	C85485	CC-BY-4.0			1	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C85485?include=synonyms	2026-11-11
+AXP000142	contusugene ladenovec	inn	ncit	C2471	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C2471?include=synonyms	2026-11-11
+AXP000142	Advexin	brand	ncit	C2471	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C2471?include=synonyms	2026-11-11
+AXP000142	INGN 201	code	ncit	C2471	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C2471?include=synonyms	2026-11-11
+AXP000142	RPR/INGN-201	former_code	ncit	C2471	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C2471?include=synonyms	2026-11-11
+AXP000142	Ad5CMV p53 Gene	synonym	ncit	C2471	CC-BY-4.0			1	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C2471?include=synonyms	2026-11-11
+AXP000142	Ad-p53	synonym	ncit	C2471	CC-BY-4.0			1	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C2471?include=synonyms	2026-11-11
+AXP000143	nadofaragene firadenovec	inn	ncit	C71011	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C71011?include=synonyms	2026-11-11
+AXP000143	nadofaragene firadenovec-vncg	usan	fda	BLA 125700	public-domain			0	accepted	https://www.fda.gov/vaccines-blood-biologics/cellular-gene-therapy-products/adstiladrin	2026-11-11
+AXP000143	Adstiladrin	brand	fda	BLA 125700	public-domain			0	accepted	https://www.fda.gov/vaccines-blood-biologics/cellular-gene-therapy-products/adstiladrin	2026-11-11
+AXP000143	Instiladrin	former_name	ncit	C71011	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C71011?include=synonyms	2026-11-11
+AXP000143	rAd-IFN/Syn3	code	ncit	C71011	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C71011?include=synonyms	2026-11-11
+AXP000143	SCH 721015	former_code	ncit	C71011	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C71011?include=synonyms	2026-11-11
+AXP000143	TR-002	former_code	ncit	C71011	CC-BY-4.0			1	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C71011?include=synonyms	2026-11-11
+AXP000144	aglatimagene besadenovec	inn	ncit	C73996	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C73996?include=synonyms	2026-11-11
+AXP000144	CAN-2409	code	ncit	C73996	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C73996?include=synonyms	2026-11-11
+AXP000144	ProstAtak	brand	ncit	C73996	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C73996?include=synonyms	2026-11-11
+AXP000144	GliAtak	brand	ncit	C73996	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C73996?include=synonyms	2026-11-11
+AXP000144	Virafir	brand	ncit	C73996	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C73996?include=synonyms	2026-11-11
+AXP000144	ADV-tk	code	ncit	C73996	CC-BY-4.0			1	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C73996?include=synonyms	2026-11-11
+AXP000145	ofranergene obadenovec	inn	ncit	C71539	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C71539?include=synonyms	2026-11-11
+AXP000145	VB-111	code	ncit	C71539	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C71539?include=synonyms	2026-11-11
+AXP000145	GT-111	former_code	ncit	C71539	CC-BY-4.0			1	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C71539?include=synonyms	2026-11-11
+AXP000145	Ofra-Vec	brand	press	cgtlive	CC-BY-4.0			0	accepted	https://cgtlive.com/view/ofra-vec-continues-to-show-no-benefit-in-platinum-resistant-ovarian-cancer	2026-11-11
+AXP000146	Ad-RTS-hIL-12	code	ncit	C143953	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C143953?include=synonyms	2026-11-11
+AXP000146	INXN-2001	code	ncit	C143953	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C143953?include=synonyms	2026-11-11
+AXP000146	Ad-RTS-hIL-12 + veledimex	synonym	ncit	C143953	CC-BY-4.0			1	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C143953?include=synonyms	2026-11-11
+AXP000147	sitimagene ceradenovec	inn	ncit	C162553	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C162553?include=synonyms	2026-11-11
+AXP000147	EG-009	code	ncit	C162553	CC-BY-4.0			1	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C162553?include=synonyms	2026-11-11
+AXP000147	Cerepro	brand	press	EMA Cerepro page	CC-BY-4.0			0	accepted	https://www.ema.europa.eu/en/medicines/human/EPAR/cerepro	2026-11-11
+AXP000148	E10A	code	ncit	C61492	CC-BY-4.0			1	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C61492?include=synonyms	2026-11-11
+AXP000148	Ad-rhENDO	code	ncit	C61492	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C61492?include=synonyms	2026-11-11
+AXP000148	Adenovirus Encoding Recombinant Human Endostatin	synonym	ncit	C61492	CC-BY-4.0			1	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C61492?include=synonyms	2026-11-11
+AXP000149	ASN-002	code	ncit	C66972	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C66972?include=synonyms	2026-11-11
+AXP000149	TG1042	former_code	ncit	C66972	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C66972?include=synonyms	2026-11-11
+AXP000149	Ad-IFNg	synonym	ncit	C66972	CC-BY-4.0			1	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C66972?include=synonyms	2026-11-11
+AXP000150	golnerminogene pradenovec	inn	ncit	C26444	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C26444?include=synonyms	2026-11-11
+AXP000150	TNFerade	brand	ncit	C26444	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C26444?include=synonyms	2026-11-11
+AXP000150	ADgv EGR.TNF.11D	code	ncit	C26444	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C26444?include=synonyms	2026-11-11
+AXP000150	Ad 5-TNF Alpha	synonym	ncit	C26444	CC-BY-4.0			1	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C26444?include=synonyms	2026-11-11
+AXP000151	alferminogene tadenovec	inn	ncit	C184852	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C184852?include=synonyms	2026-11-11
+AXP000151	Generx	brand	press	biospace	CC-BY-4.0			0	accepted	https://www.biospace.com/angionetics-generx-ad5fgf-4-gene-therapy-biologic-receives-fda-clearance-for-u-s-phase-3-clinical-study-as-a-new-single-dose-treatment-for-coron	2026-11-11
+AXP000151	Ad5FGF-4	code	press	biospace	CC-BY-4.0			0	accepted	https://www.biospace.com/angionetics-generx-ad5fgf-4-gene-therapy-biologic-receives-fda-clearance-for-u-s-phase-3-clinical-study-as-a-new-single-dose-treatment-for-coron	2026-11-11
+AXP000152	SCH-58500	code	ncit	C2423	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C2423?include=synonyms	2026-11-11
+AXP000152	ACN53	code	ncit	C2423	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C2423?include=synonyms	2026-11-11
+AXP000152	rAd/p53	synonym	ncit	C2423	CC-BY-4.0			1	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C2423?include=synonyms	2026-11-11
+AXP000153	INGN 241	code	ncit	C48368	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C48368?include=synonyms	2026-11-11
+AXP000153	Ad-MDA-7	code	ncit	C48368	CC-BY-4.0			1	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C48368?include=synonyms	2026-11-11
+AXP000153	Adenovector Encoding MDA7	synonym	ncit	C48368	CC-BY-4.0			1	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C48368?include=synonyms	2026-11-11
+AXP000154	ETBX-011	code	ncit	C91373	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C91373?include=synonyms	2026-11-11
+AXP000154	Ad5 CEA Vaccine	synonym	ncit	C91373	CC-BY-4.0			1	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C91373?include=synonyms	2026-11-11
+AXP000154	Adenoviral Vector Ad5-CEA(6D) Vaccine	synonym	ncit	C91373	CC-BY-4.0			1	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C91373?include=synonyms	2026-11-11
+AXP000155	ETBX-021	code	ncit	C150517	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C150517?include=synonyms	2026-11-11
+AXP000155	Ad5 [E1-, E2b-]-HER2/neu Vaccine	synonym	ncit	C150517	CC-BY-4.0			1	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C150517?include=synonyms	2026-11-11
+AXP000155	Adenovirus Type 5 E1/E2b-deleted HER2/neu Vaccine ETBX-021	synonym	ncit	C150517	CC-BY-4.0			1	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C150517?include=synonyms	2026-11-11
+AXP000156	ETBX-051	code	ncit	C143034	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C143034?include=synonyms	2026-11-11
+AXP000156	Ad5-brachyury vaccine	synonym	ncit	C143034	CC-BY-4.0			1	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C143034?include=synonyms	2026-11-11
+AXP000156	Adenoviral Brachyury Vaccine ETBX-051	synonym	ncit	C143034	CC-BY-4.0			1	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C143034?include=synonyms	2026-11-11
+AXP000157	ETBX-061	code	ncit	C143035	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C143035?include=synonyms	2026-11-11
+AXP000157	Ad5-MUC1 vaccine	synonym	ncit	C143035	CC-BY-4.0			1	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C143035?include=synonyms	2026-11-11
+AXP000157	Adenoviral MUC1 Vaccine ETBX-061	synonym	ncit	C143035	CC-BY-4.0			1	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C143035?include=synonyms	2026-11-11
+AXP000158	ETBX-071	code	ncit	C148142	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C148142?include=synonyms	2026-11-11
+AXP000158	Adenoviral PSA Vaccine ETBX-071	synonym	ncit	C148142	CC-BY-4.0			1	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C148142?include=synonyms	2026-11-11
+AXP000158	Adenoviral PSA Prostate Cancer Vaccine ETBX-071	synonym	ncit	C148142	CC-BY-4.0			1	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C148142?include=synonyms	2026-11-11
+AXP000159	zopapogene imadenovec	inn	ncit	C207022	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C207022?include=synonyms	2026-11-11
+AXP000159	zopapogene imadenovec-drba	usan	fda	STN 125832	public-domain			0	accepted	https://www.fda.gov/vaccines-blood-biologics/papzimeos	2026-11-11
+AXP000159	Papzimeos	brand	fda	STN 125832	public-domain			0	accepted	https://www.fda.gov/vaccines-blood-biologics/papzimeos	2026-11-11
+AXP000159	PRGN-2012	code	ncit	C207022	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C207022?include=synonyms	2026-11-11
+AXP000159	Gorilla-derived Adenovirus-expressing HPV-6/11 Vaccine PRGN-2012	synonym	ncit	C207022	CC-BY-4.0			1	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C207022?include=synonyms	2026-11-11
+AXP000160	PRGN-2009	code	ncit	C172914	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C172914?include=synonyms	2026-11-11
+AXP000160	Gorilla-derived Adenovirus-expressing HPV-16/18 E6/E7 Vaccine	synonym	ncit	C172914	CC-BY-4.0			1	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C172914?include=synonyms	2026-11-11
+AXP000161	lutadenovec autogene	inn	ncit	C156925	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C156925?include=synonyms	2026-11-11
+AXP000161	GRT-C901	code	ncit	C156925	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C156925?include=synonyms	2026-11-11
+AXP000161	Adenoviral Tumor-specific Neoantigen Priming Vaccine GRT-C901	synonym	ncit	C156925	CC-BY-4.0			1	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C156925?include=synonyms	2026-11-11
+AXP000162	GRT-C903	code	ncit	C165514	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C165514?include=synonyms	2026-11-11
+AXP000162	Shared Neoantigen Priming Cancer Vaccine GRT-C903	synonym	ncit	C165514	CC-BY-4.0			1	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C165514?include=synonyms	2026-11-11
+AXP000163	NOUS-209	code	press	Nouscom	CC-BY-4.0			0	accepted	https://www.cancer.gov/publications/dictionaries/cancer-drug	2026-11-11
+AXP000163	GAd20-209-FSP	code	ncit	C162805	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C162805?include=synonyms	2026-11-11
+AXP000163	GAd-209-FSP	code	ncit	C162805	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C162805?include=synonyms	2026-11-11
+AXP000163	MVA-209-FSP	code	ncit	C162806	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C162806?include=synonyms	2026-11-11
+AXP000164	Ad5-hGCC-PADRE	code	ncit	C112005	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C112005?include=synonyms	2026-11-11
+AXP000164	Adenovirus 5-Human Guanylyl Cyclase C-PADRE Vaccine	synonym	ncit	C112005	CC-BY-4.0			1	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C112005?include=synonyms	2026-11-11
+AXP000165	Ad-MAGEA3	code	ncit	C119614	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C119614?include=synonyms	2026-11-11
+AXP000165	AdMA3	code	ncit	C119614	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C119614?include=synonyms	2026-11-11
+AXP000165	Adenovirus/MAGE-A3	synonym	ncit	C119614	CC-BY-4.0			1	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C119614?include=synonyms	2026-11-11
+AXP000166	AdVTMM2-transduced Dendritic Cell Vaccine	synonym	ncit	C102753	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C102753?include=synonyms	2026-11-11
+AXP000166	AdVTMM2	code	ncit	C102753	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C102753?include=synonyms	2026-11-11
+AXP000167	ChAdOx1 nCoV-19	code	wikidata		CC0-1.0			0	accepted	https://en.wikipedia.org/wiki/Oxford%E2%80%93AstraZeneca_COVID-19_vaccine	2026-11-11
+AXP000167	AZD1222	code	wikidata		CC0-1.0			0	accepted	https://en.wikipedia.org/wiki/Oxford%E2%80%93AstraZeneca_COVID-19_vaccine	2026-11-11
+AXP000167	Vaxzevria	brand	wikidata		CC0-1.0			0	accepted	https://en.wikipedia.org/wiki/Oxford%E2%80%93AstraZeneca_COVID-19_vaccine	2026-11-11
+AXP000167	Covishield	brand	wikidata		CC0-1.0			0	accepted	https://en.wikipedia.org/wiki/Oxford%E2%80%93AstraZeneca_COVID-19_vaccine	2026-11-11
+AXP000168	Ad26.COV2.S	code	wikidata		CC0-1.0			0	accepted	https://en.wikipedia.org/wiki/Janssen_COVID-19_vaccine	2026-11-11
+AXP000168	JNJ-78436735	code	wikidata		CC0-1.0			0	accepted	https://en.wikipedia.org/wiki/Janssen_COVID-19_vaccine	2026-11-11
+AXP000168	Ad26COVS1	code	wikidata		CC0-1.0			0	accepted	https://en.wikipedia.org/wiki/Janssen_COVID-19_vaccine	2026-11-11
+AXP000168	VAC31518	code	wikidata		CC0-1.0			0	accepted	https://en.wikipedia.org/wiki/Janssen_COVID-19_vaccine	2026-11-11
+AXP000168	Jcovden	brand	wikidata		CC0-1.0			0	accepted	https://en.wikipedia.org/wiki/Janssen_COVID-19_vaccine	2026-11-11
+AXP000168	COVID-19 Vaccine Janssen	former_name	wikidata		CC0-1.0			0	accepted	https://en.wikipedia.org/wiki/Janssen_COVID-19_vaccine	2026-11-11
+AXP000169	Ad5-nCoV	code	wikidata		CC0-1.0			0	accepted	https://en.wikipedia.org/wiki/Convidecia	2026-11-11
+AXP000169	Convidecia	brand	wikidata		CC0-1.0			0	accepted	https://en.wikipedia.org/wiki/Convidecia	2026-11-11
+AXP000169	Convidecia Air	brand	wikidata		CC0-1.0			0	accepted	https://en.wikipedia.org/wiki/Convidecia	2026-11-11
+AXP000169	PakVac	brand	wikidata		CC0-1.0			1	accepted	https://en.wikipedia.org/wiki/Convidecia	2026-11-11
+AXP000170	Gam-COVID-Vac	code	wikidata		CC0-1.0			0	accepted	https://en.wikipedia.org/wiki/Sputnik_V_COVID-19_vaccine	2026-11-11
+AXP000170	Sputnik V	brand	wikidata		CC0-1.0			0	accepted	https://en.wikipedia.org/wiki/Sputnik_V_COVID-19_vaccine	2026-11-11
+AXP000170	Gam-COVID-Vac-Lyo	code	wikidata		CC0-1.0			0	accepted	https://en.wikipedia.org/wiki/Sputnik_V_COVID-19_vaccine	2026-11-11
+AXP000170	Gam-COVID-Vac-M	code	wikidata		CC0-1.0			0	accepted	https://en.wikipedia.org/wiki/Sputnik_V_COVID-19_vaccine	2026-11-11
+AXP000171	Sputnik Light	brand	wikidata		CC0-1.0			0	accepted	https://en.wikipedia.org/wiki/Sputnik_V_COVID-19_vaccine	2026-11-11
+AXP000171	Gam-COVID-Vac component I	synonym	wikidata		CC0-1.0			1	accepted	https://en.wikipedia.org/wiki/Sputnik_V_COVID-19_vaccine	2026-11-11
+AXP000172	Ad26.ZEBOV	code	press	EMA Zabdeno EPAR	CC-BY-4.0			0	accepted	https://www.ema.europa.eu/en/medicines/human/EPAR/zabdeno	2026-11-11
+AXP000172	Zabdeno	brand	press	EMA Zabdeno EPAR	CC-BY-4.0			0	accepted	https://www.ema.europa.eu/en/medicines/human/EPAR/zabdeno	2026-11-11
+AXP000172	Ad26.ZEBOV-GP	code	press	EMA Zabdeno EPAR	CC-BY-4.0			0	accepted	https://www.ema.europa.eu/en/medicines/human/EPAR/zabdeno	2026-11-11
+AXP000173	Ad5-EBOV	code	press	Nature outlook	CC-BY-4.0			0	accepted	https://www.nature.com/articles/d42473-018-00219-5	2026-11-11
+AXP000173	Ad5-EBOV vaccine	synonym	press	Nature outlook	CC-BY-4.0			1	accepted	https://www.nature.com/articles/d42473-018-00219-5	2026-11-11
+AXP000174	Ad26.Mos4.HIV	code	press	NIAID news release	CC-BY-4.0			0	accepted	https://www.niaid.nih.gov/node/18624	2026-11-11
+AXP000174	Ad26.Mos4.HIV-1	code	press	NIAID news release	CC-BY-4.0			1	accepted	https://www.niaid.nih.gov/node/18624	2026-11-11
+AXP000175	Ad26.RSV.preF	code	ctgov	NCT04908683	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT04908683	2026-11-11
+AXP000175	Ad26.RSV.preF-based vaccine	synonym	ctgov	NCT04908683	public-domain			1	accepted	https://clinicaltrials.gov/study/NCT04908683	2026-11-11
+AXP000176	BBV154	code	press	BioSpectrum India	CC-BY-4.0			0	accepted	https://www.biospectrumindia.com/news/22/21919/bharat-biotechs-covid-19-intranasal-vaccine-gets-emergency-use-approval.html	2026-11-11
+AXP000176	iNCOVACC	brand	press	BioSpectrum India	CC-BY-4.0			0	accepted	https://www.biospectrumindia.com/news/22/21919/bharat-biotechs-covid-19-intranasal-vaccine-gets-emergency-use-approval.html	2026-11-11
+AXP000176	ChAd-SARS-CoV-2-S	code	press	BioSpectrum India	CC-BY-4.0			1	accepted	https://www.biospectrumindia.com/news/22/21919/bharat-biotechs-covid-19-intranasal-vaccine-gets-emergency-use-approval.html	2026-11-11
+AXP000177	GRAd-COV2	code	ctgov	NCT04791423	public-domain			0	accepted	https://api.ai-analytics.org/clinical/NCT04791423.md	2026-11-11
+AXP000177	ReiThera COVID-19 vaccine	synonym	ctgov	NCT04791423	public-domain			1	accepted	https://api.ai-analytics.org/clinical/NCT04791423.md	2026-11-11
+AXP000178	rilimogene galvacirepvec	inn	ncit	C38681	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C38681?include=synonyms	2026-11-11
+AXP000178	rilimogene glafolivec	inn	ncit	C29560	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C29560?include=synonyms	2026-11-11
+AXP000178	PROSTVAC	code	ncit	C132990	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C132990?include=synonyms	2026-11-11
+AXP000178	PROSTVAC-VF	code	ncit	C132990	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C132990?include=synonyms	2026-11-11
+AXP000178	PROSTVAC-VF/TRICOM	code	ncit	C132990	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C132990?include=synonyms	2026-11-11
+AXP000178	PSA-TRICOM	synonym	curator		CC-BY-4.0			0	accepted	https://en.wikipedia.org/wiki/Prostvac	2026-11-11
+AXP000178	rV-PSA-TRICOM	synonym	ncit	C38681	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C38681?include=synonyms	2026-11-11
+AXP000178	rF-PSA-TRICOM	synonym	ncit	C29560	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C29560?include=synonyms	2026-11-11
+AXP000179	inalimarev	inn	ncit	C29317	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C29317?include=synonyms	2026-11-11
+AXP000179	falimarev	inn	ncit	C29316	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C29316?include=synonyms	2026-11-11
+AXP000179	PANVAC	code	curator	NCT00088660	CC-BY-4.0			1	accepted	https://ctv.veeva.com/study/panvac-vf-vaccine-for-the-treatment-of-metastatic-pancreatic-cancer-after-failing-a-gemcitabine-con	2026-11-11
+AXP000179	PANVAC-VF	code	ctgov	NCT00088660	public-domain			0	accepted	https://ctv.veeva.com/study/panvac-vf-vaccine-for-the-treatment-of-metastatic-pancreatic-cancer-after-failing-a-gemcitabine-con	2026-11-11
+AXP000179	PANVAC-V	code	ncit	C29317	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C29317?include=synonyms	2026-11-11
+AXP000179	PANVAC-F	code	ncit	C29316	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C29316?include=synonyms	2026-11-11
+AXP000179	TBC-PAN-003	code	ctgov	NCT00088660	public-domain			0	accepted	https://ctv.veeva.com/study/panvac-vf-vaccine-for-the-treatment-of-metastatic-pancreatic-cancer-after-failing-a-gemcitabine-con	2026-11-11
+AXP000180	CV301	code	ncit	C131129	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C131129?include=synonyms	2026-11-11
+AXP000180	CVAC-301	code	ncit	C131129	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C131129?include=synonyms	2026-11-11
+AXP000180	CV301-V/F	code	ncit	C131129	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C131129?include=synonyms	2026-11-11
+AXP000180	MVA-BN-CV301	code	ncit	C143059	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C143059?include=synonyms	2026-11-11
+AXP000180	FPV-CV301	code	ncit	C141298	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C141298?include=synonyms	2026-11-11
+AXP000180	PANVAC	synonym	ncit	C131129	CC-BY-4.0			1	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C131129?include=synonyms	2026-11-11
+AXP000181	TG4010	code	ncit	C2241	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C2241?include=synonyms	2026-11-11
+AXP000181	MVA-MUC1-IL2	synonym	ncit	C2241	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C2241?include=synonyms	2026-11-11
+AXP000182	TG4001	code	ncit	C88326	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C88326?include=synonyms	2026-11-11
+AXP000182	MVA-HPV-IL2	synonym	ncit	C88326	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C88326?include=synonyms	2026-11-11
+AXP000182	MVA-HPV16E6/E7-IL2	synonym	ncit	C88326	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C88326?include=synonyms	2026-11-11
+AXP000182	RO5217790	former_code	ncit	C88326	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C88326?include=synonyms	2026-11-11
+AXP000182	RG3484	former_code	ncit	C88326	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C88326?include=synonyms	2026-11-11
+AXP000183	TG4050	code	ncit	C171392	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C171392?include=synonyms	2026-11-11
+AXP000184	TroVax	brand	ncit	C49087	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C49087?include=synonyms	2026-11-11
+AXP000184	OXB-301	code	ncit	C49087	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C49087?include=synonyms	2026-11-11
+AXP000184	MVA-5T4	code	ncit	C49087	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C49087?include=synonyms	2026-11-11
+AXP000185	MVA-BN-Brachyury	code	ncit	C148400	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C148400?include=synonyms	2026-11-11
+AXP000185	BN-Brachyury	code	curator	C148400	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C148400?include=synonyms	2026-11-11
+AXP000185	FPV-Brachyury-TRICOM	code	ncit	C148402	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C148402?include=synonyms	2026-11-11
+AXP000185	MVA Brachyury-TRICOM	synonym	ncit	C116777	CC-BY-4.0			1	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C116777?include=synonyms	2026-11-11
+AXP000186	MVA-BN-HER2	code	ncit	C71758	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C71758?include=synonyms	2026-11-11
+AXP000186	BN-HER2	code	curator	C71758	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C71758?include=synonyms	2026-11-11
+AXP000187	p53MVA	code	ncit	C116868	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C116868?include=synonyms	2026-11-11
+AXP000187	MVA-p53	code	ncit	C116868	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C116868?include=synonyms	2026-11-11
+AXP000188	ALVAC-CEA-B7.1	code	ncit	C1977	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C1977?include=synonyms	2026-11-11
+AXP000188	ALVAC-B7-CEA	synonym	ncit	C2742	CC-BY-4.0			1	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C2742?include=synonyms	2026-11-11
+AXP000188	ALVAC-CEA (6D)-B7.1	synonym	ncit	C29982	CC-BY-4.0			1	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C29982?include=synonyms	2026-11-11
+AXP000189	vCP2292	code	ncit	C79832	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C79832?include=synonyms	2026-11-11
+AXP000189	ALVAC(2)-NY-ESO-1(M)/TRICOM	code	ncit	C79832	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C79832?include=synonyms	2026-11-11
+AXP000190	TA-HPV	code	ncit	C2403	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C2403?include=synonyms	2026-11-11
+AXP000190	Human Papillomavirus Tumor Antigen Vaccine	synonym	ncit	C2403	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C2403?include=synonyms	2026-11-11
+AXP000191	MVA E2	code	paper	25275724	CC-BY-4.0			0	accepted	https://pmc.ncbi.nlm.nih.gov/articles/PMC4270165	2026-11-11
+AXP000191	MVA E2 therapeutic vaccine	synonym	paper	25275724	CC-BY-4.0			0	accepted	https://pmc.ncbi.nlm.nih.gov/articles/PMC4270165	2026-11-11
+AXP000192	MQ710	code	ncit	C199613	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C199613?include=synonyms	2026-11-11
+AXP000192	MVAdeltaE5R-Flt3L-OX40L	synonym	ncit	C199613	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C199613?include=synonyms	2026-11-11
+AXP000193	beremagene geperpavec	inn	ncit	C174623	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C174623?include=synonyms	2026-11-11
+AXP000193	beremagene geperpavec-svdt	synonym	ncit	C174623	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C174623?include=synonyms	2026-11-11
+AXP000193	B-VEC	code	ncit	C174623	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C174623?include=synonyms	2026-11-11
+AXP000193	KB103	code	ncit	C174623	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C174623?include=synonyms	2026-11-11
+AXP000193	Vyjuvek	brand	fda	BLA 125774	public-domain			0	accepted	https://www.fda.gov/vaccines-blood-biologics/vyjuvek	2026-11-11
+AXP000194	KB407	code	press		CC-BY-4.0			0	accepted	https://ir.krystalbio.com/node/7941	2026-11-11
+AXP000194	CORAL-1	synonym	press	NCT05504837	CC-BY-4.0			1	accepted	https://ir.krystalbio.com/node/10101	2026-11-11
+AXP000195	KB408	code	press		CC-BY-4.0			0	accepted	https://ir.krystalbio.com/node/7941	2026-11-11
+AXP000195	SERPENTINE-1	synonym	press	NCT06049082	CC-BY-4.0			1	accepted	https://ir.krystalbio.com/node/10101	2026-11-11
+AXP000196	KB707	code	press		CC-BY-4.0			0	accepted	https://pipelinereview.com/?p=118969	2026-11-11
+AXP000196	KYANITE-1	synonym	press	NCT06228326	CC-BY-4.0			1	accepted	https://pipelinereview.com/?p=118969	2026-11-11
+AXP000196	OPAL-1	synonym	press	NCT05970497	CC-BY-4.0			1	accepted	https://ir.krystalbio.com/node/10101	2026-11-11
+AXP000197	KB801	code	press	NCT06999733	CC-BY-4.0			0	accepted	https://ir.krystalbio.com/node/10816	2026-11-11
+AXP000197	EMERALD-1	synonym	press	NCT06999733	CC-BY-4.0			1	accepted	https://ir.krystalbio.com/node/10816	2026-11-11
+AXP000198	KB105	code	press		CC-BY-4.0			0	accepted	https://ir.krystalbio.com/node/7451	2026-11-11
+AXP000199	KB301	code	press	NCT04540900	CC-BY-4.0			0	accepted	https://ir.krystalbio.com/node/10301	2026-11-11
+AXP000199	PEARL-1	synonym	press	NCT04540900	CC-BY-4.0			1	accepted	https://ir.krystalbio.com/node/10301	2026-11-11
+AXP000200	NP2	code	paper	21796661	CC-BY-4.0			1	accepted	https://deepblue.lib.umich.edu/bitstream/2027.42/86983/1/22446_ftp.pdf	2026-11-11
+AXP000200	NP2 enkephalin	synonym	paper	21796661	CC-BY-4.0			0	accepted	https://deepblue.lib.umich.edu/bitstream/2027.42/86983/1/22446_ftp.pdf	2026-11-11
+AXP000201	MVA-BN-Filo	code	curator	EMEA/H/C/005343	CC-BY-4.0			0	accepted	https://www.ema.europa.eu/en/medicines/human/EPAR/mvabea	2026-11-11
+AXP000201	Mvabea	brand	curator	EMEA/H/C/005343	CC-BY-4.0			0	accepted	https://www.ema.europa.eu/en/medicines/human/EPAR/mvabea	2026-11-11
+AXP000202	vCP1521	code	paper	34029515	CC-BY-4.0			0	accepted	https://pmc.ncbi.nlm.nih.gov/articles/PMC8449712	2026-11-11
+AXP000202	ALVAC-HIV vCP1521	code	paper	34029515	CC-BY-4.0			0	accepted	https://pmc.ncbi.nlm.nih.gov/articles/PMC8449712	2026-11-11
+AXP000203	vCP2438	code	paper	34029515	CC-BY-4.0			0	accepted	https://pmc.ncbi.nlm.nih.gov/articles/PMC8449712	2026-11-11
+AXP000203	ALVAC-HIV vCP2438	code	paper	34029515	CC-BY-4.0			0	accepted	https://pmc.ncbi.nlm.nih.gov/articles/PMC8449712	2026-11-11
+AXP000203	ALVAC-HIV (subtype C)	synonym	press		CC-BY-4.0			1	accepted	https://www.nih.gov/news-events/news-releases/experimental-hiv-vaccine-regimen-ineffective-preventing-hiv	2026-11-11
+AXP000204	MVA-BN-RSV	code	press		CC-BY-4.0			0	accepted	https://www.bavarian-nordic.com/investor/news/news.aspx?news=6808	2026-11-11
+AXP000204	MVA-RSV	synonym	paper		CC-BY-4.0			1	accepted	https://pmc.ncbi.nlm.nih.gov/articles/PMC9238321/	2026-11-11
+AXP000204	VANIR	synonym	press		CC-BY-4.0			1	accepted	https://www.bavarian-nordic.com/investor/news/news.aspx?news=6808	2026-11-11
+AXP000205	Ervebo	brand	fda	STN 125690	public-domain			0	accepted	https://www.fda.gov/vaccines-blood-biologics/ervebo	2026-11-11
+AXP000205	rVSVΔG-ZEBOV-GP	synonym	curator	EPAR Ervebo	CC-BY-4.0			0	accepted	https://www.ema.europa.eu/en/medicines/human/EPAR/ervebo	2026-11-11
+AXP000205	rVSV-ZEBOV	synonym	curator	EPAR Ervebo	CC-BY-4.0			0	accepted	https://www.ema.europa.eu/en/medicines/human/EPAR/ervebo	2026-11-11
+AXP000205	Ebola Zaire Vaccine, Live	synonym	fda	STN 125690	public-domain			1	accepted	https://www.fda.gov/vaccines-blood-biologics/ervebo	2026-11-11
+AXP000206	Dengvaxia	brand	curator	EPAR Dengvaxia	CC-BY-4.0			0	accepted	https://www.ema.europa.eu/en/medicines/human/EPAR/dengvaxia	2026-11-11
+AXP000206	CYD-TDV	code	curator		CC-BY-4.0			0	accepted	https://www.ema.europa.eu/en/medicines/human/EPAR/dengvaxia	2026-11-11
+AXP000206	Dengue Tetravalent Vaccine, Live	synonym	fda	STN 125682	public-domain			1	accepted	https://www.fda.gov/vaccines-blood-biologics/dengvaxia	2026-11-11
+AXP000207	Imojev	brand	curator	WHO PQ Imojev MD	CC-BY-4.0			0	accepted	https://extranet.who.int/prequal/vaccines/p/imojev-md	2026-11-11
+AXP000207	Imojev MD	brand	curator	WHO PQ Imojev MD	CC-BY-4.0			0	accepted	https://extranet.who.int/prequal/vaccines/p/imojev-md	2026-11-11
+AXP000207	ChimeriVax-JE	former_code	curator		CC-BY-4.0			0	accepted	https://www.nps.org.au/assets/94ea7bc16d0652c2-03a2ddeea681-14fe892adb3e78bae0728edf6cf466278960f49ef6ccb16c8a3ec49a9075.pdf	2026-11-11
+AXP000207	JE-CV	code	curator		CC-BY-4.0			0	accepted	https://www.nps.org.au/assets/94ea7bc16d0652c2-03a2ddeea681-14fe892adb3e78bae0728edf6cf466278960f49ef6ccb16c8a3ec49a9075.pdf	2026-11-11
+AXP000208	MV-CHIK	code	curator	Belgian biosafety notification, phase III	CC-BY-4.0			0	accepted	https://www.biosafety.be/content/phase-iii-randomized-observer-blinded-placebo-controlled-multi-center-study-evaluate-safety	2026-11-11
+AXP000208	V184	code	ctgov	NCT03807843	public-domain			0	accepted	https://ctv.veeva.com/study/chikungunya-vaccine-v184-study-in-previously-exposed-adults-v184006	2026-11-11
+AXP000209	NDV-HXP-S	code	paper	medRxiv 2022.02.08.22270676	CC-BY-4.0			0	accepted	https://medrxiv.org/content/10.1101/2022.02.08.22270676v1.full	2026-11-11
+AXP000209	Patria	brand	press	COFEPRIS emergency-use authorisation, June 2024	CC-BY-4.0			0	accepted	https://politica.expansion.mx/mexico/2024/06/06/cofepris-aprueba-vacuna-patria-contra-covid-para-uso-en-emergencias	2026-11-11
+AXP000209	ButanVac	synonym	curator		CC-BY-4.0			1	accepted	https://medrxiv.org/content/10.1101/2022.02.08.22270676v1.full	2026-11-11
+AXP000209	HXP-GPOVac	synonym	curator		CC-BY-4.0			1	accepted	https://medrxiv.org/content/10.1101/2022.02.08.22270676v1.full	2026-11-11
+AXP000210	Rexin-G	code	ncit	C49082	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/search?term=Rexin-G&type=contains&include=synonyms	2026-11-11
+AXP000210	DeltaRex-G	synonym	ncit	C49082	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/search?term=Rexin-G&type=contains&include=synonyms	2026-11-11
+AXP000210	Mx-dnG1	code	ncit	C49082	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/search?term=Rexin-G&type=contains&include=synonyms	2026-11-11
+AXP000210	Retrovector Encoding Mutant Anti-Cyclin G1	synonym	ncit	C49082	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/search?term=Rexin-G&type=contains&include=synonyms	2026-11-11
+AXP000211	Strimvelis	brand	curator	EPAR Strimvelis	CC-BY-4.0			0	accepted	https://www.ema.europa.eu/en/medicines/human/EPAR/strimvelis	2026-11-11
+AXP000211	GSK2696273	code	curator	Strimvelis EPAR public assessment report	CC-BY-4.0			0	accepted	https://ema.europa.eu/en/documents/assessment-report/strimvelis-epar-public-assessment-report_en.pdf	2026-11-11
+AXP000212	Zalmoxis	brand	curator	EPAR Zalmoxis	CC-BY-4.0			0	accepted	https://www.ema.europa.eu/en/medicines/human/EPAR/zalmoxis	2026-11-11
+AXP000212	TK cells	synonym	curator	HAS transparency opinion, Zalmoxis	CC-BY-4.0			1	accepted	https://has-sante.fr/upload/docs/application/pdf/2019-01/zalmoxis_pic_ins_avis3_modifiele15012019_ct16901.pdf	2026-11-11
+AXP000213	AVX701	code	ncit	C70644	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/search?term=AVX701&type=contains&include=synonyms	2026-11-11
+AXP000213	CEA(6D) VRP	synonym	ncit	C70644	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/search?term=AVX701&type=contains&include=synonyms	2026-11-11
+AXP000214	AVX901	code	ncit	C99903	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/search?term=AVX901&type=contains&include=synonyms	2026-11-11
+AXP000214	VRP-HER2	synonym	ncit	C99903	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/search?term=AVX901&type=contains&include=synonyms	2026-11-11
+AXP000214	HER2 ECDTM VRP	synonym	ncit	C99903	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/search?term=AVX901&type=contains&include=synonyms	2026-11-11
