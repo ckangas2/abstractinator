@@ -75,6 +75,10 @@ Development before v2.0.0 was untagged; see the git history for detail.
   longer counts as support for a hepatitis B tag.
 
 ### Added
+- Six ophthalmology AAV programs at phase 1/2 or later (AXP000257-AXP000262):
+  surabgene lomparvovec, ixoberogene soroparvovec, 4D-150, botaretigene
+  sparoparvovec, laruparetigene zovaparvovec and OCU400. First use of the new
+  `suprachoroidal` route.
 - Every AAV gene therapy approved anywhere, 9 programs in the registry
   (AXP000248-AXP000256) with 17 approval rows: Glybera, Luxturna, Zolgensma
   (with its intrathecal form Itvisma), Upstaza/Kebilidi, Roctavian, Hemgenix,

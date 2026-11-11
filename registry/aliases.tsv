@@ -609,3 +609,16 @@ AXP000255	SPK-9001	former_code	curator	EMA EPAR Durveqtix	CC-BY-4.0			0	proposed
 AXP000255	PF-06838435	former_code	curator	EMA EPAR Durveqtix	CC-BY-4.0			0	proposed	https://www.ema.europa.eu/en/medicines/human/EPAR/durveqtix	2026-11-11
 AXP000256	BBM-H901	code	press	Belief BioMed / Takeda China approval release	CC-BY-4.0			0	proposed	https://www.biospectrumasia.com/news/25/25865/china-approves-first-hemophilia-b-gene-therapy.html	2026-11-11
 AXP000256	XinJiuning	brand	press	Cyagen note on the NMPA approval	CC-BY-4.0			0	proposed	https://www.cyagen.com/us/en/community/technical-bulletin/aav-gene-therapy-drug.html	2026-11-11
+AXP000257	ABBV-RGX-314	code	ctgov	NCT04704921	public-domain			0	proposed	https://clinicaltrials.gov/study/NCT04704921	2026-11-11
+AXP000257	RGX-314	former_code	ctgov	NCT05407636	public-domain			0	proposed	https://clinicaltrials.gov/study/NCT05407636	2026-11-11
+AXP000257	sura-vec	synonym	ctgov	NCT05407636	public-domain			0	proposed	https://clinicaltrials.gov/study/NCT05407636	2026-11-11
+AXP000258	ixo-vec	synonym	ctgov	NCT06856577	public-domain			0	proposed	https://clinicaltrials.gov/study/NCT06856577	2026-11-11
+AXP000258	ADVM-022	former_code	ctgov	NCT03748784	public-domain			0	proposed	https://clinicaltrials.gov/study/NCT03748784	2026-11-11
+AXP000259	4D-150	code	ctgov	NCT05197270	public-domain			0	proposed	https://clinicaltrials.gov/study/NCT05197270	2026-11-11
+AXP000260	bota-vec	synonym	curator	J&J medical information page	CC-BY-4.0			0	proposed	https://jnjmedicalconnect.com/products/botaretigene-sparoparvovec/medical-content/lumeos-phase-3-clinical-trial	2026-11-11
+AXP000260	MGT009	former_code	curator	Retina Today review of IRD gene therapy trials	CC-BY-4.0			0	proposed	https://retinatoday.com/articles/2023-july-aug/the-latest-in-gene-therapy-clinical-trials-for-ird	2026-11-11
+AXP000260	AAV-RPGR	former_code	curator	Retina Today review of IRD gene therapy trials	CC-BY-4.0			0	proposed	https://retinatoday.com/articles/2023-july-aug/the-latest-in-gene-therapy-clinical-trials-for-ird	2026-11-11
+AXP000261	AGTC-501	code	curator	CGTLive snapshot of ophthalmic cell and gene therapies	CC-BY-4.0			0	proposed	https://cgtlive.com/view/a-snapshot-of-ophthalmologic-therapies-in-development	2026-11-11
+AXP000261	laru-zova	synonym	curator	Retinal Physician review of IRD gene therapies	CC-BY-4.0			0	proposed	https://retinalphysician.com/issues/2025/october/gene-therapies-for-inherited-retinal-diseases/	2026-11-11
+AXP000262	OCU400	code	ctgov	NCT06388200	public-domain			0	proposed	https://clinicaltrials.gov/study/NCT06388200	2026-11-11
+AXP000262	AAV-hNR2E3	synonym	paper	PMC11654773 table 2	CC-BY-4.0			0	proposed	https://pmc.ncbi.nlm.nih.gov/articles/PMC11654773/table/tbl2	2026-11-11
