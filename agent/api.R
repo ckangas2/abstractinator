@@ -321,6 +321,8 @@ function(req, res, q = "", limit = 25, abstract_chars = 1500, deep = "false",
             # Clinical trials only; null on every other record.
             trial_status = "TrialStatus", trial_start = "TrialStart", trial_end = "TrialEnd",
             phase = "Phase", interventions = "Interventions", conditions = "Conditions",
+            intervention_other_names = "InterventionOtherNames", lead_sponsor = "LeadSponsor",
+            trial_references = "TrialReferences",
             # copies of the same work from other databases, folded into this one
             merged_from = "MergedFrom")
   # Every record carries every key, with null where a source has no value, so

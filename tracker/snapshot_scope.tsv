@@ -1,0 +1,4 @@
+query_id	query	note
+oncolytic	oncolytic OR virotherapy	Oncolytic viruses: any trial whose record mentions them
+car_t	"chimeric antigen receptor" OR "CAR-T" OR "CAR T"	CAR-T and other CAR cell therapies
+kras	KRAS	KRAS-targeted agents and KRAS-mutant populations

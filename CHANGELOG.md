@@ -66,6 +66,17 @@ Development before v2.0.0 was untagged; see the git history for detail.
   longer counts as support for a hepatitis B tag.
 
 ### Added
+- Program registry groundwork (`registry/`, `tracker/`): a specification for
+  stable program IDs (`AXP000001`...) and aliases, the empty registry files,
+  and a validator that runs in CI. Released under CC BY 4.0.
+- Weekly ClinicalTrials.gov snapshots of oncolytic-virus, CAR-T and KRAS
+  trials (`tracker/snapshot_trials.py`, Sundays via cron), keeping each
+  trial's status, phase, enrolment, dates, interventions and sponsor so that
+  changes can be detected later. Contact details are not stored.
+- Trials keep their interventions' other names (development codes, brand
+  names), lead sponsor, cited PMIDs and last-update date; API/MCP results
+  gain `intervention_other_names`, `lead_sponsor` and `trial_references`.
+  Other names also count when tagging a trial's therapy.
 - `merged_from` in API/MCP results: the copies from other databases folded
   into each record.
 - Optional free OpenAlex API key (`OPENALEX_API_KEY` in `.Renviron`), sent as

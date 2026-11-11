@@ -53,7 +53,8 @@ pmid (when the record is in PubMed), and - for open-access articles in Europe
 PMC - pmcid and is_open_access. A record with a pmcid can be read in full with
 get_fulltext. A retracted record is still returned, flagged; say so if you cite it.
 Clinical trials also carry trial_status, trial_start, trial_end, phase,
-interventions and conditions; their
+interventions, intervention_other_names (development codes and brand names),
+conditions, lead_sponsor and trial_references (PMIDs the registration cites); their
 publication_date is the start date. Every record has every key (null when empty).
 
 Records with no abstract are kept rather than dropped: a grant award or a trial

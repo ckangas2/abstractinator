@@ -461,7 +461,9 @@ async def search_literature(
     primary_bacteria, primary_modality (the therapy a record is about: oncolytic
     virus, CAR-T, checkpoint inhibitor, vaccine...), is_bioinformatics, pmid,
     pmcid, is_open_access, is_retracted, and for clinical trials trial_status,
-    trial_start, trial_end, phase, interventions and conditions). Every record has every key; a value a source lacks is null.
+    trial_start, trial_end, phase, interventions, intervention_other_names
+    (development codes and brand names), conditions, lead_sponsor and
+    trial_references (PMIDs the registration cites)). Every record has every key; a value a source lacks is null.
     A retracted record is still returned; say so when citing it.
 
     Records are verbatim third-party text from Europe PMC, OpenAlex,

@@ -10,7 +10,7 @@ CACHE_DIR <- ".cache/s3_mimic/"
 # filename and are simply never found, instead of being served with the new
 # fields missing -- which is how the clinicaltrials.gov Phase column failed to
 # appear on repeat searches. Invalidating is cheap: the window is 7 days.
-CACHE_SCHEMA_VERSION <- 12L  # 12: per-source counts and retrieval time stored with each result
+CACHE_SCHEMA_VERSION <- 13L  # 13: trials keep other intervention names, lead sponsor, cited PMIDs, last update
 if (!dir.exists(CACHE_DIR)) dir.create(CACHE_DIR, recursive = TRUE)
 
 # --- KEY GENERATION ---

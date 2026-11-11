@@ -51,5 +51,12 @@ jobs:
             any::DT
             any::parallelly
 
+      # Program registry and trial snapshots: standard-library Python, so they
+      # run first and fast. The validator fails the build on a bad registry row.
+      - name: Registry and tracker tests
+        run: |
+          python3 tracker/registry.py validate
+          python3 -m unittest discover -s tracker/tests
+
       - name: Run tests
         run: Rscript -e 'testthat::test_dir("tests/testthat", stop_on_failure = TRUE)'

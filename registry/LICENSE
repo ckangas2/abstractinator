@@ -1,0 +1,21 @@
+The Abstractinator program registry (the files in this directory)
+Copyright (c) 2026 Chase Kangas
+
+Licensed under the Creative Commons Attribution 4.0 International licence
+(CC BY 4.0): https://creativecommons.org/licenses/by/4.0/
+Full legal code: https://creativecommons.org/licenses/by/4.0/legalcode
+
+You may share and adapt it for any purpose, including commercially, as long as
+you give appropriate credit, link to the licence, and indicate if changes were
+made. Credit it as:
+
+    The Abstractinator program registry (https://abstractinator.me/registry/),
+    CC BY 4.0
+
+Rows of aliases.tsv whose `licence` column says otherwise keep the licence
+named there: rows marked `CC0-1.0` come from Wikidata, rows marked
+`public-domain` from US government sources. Rows marked `CC-BY-4.0` are either
+our own curation or (source `ncit`) from the NCI Thesaurus, credited in
+README.md.
+
+The code elsewhere in this repository is under the MIT licence (../LICENSE).
