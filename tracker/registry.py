@@ -32,7 +32,23 @@ ALIAS_COLUMNS = [
     "valid_from", "valid_to", "ambiguous", "status", "evidence_url", "added",
 ]
 
+VIRUS_COLUMNS = [
+    "axp_id", "role", "virus_family", "virus", "ncbi_taxon", "strain", "replication",
+    "modifications", "transgenes", "route", "carrier", "evidence_url",
+]
+APPROVAL_COLUMNS = [
+    "axp_id", "agency", "region", "date", "status", "brand", "indication", "evidence_url",
+]
+
 PROGRAM_STATUSES = {"active", "merged", "obsolete"}
+VIRUS_ROLES = {"oncolytic", "in_vivo_gene_transfer", "ex_vivo_gene_transfer", "vaccine_vector", "phage", "other"}
+REPLICATION = {"replicating", "conditionally_replicating", "non_replicating"}
+ROUTES = {"intratumoral", "intravenous", "intra_arterial", "intravesical", "intraperitoneal", "intrapleural",
+          "intracerebral", "intrathecal", "subretinal", "intravitreal", "intramuscular", "subcutaneous",
+          "intradermal", "intranasal", "oral", "topical", "ex_vivo"}
+AGENCIES = {"FDA", "EMA", "PMDA", "NMPA", "MFDS", "MHRA", "Health Canada", "TGA", "other"}
+APPROVAL_STATUSES = {"approved", "conditional", "withdrawn"}
+FAMILY_RE = re.compile(r"^[A-Z][a-z]+(viridae|viricetes)$")
 ALIAS_TYPES = {"code", "inn", "usan", "brand", "former_code", "former_name", "synonym"}
 ALIAS_SOURCES = {"curator", "ncit", "wikidata", "ctgov", "fda", "paper", "press"}
 ALIAS_STATUSES = {"accepted", "proposed", "rejected"}
@@ -121,6 +137,15 @@ def read_tsv(path, columns):
         row["_line"] = n
         rows.append(row)
     return rows, errors
+
+
+def read_optional(registry_dir):
+    """virus.tsv and approvals.tsv as (rows, errors) each; a missing file is empty."""
+    out = []
+    for name, cols in (("virus.tsv", VIRUS_COLUMNS), ("approvals.tsv", APPROVAL_COLUMNS)):
+        path = os.path.join(registry_dir, name)
+        out.append(read_tsv(path, cols) if os.path.exists(path) else ([], []))
+    return out
 
 
 def validate(registry_dir=DEFAULT_DIR, modalities=None):
@@ -218,6 +243,54 @@ def validate(registry_dir=DEFAULT_DIR, modalities=None):
             err("aliases.tsv", row, "added must be YYYY-MM-DD")
         if row["status"] == "accepted" and not (row["evidence_url"] or row["source_record"]):
             err("aliases.tsv", row, "accepted aliases need an evidence_url or source_record")
+
+    # --- virus.tsv and approvals.tsv ---
+    viruses, approvals = read_optional(registry_dir)
+    errors += viruses[1] + approvals[1]
+    viruses, approvals = viruses[0], approvals[0]
+    for file, rows in (("virus.tsv", viruses), ("approvals.tsv", approvals)):
+        for row in rows:
+            for col, val in row.items():
+                if col != "_line" and val != val.strip():
+                    err(file, row, "%s has leading or trailing spaces" % col)
+            prog = by_id.get(row["axp_id"])
+            if prog is None:
+                err(file, row, "no such program")
+            elif prog["status"] != "active":
+                err(file, row, "program is %s; use the active entry" % prog["status"])
+            if not row["evidence_url"].startswith(("http://", "https://")):
+                err(file, row, "evidence_url must be a link")
+    seen_virus = {}
+    for row in viruses:
+        if row["axp_id"] in seen_virus:
+            err("virus.tsv", row, "second row for this program (first on line %d)" % seen_virus[row["axp_id"]])
+        seen_virus.setdefault(row["axp_id"], row["_line"])
+        if row["role"] not in VIRUS_ROLES:
+            err("virus.tsv", row, "role %r must be one of %s" % (row["role"], sorted(VIRUS_ROLES)))
+        if not FAMILY_RE.match(row["virus_family"]):
+            err("virus.tsv", row, "virus_family %r should be an ICTV family (...viridae) or class (...viricetes)"
+                % row["virus_family"])
+        if not row["virus"]:
+            err("virus.tsv", row, "virus is empty")
+        if row["ncbi_taxon"] and not row["ncbi_taxon"].isdigit():
+            err("virus.tsv", row, "ncbi_taxon must be digits")
+        if row["replication"] and row["replication"] not in REPLICATION:
+            err("virus.tsv", row, "replication must be one of %s" % sorted(REPLICATION))
+        routes = [r.strip() for r in row["route"].split(";") if r.strip()] if row["route"] else []
+        bad = [r for r in routes if r not in ROUTES]
+        if bad:
+            err("virus.tsv", row, "unknown route %s (allowed: %s)" % (", ".join(bad), ", ".join(sorted(ROUTES))))
+    for row in approvals:
+        if row["agency"] not in AGENCIES:
+            err("approvals.tsv", row, "agency %r must be one of %s" % (row["agency"], sorted(AGENCIES)))
+        if not re.match(r"^[A-Z]{2}$", row["region"]):
+            err("approvals.tsv", row, "region must be a two-letter code, e.g. US, EU, JP, CN")
+        if not PARTIAL_DATE_RE.match(row["date"]):
+            err("approvals.tsv", row, "date must be YYYY, YYYY-MM or YYYY-MM-DD")
+        if row["status"] not in APPROVAL_STATUSES:
+            err("approvals.tsv", row, "status must be one of %s" % sorted(APPROVAL_STATUSES))
+        if not row["indication"]:
+            err("approvals.tsv", row, "indication is empty")
 
     # --- name collisions (SPEC section 5) ---
     # Every active program's preferred name counts as an accepted, unambiguous alias.

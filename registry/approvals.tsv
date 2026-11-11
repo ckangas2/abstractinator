@@ -1,0 +1,8 @@
+axp_id	agency	region	date	status	brand	indication	evidence_url
+AXP000003	NMPA	CN	2005-11	approved	Oncorine	Nasopharyngeal/head and neck squamous cell carcinoma, by intratumoral injection in combination with cisplatin-based chemotherapy	https://www.biospace.com/shanghai-sunway-biotech-co-ltd-release-first-oncolytic-viral-therapy-approved-for-head-and-neck-cancer
+AXP000001	FDA	US	2015-10-27	approved	Imlygic	Local treatment of unresectable cutaneous, subcutaneous and nodal lesions in patients with melanoma recurrent after initial surgery	https://www.fda.gov/vaccines-blood-biologics/cellular-gene-therapy-products/imlygic-talimogene-laherparepvec
+AXP000001	EMA	EU	2015-12	approved	Imlygic	Unresectable melanoma that is regionally or distantly metastatic (stage IIIB, IIIC and IVM1a) with no bone, brain, lung or other visceral disease	https://www.ema.europa.eu/en/medicines/human/EPAR/imlygic
+AXP000002	PMDA	JP	2021-06-11	conditional	Delytact	Malignant glioma (conditional, time-limited approval)	https://www.daiichisankyo.com/files/news/pressrelease/pdf/202106/20210611_E_47.pdf
+AXP000010	FDA	US	2026-08-06	conditional	Tudriqev	Advanced melanoma, with nivolumab (accelerated approval)	https://www.fda.gov/news-events/press-announcements/fda-approves-new-engineered-viral-immunotherapy-patients-treatment-resistant-advanced-melanoma
+AXP000125	other	LV	2004	approved	Rigvir	melanoma (local registration, Latvia)	https://en.wikipedia.org/wiki/ECHO-7
+AXP000125	other	LV	2019-05-30	withdrawn	Rigvir	melanoma; marketing authorisation suspended over batch quality failures	https://zva.gov.lv/en/news-and-publications/news/rigvir-marketing-authorisation-suspended-information-current-patients

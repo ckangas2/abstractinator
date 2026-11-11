@@ -145,6 +145,59 @@ class Validate(RegistryCase):
         self.assertEqual(reg.next_id(self.dir), "AXP000003")
 
 
+class VirusAndApprovals(RegistryCase):
+    def write_extra(self, viruses=(), approvals=()):
+        for name, cols, rows in (("virus.tsv", reg.VIRUS_COLUMNS, viruses),
+                                 ("approvals.tsv", reg.APPROVAL_COLUMNS, approvals)):
+            with open(os.path.join(self.dir, name), "w", encoding="utf-8") as fh:
+                fh.write("\t".join(cols) + "\n")
+                for r in rows:
+                    fh.write("\t".join(r.get(c, "") for c in cols) + "\n")
+
+    def virus(self, **kw):
+        row = dict(axp_id="AXP000001", role="oncolytic", virus_family="Herpesviridae",
+                   virus="herpes simplex virus 1", ncbi_taxon="10298", strain="JS1",
+                   replication="conditionally_replicating", modifications="ICP34.5 and ICP47 deleted",
+                   transgenes="CSF2", route="intratumoral", evidence_url="https://example.org/tvec")
+        row.update(kw)
+        return row
+
+    def approval(self, **kw):
+        row = dict(axp_id="AXP000001", agency="FDA", region="US", date="2015-10-27", status="approved",
+                   brand="Imlygic", indication="melanoma", evidence_url="https://example.org/label")
+        row.update(kw)
+        return row
+
+    def check(self, viruses=(), approvals=()):
+        self.write([program("AXP000001", "talimogene laherparepvec"), program("AXP000002", "B", status="merged",
+                                                                             replaced_by="AXP000001")], [])
+        self.write_extra(viruses, approvals)
+        return reg.validate(self.dir, modalities=MODALITIES)
+
+    def test_good(self):
+        self.assertEqual(self.check([self.virus(route="intratumoral; intravenous")], [self.approval()]), [])
+
+    def test_missing_files_are_empty(self):
+        self.write([program("AXP000001")], [])
+        self.assertEqual(reg.validate(self.dir, modalities=MODALITIES), [])
+
+    def test_virus_rules(self):
+        probs = self.check([self.virus(role="cure", virus_family="herpes", ncbi_taxon="HSV",
+                                       replication="sometimes", route="intratumoral; by post",
+                                       evidence_url="")])
+        for frag in ("role", "virus_family", "ncbi_taxon", "replication", "by post", "evidence_url"):
+            self.assertProblem(probs, frag)
+        self.assertProblem(self.check([self.virus(), self.virus()]), "second row")
+        self.assertProblem(self.check([self.virus(axp_id="AXP000002")]), "use the active entry")
+        self.assertEqual(self.check([self.virus(virus_family="Caudoviricetes", role="phage")]), [])
+
+    def test_approval_rules(self):
+        probs = self.check(approvals=[self.approval(agency="FDA2", region="USA", date="Oct 2015",
+                                                    status="maybe", indication="")])
+        for frag in ("agency", "region", "date", "status", "indication"):
+            self.assertProblem(probs, frag)
+
+
 class Modalities(unittest.TestCase):
     def test_reads_the_app_list(self):
         names = reg.modality_names()

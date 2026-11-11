@@ -13,7 +13,7 @@
 # R/ is loaded automatically by the Shiny app, so this file only defines
 # things. RSQLite is needed only when the database is actually read.
 
-REGISTRY_SCHEMA_VERSION <- "1"
+REGISTRY_SCHEMA_VERSION <- "2"   # 2: virus and approval tables
 REGISTRY_SIGNIFICANCE   <- c("major", "minor", "info")
 REGISTRY_RECENT_CHANGES <- 50L
 
@@ -74,6 +74,13 @@ registry_meta_value <- function(meta, key) {
 # merges and event program names are resolved from this rather than per row.
 registry_programs <- function(con) {
   DBI::dbGetQuery(con, "SELECT axp_id, status, replaced_by, preferred_name FROM program")
+}
+
+# A "; "-separated cell as a JSON array (always an array, possibly empty).
+registry_split <- function(x) {
+  if (length(x) != 1L || is.na(x)) return(I(character(0)))
+  parts <- trimws(strsplit(x, ";", fixed = TRUE)[[1]])
+  I(parts[nzchar(parts)])
 }
 
 # Follow replaced_by from a merged ID to the program that survives it.
@@ -168,6 +175,17 @@ registry_program <- function(path, query) {
       wikidata = p$wikidata[1], unii = p$unii[1],
       entry_version = as.integer(p$entry_version[1]), notes = p$notes[1])
 
+    # The virus or vector, for virus-based programs; NA (null) otherwise.
+    v <- DBI::dbGetQuery(con, "SELECT * FROM virus WHERE axp_id = ?", params = list(id))
+    virus <- if (nrow(v) == 0L) NA else list(
+      role = v$role[1], virus_family = v$virus_family[1], virus = v$virus[1],
+      ncbi_taxon = v$ncbi_taxon[1], strain = v$strain[1], replication = v$replication[1],
+      modifications = v$modifications[1], transgenes = registry_split(v$transgenes[1]),
+      route = registry_split(v$route[1]), carrier = v$carrier[1], evidence_url = v$evidence_url[1])
+    approvals <- DBI::dbGetQuery(con, paste(
+      "SELECT agency, region, date, status, brand, indication, evidence_url FROM approval",
+      "WHERE axp_id = ? ORDER BY date, agency"), params = list(id))
+
     aliases <- DBI::dbGetQuery(con, paste(
       "SELECT alias, alias_type, ambiguous, source, evidence_url FROM alias",
       "WHERE axp_id = ? ORDER BY alias_type = 'preferred' DESC, alias"), params = list(id))
@@ -189,7 +207,7 @@ registry_program <- function(path, query) {
 
     registry_result(200, list(
       registry_release = release, query = query, program = program,
-      aliases = aliases, trials = trials, recent_changes = recent,
+      virus = virus, approvals = approvals, aliases = aliases, trials = trials, recent_changes = recent,
       merged_from = hit$merged_from))
   })
 }

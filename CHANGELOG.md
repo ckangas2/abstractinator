@@ -66,6 +66,11 @@ Development before v2.0.0 was untagged; see the git history for detail.
   longer counts as support for a hepatitis B tag.
 
 ### Added
+- Oncolytic virus census: the program registry now lists 120 therapeutic
+  viruses given to humans (from the 1950s to 2026, worldwide), each with its
+  virus family, strain, replication, engineering, transgenes, route and
+  regulatory approvals (`registry/virus.tsv`, `registry/approvals.tsv`,
+  spec 0.2), returned by `/program` and the `program` MCP tool.
 - `/program` and `/changes` in the API, and `program` and `changes` MCP
   tools: look up a therapy program by any of its names (its IDs, names,
   linked trials with link method and confidence, recent changes), and list

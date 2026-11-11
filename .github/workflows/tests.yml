@@ -8,12 +8,36 @@ on:
   pull_request:
 
 jobs:
+  # Program registry and trial snapshots: standard-library Python, no R, so
+  # this answers in seconds. The validator fails the build on a bad registry row.
+  registry:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+      - name: Registry and tracker tests
+        run: |
+          python3 tracker/registry.py validate
+          python3 -m unittest discover -s tracker/tests
+
   test:
     # Pinned rather than ubuntu-latest: the latest label migrates to Ubuntu 26
     # from 2026-10-19, which would change the toolchain without a commit here.
     runs-on: ubuntu-24.04
+    # A normal run takes under 10 minutes even with a cold package cache; a
+    # stuck runner fails here instead of hanging for an hour.
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7
+
+      # setup-r apt-installs system packages first. On 2026-11-11 the runners'
+      # default mirror (azure.archive.ubuntu.com) stalled for 40+ minutes, so
+      # use the main Ubuntu archive, and give up on a dead mirror quickly.
+      - name: Use the main Ubuntu mirror
+        run: |
+          sudo sed -i 's#http://azure.archive.ubuntu.com/ubuntu#http://archive.ubuntu.com/ubuntu#g' \
+            /etc/apt/sources.list.d/ubuntu.sources /etc/apt/sources.list 2>/dev/null || true
+          echo 'Acquire::Retries "2"; Acquire::http::Timeout "20";' | sudo tee /etc/apt/apt.conf.d/99ci-timeouts
 
       - uses: r-lib/actions/setup-r@v2
         with:
@@ -53,13 +77,6 @@ jobs:
             any::DBI
             any::RSQLite
             any::stringi
-
-      # Program registry and trial snapshots: standard-library Python, so they
-      # run first and fast. The validator fails the build on a bad registry row.
-      - name: Registry and tracker tests
-        run: |
-          python3 tracker/registry.py validate
-          python3 -m unittest discover -s tracker/tests
 
       - name: Run tests
         run: Rscript -e 'testthat::test_dir("tests/testthat", stop_on_failure = TRUE)'
