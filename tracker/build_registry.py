@@ -65,6 +65,7 @@ SCHEMA_VERSION = "3"   # 2: virus and approval tables; 3: trial conditions, pape
 
 CONFIDENCE = {"intervention_name": 0.95, "intervention_text": 0.8, "title": 0.6}
 MIN_AUTO_TEXT_KEY = 5        # shorter names found inside text are only candidates
+MIN_AUTO_CODE_KEY = 6        # a code this long in an abstract counts on its own
 # Found inside a longer intervention name, a development code is only a
 # candidate: "AUTO1/22" contains AUTO1 but is a different product. Names
 # (INNs, brands) inside text are safe enough to link automatically.
@@ -325,17 +326,25 @@ EVIDENCE_CONFIDENCE = {"trial_reference": 0.9, "title": 0.85, "abstract": 0.6, "
 
 
 def evidence_status(alias, field):
-    """auto or candidate for a paper/grant hit, by where the name was found.
+    """auto, candidate or None (don't record the link at all), by where the
+    name was found.
 
-    A name in the title counts unless it is ambiguous or very short; in the
-    abstract or project terms, only INNs and brand names count."""
-    if alias is None or alias["ambiguous"]:
+    In the title, a name counts unless it is ambiguous or very short. In an
+    abstract or project terms it counts if it is an INN or brand, or a
+    development code long enough to be distinctive on its own
+    (MIN_AUTO_CODE_KEY); such codes are matched as written, so "ON-01" does
+    not match "on 01 January". An ambiguous name outside a title is dropped:
+    it is noise, not evidence ("TK cells" matches every paper about
+    thymidine-kinase-transduced cells, whichever product they used)."""
+    if alias is None:
         return "candidate"
     key = alias["alias_key"]
+    if alias["ambiguous"]:
+        return "candidate" if field == "title" else None
     named = alias.get("alias_type") in AUTO_TEXT_TYPES and len(key) >= MIN_AUTO_TEXT_KEY
     if field == "title":
         return "auto" if named or len(key) >= MIN_TEXT_KEY else "candidate"
-    return "auto" if named else "candidate"
+    return "auto" if named or len(key) >= MIN_AUTO_CODE_KEY else "candidate"
 
 
 def add_evidence(db, evidence_path, alias_rows, links_by_trial, nct_refs):
@@ -351,6 +360,8 @@ def add_evidence(db, evidence_path, alias_rows, links_by_trial, nct_refs):
     best = {}
 
     def offer(table, axp, ident, method, matched, status, conf, nct=None):
+        if status is None:
+            return                  # evidence_status says this hit is noise
         k = (table, axp, ident)
         cand = (status == "auto", conf, method, matched, nct, status)
         if k not in best or cand[:2] > best[k][:2]:

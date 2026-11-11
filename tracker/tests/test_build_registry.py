@@ -180,6 +180,19 @@ class Build(unittest.TestCase):
         with open(dest, encoding="utf-8") as fh:
             review = fh.read()
         self.assertIn("NCT03", review)
+        # An ambiguous name outside a title is dropped rather than queued for review.
+        amb = {"ambiguous": 1, "alias_key": "TKCELLS", "alias_type": "synonym"}
+        self.assertIsNone(br.evidence_status(amb, "abstract"))
+        self.assertIsNone(br.evidence_status(amb, "terms"))
+        self.assertEqual(br.evidence_status(amb, "title"), "candidate")
+        # A long, unambiguous development code counts in an abstract; a short one waits.
+        code = {"ambiguous": 0, "alias_key": "SCH58500", "alias_type": "code"}
+        self.assertEqual(br.evidence_status(code, "abstract"), "auto")
+        short = {"ambiguous": 0, "alias_key": "G207", "alias_type": "code"}
+        self.assertEqual(br.evidence_status(short, "abstract"), "candidate")
+        self.assertEqual(br.evidence_status(short, "title"), "auto")     # a title is enough for a short code
+        tiny = {"ambiguous": 0, "alias_key": "HF10", "alias_type": "code"}
+        self.assertEqual(br.evidence_status(tiny, "abstract"), "candidate")
         self.assertEqual(review.split("\n")[0].split("\t")[0], "kind")
         self.assertTrue(any(l.startswith("trial\t") for l in review.splitlines()[1:]))
         with self.assertRaises(SystemExit):                     # never overwrites

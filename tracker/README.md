@@ -100,6 +100,12 @@ characters), it searches:
   year's title, organisation and contact PI. A search with more hits than
   RePORTER pages through (offset 14,999) is split in half until it fits.
 
+A hit counts as `auto` when the name is an INN or brand, or a development
+code of at least 6 characters, wherever it was found; a shorter code needs
+the title. An ambiguous name counts only in a title: elsewhere it is dropped
+rather than queued for review, because a generic synonym ("TK cells") matches
+every paper about that kind of product, not about this one.
+
 Each record that comes back is checked here with the same word matching
 as trial titles (`window_keys`), never trusting the search engine's own
 matching; `field` says where the name was (`title` beats `abstract` beats

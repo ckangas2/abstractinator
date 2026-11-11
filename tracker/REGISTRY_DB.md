@@ -89,7 +89,7 @@ of `clinical_trial`, `case_report`, `clinical_other`, `review`, `other`.
 |---|---|---|
 | `trial_reference`: a RESULT/DERIVED reference in an auto-linked trial's registration (`nct_id` says which) | 0.9 | auto |
 | `title`: a program name in the paper's title | 0.85 | auto unless the name is ambiguous or under 4 characters |
-| `abstract`: only in the abstract | 0.6 | auto for INNs and brands, else candidate |
+| `abstract`: only in the abstract | 0.6 | auto for INNs, brands and development codes of 6 characters or more; candidate for shorter codes. An ambiguous name outside a title is not recorded at all |
 
 ### grant_award, grant_link
 NIH grants about programs, from NIH RePORTER via `tracker/evidence.py`.
