@@ -34,7 +34,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
 sys.path.insert(0, HERE)
 import build_registry as br  # noqa: E402  (shared CSS tokens and change labels)
-import atlas_page  # noqa: E402  (the oncolytic virus atlas, atlas.html)
+import atlas_page  # noqa: E402  (the atlases: atlas.html, atlas-phage.html)
 
 DEFAULT_DB = os.path.join(REPO, "data", "registry", "registry.sqlite")
 DEFAULT_SITE = os.path.join(REPO, "www", "registry")
@@ -384,7 +384,9 @@ def index_page(d):
             '<p class="muted">Trials as of the ClinicalTrials.gov snapshot of %s. Phase and trial counts use '
             "confirmed (automatic) links only.</p>" % esc(meta.get("latest_snapshot") or "(none yet)")]
     body.append('<h2>Explore</h2><p><a href="atlas.html">Oncolytic virus atlas</a>: every oncolytic virus as a '
-                "map, joined to its virus family, transgenes, the cancers its trials enrol and more.</p>")
+                "map, joined to its virus family, transgenes, the cancers its trials enrol and more. "
+                '<a href="atlas-phage.html">Phage therapy atlas</a>: the same map for phage therapies, '
+                "joined to the infections their trials enrol.</p>")
     body.append("<h2>By disease</h2><ul>%s</ul>" % "".join(
         '<li><a href="disease/%s.html">%s</a></li>' % (esc(slug), esc(label)) for slug, label, _ in DISEASE_VIEWS))
     body.append('<div id="filter" hidden><label for="q">Filter programs</label><br>'
@@ -689,7 +691,8 @@ def write_site(db_path, out_dir=DEFAULT_SITE, log=print):
             n += 1
         for slug, label, terms in DISEASE_VIEWS:
             _write(os.path.join(tmp, "disease", "%s.html" % slug), disease_page(d, slug, label, terms))
-        _write(os.path.join(tmp, "atlas.html"), atlas_page.atlas_page(d, esc, frame, FILTER_JS, table))
+        for f in atlas_page.FIELDS:
+            _write(os.path.join(tmp, f["page"]), atlas_page.atlas_page(d, esc, frame, FILTER_JS, table, f["key"]))
     except BaseException:
         shutil.rmtree(tmp, ignore_errors=True)
         raise
@@ -697,7 +700,7 @@ def write_site(db_path, out_dir=DEFAULT_SITE, log=print):
         os.rename(out_dir, old)
     os.rename(tmp, out_dir)
     shutil.rmtree(old, ignore_errors=True)
-    log("wrote %s: index, %d program pages, %d disease views, atlas" % (out_dir, n, len(DISEASE_VIEWS)))
+    log("wrote %s: index, %d program pages, %d disease views, atlases" % (out_dir, n, len(DISEASE_VIEWS)))
     return out_dir
 
 

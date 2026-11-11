@@ -220,7 +220,15 @@ class Site(unittest.TestCase):
         self.assertTrue(all(a in ids and b in ids for a, b in data["links"]))
         self.assertNotIn("<script src", atlas)                    # loads nothing from elsewhere
         with open(os.path.join(out, "registry", "index.html"), encoding="utf-8") as fh:
-            self.assertIn('href="atlas.html"', fh.read())
+            index = fh.read()
+        self.assertIn('href="atlas.html"', index)
+        self.assertIn('href="atlas-phage.html"', index)
+        # Each atlas page carries the tab bar, marking itself as current.
+        with open(os.path.join(out, "registry", "atlas-phage.html"), encoding="utf-8") as fh:
+            phage = fh.read()
+        self.assertIn('<a href="atlas-phage.html" aria-current="page">Phage therapy</a>', phage)
+        self.assertIn('<a href="atlas.html" aria-current="page">Oncolytic viruses</a>', atlas)
+        json.loads(re.search(r'id="atlas-data">(.*?)</script>', phage, re.S).group(1))
         with open(os.path.join(out, "changes.html"), encoding="utf-8") as fh:
             self.assertIn('href="registry/index.html"', fh.read())
         shutil.rmtree(out)
@@ -240,6 +248,31 @@ class Site(unittest.TestCase):
                                            ["pancrea"]))
         self.assertFalse(sp.matches_disease({"conditions": None, "brief_title": "Liver"}, ["pancrea"]))
 
+
+
+class AtlasFieldTest(unittest.TestCase):
+    """The phage atlas uses the same code with its own programs, hubs and groups."""
+
+    def test_phage_field(self):
+        import atlas_page as ap
+        prog = lambda i, name: {"axp_id": i, "preferred_name": name, "status": "active", "sponsor": "Acme"}
+        d = {"programs": {"A1": prog("A1", "OV-1"), "P1": prog("P1", "Phage-1"), "P2": prog("P2", "Phage-2")},
+             "virus": {"A1": {"role": "oncolytic", "virus_family": "Adenoviridae", "transgenes": "GM-CSF"},
+                       "P1": {"role": "phage", "virus_family": "Caudoviricetes", "transgenes": "X",
+                              "route": "topical"},
+                       "P2": {"role": "phage", "virus_family": "Caudoviricetes"}},
+             "trials": {"P1": [{"link_status": "auto", "conditions": '["Urinary Tract Infections"]',
+                                "brief_title": "", "phase": "PHASE2"}]},
+             "approvals": {}, "aliases": {}}
+        data = ap.atlas_data(d, "phage")
+        viruses = [n["id"] for n in data["nodes"] if n["kind"] == "virus"]
+        self.assertEqual(viruses, ["P1", "P2"])                       # oncolytic left out
+        kinds = {n["kind"] for n in data["nodes"]}
+        self.assertNotIn("transgene", kinds)                          # no payload hubs for phage
+        self.assertIn("sponsor", kinds)                               # Acme has 2 phage products
+        p1 = next(n for n in data["nodes"] if n["id"] == "P1")
+        self.assertEqual(p1["cancers"], ["Urinary tract"])
+        self.assertEqual([n["id"] for n in ap.atlas_data(d)["nodes"] if n["kind"] == "virus"], ["A1"])
 
 if __name__ == "__main__":
     unittest.main()
