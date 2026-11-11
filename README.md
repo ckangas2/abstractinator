@@ -76,7 +76,7 @@ clinical trials `trial_status`, `trial_start`, `trial_end`, `phase`, `interventi
 
 **`program(query)`** looks up one therapy program in the program registry by its stable AXP ID or
 any name or code, and returns its aliases, linked ClinicalTrials.gov trials (each with how it was
-linked, a confidence, and `auto` or unreviewed `candidate` status), the clinical papers (Europe PMC)
+linked, a confidence, and `auto` or unreviewed `candidate` status), the clinical papers (PubMed)
 and NIH grants (RePORTER) that name it, linked the same way, and recent changes.
 
 **`changes(since, program, modality, significance="info", limit=100)`** returns change events

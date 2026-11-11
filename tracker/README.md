@@ -8,7 +8,7 @@ log. Nothing to install.
 | `registry.py` | alias keys and the registry validator (`validate`, `next-id`, `key`) |
 | `snapshot_trials.py` | weekly ClinicalTrials.gov snapshot of the tracked topics |
 | `snapshot_scope.tsv` | the queries that define "tracked topics" |
-| `evidence.py` | weekly search of Europe PMC and NIH RePORTER for the clinical papers and grants that name each program |
+| `evidence.py` | weekly search of PubMed and NIH RePORTER for the clinical papers and grants that name each program |
 | `build_registry.py` | builds `data/registry/registry.sqlite` (programs, names, trial links, what changed) and the `www/changes.html` digest; layout in `REGISTRY_DB.md` |
 | `site_pages.py` | writes the registry's web pages (`www/registry/`) from that database |
 | `tests/` | `python3 -m unittest discover -s tracker/tests` (no network) |
@@ -61,10 +61,15 @@ before the registry build, and writes `data/evidence/evidence.sqlite`
 preferred name and accepted aliases (except names whose alias key is under 4
 characters), it searches:
 
-- **clinical papers** in the [Europe PMC REST API](https://europepmc.org/RestfulWebService)
-  (`resultType=core`, 1000 per page, cursorMark paging): MEDLINE records
-  whose title or abstract has the name, of clinical publication types only,
-  20 names per query:
+- **clinical papers** in [PubMed](https://www.ncbi.nlm.nih.gov/books/NBK25501/)
+  (E-utilities: `esearch` for the PMIDs, up to 9,999 per search, then
+  `efetch` XML in batches of 200, both as POST): records whose title or
+  abstract has the name, of clinical publication types only, 20 names per
+  query: `("a"[tiab] OR ...) AND ("Clinical Trial"[pt] OR ... OR "Case Reports"[pt] ...)`.
+  `--papers-from europepmc` uses the
+  [Europe PMC REST API](https://europepmc.org/RestfulWebService) instead
+  (`resultType=core`, 1000 per page, cursorMark paging), with the same
+  names and types:
   `(TITLE:"a" OR ABSTRACT:"a" OR ...) AND SRC:MED AND (PUB_TYPE:"Clinical Trial" OR
   PUB_TYPE:"Clinical Trial, Phase I" ... OR PUB_TYPE:"Case Reports" OR
   PUB_TYPE:"Randomized Controlled Trial" OR PUB_TYPE:"Clinical Study" OR
@@ -86,12 +91,16 @@ are `auto` and which `candidate`.
 
 What is stored: titles, journal, year, publication kind and identifiers
 (PMID, DOI, PMCID) of papers; titles, organisation, PI name, fiscal years and
-the RePORTER link of grants. Europe PMC's metadata and NIH RePORTER's data
+the RePORTER link of grants. PubMed's and Europe PMC's metadata and NIH RePORTER's data
 are public and may be reused this way; abstracts are read to find names but
 never stored, since their copyright stays with publishers and authors.
 
-Failures: if any request fails after retries (backoff on 429 and 5xx),
-nothing is written and last week's file stays for the build (exit 1). If a
+Time limits: each request must finish within 90 seconds in total (a slow
+trickle counts as a failure and is retried), and the whole run within 45
+minutes (`--budget-minutes`). Progress lines are flushed as they happen.
+
+Failures: if any request fails after retries (backoff on 429 and 5xx), or the
+time budget runs out, nothing is written and last week's file stays for the build (exit 1). If a
 search had more records than can be paged, the file is written with
 `complete = 0` (exit 3). Check: `python3 tracker/evidence.py --status`
 (exit 1 when older than 8 days or incomplete; the uptime probe runs it). Try

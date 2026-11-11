@@ -4,9 +4,11 @@
 The registry links a program to its trials by name (build_registry.py); this
 does the same for two other kinds of evidence:
 
-  * clinical papers, from the Europe PMC REST API: MEDLINE records of clinical
-    trials, case reports and other clinical studies whose title or abstract
-    contains one of the program's names;
+  * clinical papers, from PubMed (NCBI E-utilities: esearch, then efetch in
+    batches of 200), or from the Europe PMC REST API with --papers-from
+    europepmc: MEDLINE records of clinical trials, case reports and other
+    clinical studies whose title or abstract contains one of the program's
+    names;
   * NIH grants, from the NIH RePORTER API v2: projects whose title, abstract
     or project terms contain one of the program's names.
 
@@ -46,6 +48,7 @@ Options:
 """
 
 import argparse
+import xml.etree.ElementTree as ET
 import datetime as dt
 import html
 import json
@@ -70,6 +73,12 @@ DEFAULT_OUT = os.path.join(REPO, "data", "evidence", "evidence.sqlite")
 DEFAULT_REGISTRY = os.path.join(REPO, "registry")
 
 EPMC_API = "https://www.ebi.ac.uk/europepmc/webservices/rest/search"
+ESEARCH_API = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
+EFETCH_API = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
+PUBMED_MAX = 9999            # esearch returns at most this many ids for one search
+EFETCH_BATCH = 200           # records per efetch
+REQUEST_DEADLINE = 90        # seconds a single request may take in total (a slow trickle fails)
+TIME_BUDGET = 45 * 60        # seconds the whole fetch may take; past it, nothing is written
 REPORTER_API = "https://api.reporter.nih.gov/v2/projects/search"
 
 PAUSE_SECONDS = 1.0          # at least this long between any two requests (NIH asks for <= 1/s)
@@ -203,19 +212,48 @@ class FetchError(Exception):
 _last_request = [0.0]
 
 
-def http_json(url, params=None, body=None, retries=4, timeout=120, sleep=time.sleep):
-    """GET url?params, or POST body as JSON; the decoded JSON reply.
+_deadline = [None]           # monotonic time after which no new request starts (TIME_BUDGET)
 
-    Requests are spaced at least PAUSE_SECONDS apart. 429 and 5xx replies and
-    network errors are retried with backoff (5, 10, 20, 40 s, or the server's
-    Retry-After); a 400 raises BadRequest; anything else raises FetchError."""
+
+def say(msg):
+    """Print a progress line now, not when the buffer fills: cron sends it to a log."""
+    print(msg, flush=True)
+
+
+def _read_all(resp, limit):
+    """The whole body, failing if it takes longer than `limit` seconds in total.
+    (urlopen's timeout only covers silence; a slow trickle could run for hours.)"""
+    start, chunks = time.monotonic(), []
+    while True:
+        chunk = resp.read(65536)
+        if not chunk:
+            return b"".join(chunks)
+        chunks.append(chunk)
+        if time.monotonic() - start > limit:
+            raise TimeoutError("response took longer than %d s" % limit)
+
+
+def http_json(url, params=None, body=None, retries=4, timeout=60, sleep=time.sleep, form=None, raw=False):
+    """GET url?params, or POST body as JSON (or form as form data); the decoded
+    JSON reply (the text, if raw).
+
+    Requests are spaced at least PAUSE_SECONDS apart and each must finish
+    within REQUEST_DEADLINE seconds. 429 and 5xx replies and network errors
+    are retried with backoff (5, 10, 20, 40 s, or the server's Retry-After);
+    a 400 raises BadRequest; anything else raises FetchError. Past the run's
+    time budget, FetchError."""
+    if _deadline[0] is not None and time.monotonic() > _deadline[0]:
+        raise FetchError("time budget of %d minutes used up" % (TIME_BUDGET // 60))
     if params:
         url = url + "?" + urllib.parse.urlencode(params)
-    headers = {"User-Agent": USER_AGENT, "Accept": "application/json"}
+    headers = {"User-Agent": USER_AGENT, "Accept": "*/*" if raw else "application/json"}
     data = None
     if body is not None:
         data = json.dumps(body).encode("utf-8")
         headers["Content-Type"] = "application/json"
+    elif form is not None:
+        data = urllib.parse.urlencode(form).encode("utf-8")
+        headers["Content-Type"] = "application/x-www-form-urlencoded"
     host = urllib.parse.urlsplit(url).netloc
     delay = 5.0
     for attempt in range(retries + 1):
@@ -226,7 +264,8 @@ def http_json(url, params=None, body=None, retries=4, timeout=120, sleep=time.sl
         req = urllib.request.Request(url, data=data, headers=headers, method="POST" if data else "GET")
         try:
             with urllib.request.urlopen(req, timeout=timeout) as resp:
-                return json.loads(resp.read().decode("utf-8"))
+                text = _read_all(resp, REQUEST_DEADLINE).decode("utf-8")
+                return text if raw else json.loads(text)
         except urllib.error.HTTPError as e:
             if e.code == 400:
                 raise BadRequest("HTTP 400 from %s: %s" % (host, e.read()[:300].decode("utf-8", "replace")))
@@ -242,6 +281,92 @@ def http_json(url, params=None, body=None, retries=4, timeout=120, sleep=time.sl
                 delay *= 2
                 continue
             raise FetchError("network error from %s: %s" % (host, e))
+
+
+# --- PubMed (NCBI E-utilities) --------------------------------------------------------
+
+def pubmed_query(terms):
+    """("a"[tiab] OR "b"[tiab] ...) AND ("Clinical Trial"[pt] OR ...): the same
+    names and clinical publication types as the Europe PMC query."""
+    names = " OR ".join('"%s"[tiab]' % t for t in terms)
+    types = " OR ".join('"%s"[pt]' % t for t in CLINICAL_PUB_TYPES)
+    return "(%s) AND (%s)" % (names, types)
+
+
+def _text(el):
+    return " ".join("".join(el.itertext()).split()) if el is not None else ""
+
+
+def parse_pubmed_xml(text):
+    """[{pmid, title, abstract, journal, year, pub_types, doi, pmcid}] from efetch XML."""
+    out = []
+    root = ET.fromstring(text)
+    for art in root.iter("PubmedArticle"):
+        cit = art.find("MedlineCitation")
+        if cit is None:
+            continue
+        a = cit.find("Article")
+        pmid = _text(cit.find("PMID"))
+        if not pmid or a is None:
+            continue
+        year = _text(a.find("Journal/JournalIssue/PubDate/Year")) or \
+            _text(a.find("Journal/JournalIssue/PubDate/MedlineDate"))[:4]
+        ids = {i.get("IdType"): _text(i) for i in art.findall("PubmedData/ArticleIdList/ArticleId")}
+        out.append({
+            "pmid": pmid,
+            "title": _text(a.find("ArticleTitle")),
+            "abstract": " ".join(_text(x) for x in a.findall("Abstract/AbstractText")),
+            "journal": _text(a.find("Journal/Title")) or _text(a.find("Journal/ISOAbbreviation")) or None,
+            "year": _int(year),
+            "pub_types": [_text(t) for t in a.findall("PublicationTypeList/PublicationType")],
+            "doi": ids.get("doi") or None,
+            "pmcid": ids.get("pmc") or None,
+        })
+    return out
+
+
+def fetch_pubmed(query, http=http_json, max_ids=PUBMED_MAX, batch=EFETCH_BATCH, max_fetch=None):
+    """Records for one search: esearch for the ids, efetch them in batches.
+    Returns (records, hit_count, requests)."""
+    data = http(ESEARCH_API, form={"db": "pubmed", "term": query, "retmode": "json", "retmax": max_ids})
+    res = data.get("esearchresult") or {}
+    if res.get("ERROR"):
+        raise BadRequest("PubMed rejected the query: %s" % res.get("ERROR"))
+    ids = res.get("idlist") or []
+    total = int(res.get("count") or 0)
+    if max_fetch is not None:
+        ids = ids[:max_fetch]
+    records, requests = [], 1
+    for i in range(0, len(ids), batch):
+        text = http(EFETCH_API, form={"db": "pubmed", "id": ",".join(ids[i:i + batch]), "retmode": "xml"}, raw=True)
+        records.extend(parse_pubmed_xml(text))
+        requests += 1
+    return records, total, requests
+
+
+def collect_papers_pubmed(names, http=http_json, log=say, max_batches=None, max_fetch=None):
+    """As collect_papers, from PubMed. Returns (papers, hits, complete)."""
+    index = br.AliasIndex(names)
+    papers, hits, complete = {}, {}, True
+    batches = epmc_batches(search_terms(names))[:max_batches]
+    for i, terms in enumerate(batches, 1):
+        records, total, _ = fetch_pubmed(pubmed_query(terms), http=http, max_fetch=max_fetch)
+        if total > PUBMED_MAX:
+            complete = False
+        kept = 0
+        for rec in records:
+            found = best_hits(index, [("title", rec["title"]), ("abstract", rec["abstract"])])
+            if not found:
+                continue      # PubMed's match (it expands terms), not ours
+            kept += 1
+            row = (rec["pmid"], _clean(rec["title"]) or None, rec["journal"], rec["year"],
+                   paper_kind(rec["pub_types"]), rec["doi"], rec["pmcid"])
+            papers[row[0]] = row
+            for axp, (field, alias) in found.items():
+                _offer(hits, (row[0], axp), field, alias)
+        log("pubmed    %3d/%d: %4d names, %5s hits, %5d fetched, %5d name a program"
+            % (i, len(batches), len(terms), total, len(records), kept))
+    return papers, hits, complete
 
 
 # --- Europe PMC ---------------------------------------------------------------------
@@ -328,7 +453,7 @@ def fetch_epmc(query, http=http_json, page_size=EPMC_PAGE_SIZE, max_pages=None):
     return records, total, pages
 
 
-def collect_papers(names, http=http_json, log=print, max_batches=None, page_size=EPMC_PAGE_SIZE,
+def collect_papers(names, http=http_json, log=say, max_batches=None, page_size=EPMC_PAGE_SIZE,
                    max_pages=None):
     """Search every name; returns (papers {pmid: row}, hits {(pmid, axp): (field, alias)}, complete)."""
     index = br.AliasIndex(names)
@@ -450,7 +575,7 @@ def grant_rows(records):
     return out
 
 
-def collect_grants(names, http=http_json, log=print, max_batches=None, limit=None, max_pages=None):
+def collect_grants(names, http=http_json, log=say, max_batches=None, limit=None, max_pages=None):
     """Search every name; returns (grants {core: row}, hits {(core, axp): (field, alias)}, complete)."""
     index = br.AliasIndex(names)
     terms = search_terms(names)
@@ -517,19 +642,28 @@ def write_db(out, papers, paper_hits, grants, grant_hits, complete, fetched_at):
     os.replace(tmp, out)
 
 
-def fetch_all(out, registry_dir=DEFAULT_REGISTRY, http=http_json, log=print, now=None):
+def fetch_all(out, registry_dir=DEFAULT_REGISTRY, http=http_json, log=say, now=None, papers_from="pubmed",
+              budget=TIME_BUDGET):
     """Fetch both sources and write the database. Returns the exit code:
-    0 written and complete, 3 written but incomplete, 1 nothing written."""
+    0 written and complete, 3 written but incomplete, 1 nothing written.
+    papers_from: "pubmed" (default) or "europepmc". Past `budget` seconds,
+    nothing is written and the previous file stays."""
     now = now or dt.datetime.now(dt.timezone.utc)
+    _deadline[0] = time.monotonic() + budget if budget else None
     names = load_names(registry_dir)
     log("%d names (%d searched spellings) for %d programs"
         % (len(names), len(search_terms(names)), len({n["axp_id"] for n in names})))
     try:
-        papers, phits, p_ok = collect_papers(names, http=http, log=log)
+        if papers_from == "europepmc":
+            papers, phits, p_ok = collect_papers(names, http=http, log=log)
+        else:
+            papers, phits, p_ok = collect_papers_pubmed(names, http=http, log=log)
         grants, ghits, g_ok = collect_grants(names, http=http, log=log)
     except (FetchError, BadRequest) as e:
         log("ERROR %s; nothing written, %s left as it was" % (e, out))
         return 1
+    finally:
+        _deadline[0] = None
     if not papers and not grants:
         log("ERROR no papers and no grants found (an API change?); nothing written, %s left as it was" % out)
         return 1
@@ -539,7 +673,7 @@ def fetch_all(out, registry_dir=DEFAULT_REGISTRY, http=http_json, log=print, now
     return 0 if p_ok and g_ok else 3
 
 
-def status(path, today=None, log=print):
+def status(path, today=None, log=say):
     if not os.path.isfile(path):
         log("no evidence database at %s" % path)
         return 1
@@ -565,13 +699,18 @@ def status(path, today=None, log=print):
     return 0 if ok else 1
 
 
-def dry_run(registry_dir=DEFAULT_REGISTRY, http=http_json, log=print):
+def dry_run(registry_dir=DEFAULT_REGISTRY, http=http_json, log=say, papers_from="pubmed"):
     """The first batch of each source, one small page; prints counts and samples, writes nothing."""
     names = load_names(registry_dir)
     log("%d names (%d searched spellings)" % (len(names), len(search_terms(names))))
-    log("europepmc query: %s" % epmc_query(epmc_batches(search_terms(names))[0])[:400])
+    first = epmc_batches(search_terms(names))[0]
     try:
-        papers, phits, _ = collect_papers(names, http=http, log=log, max_batches=1, page_size=25, max_pages=1)
+        if papers_from == "europepmc":
+            log("europepmc query: %s" % epmc_query(first)[:400])
+            papers, phits, _ = collect_papers(names, http=http, log=log, max_batches=1, page_size=25, max_pages=1)
+        else:
+            log("pubmed query: %s" % pubmed_query(first)[:400])
+            papers, phits, _ = collect_papers_pubmed(names, http=http, log=log, max_batches=1, max_fetch=25)
         for (pmid, axp), (field, alias) in sorted(phits.items())[:3]:
             log("  PMID %s -> %s by %r in %s: %s" % (pmid, axp, alias["alias"], field, papers[pmid][1]))
         grants, ghits, _ = collect_grants(names, http=http, log=log, max_batches=1, limit=25, max_pages=1)
@@ -590,12 +729,16 @@ def main(argv=None):
     ap.add_argument("--registry", default=DEFAULT_REGISTRY)
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--status", action="store_true")
+    ap.add_argument("--papers-from", choices=["pubmed", "europepmc"], default="pubmed",
+                    help="where clinical papers are searched (default pubmed)")
+    ap.add_argument("--budget-minutes", type=int, default=TIME_BUDGET // 60,
+                    help="stop (writing nothing) after this long")
     args = ap.parse_args(argv)
     if args.status:
-        return status(args.out)
+        return status(args.out, log=say)
     if args.dry_run:
-        return dry_run(args.registry)
-    return fetch_all(args.out, args.registry)
+        return dry_run(args.registry, papers_from=args.papers_from)
+    return fetch_all(args.out, args.registry, papers_from=args.papers_from, budget=args.budget_minutes * 60)
 
 
 if __name__ == "__main__":

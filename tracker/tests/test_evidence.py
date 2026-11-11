@@ -1,4 +1,4 @@
-"""Tests for tracker/evidence.py, with fake Europe PMC and RePORTER APIs (no network)."""
+"""Tests for tracker/evidence.py, with fake PubMed, Europe PMC and RePORTER APIs (no network)."""
 
 import copy
 import io
@@ -9,6 +9,7 @@ import sys
 import tempfile
 import unittest
 import urllib.error
+from xml.sax.saxutils import escape
 from unittest import mock
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -37,14 +38,36 @@ def project(appl, core, fy, title, abstract="", terms="", org="Univ A", pi="SMIT
             "principal_investigators": [{"full_name": "Jane Smith", "is_contact_pi": True}]}
 
 
-class FakeAPIs:
-    """Both APIs. Europe PMC records and RePORTER projects are served for a
-    search that contains (quoted) one of the names they are filed under, with
-    paging by cursorMark and by offset/limit. fail=True makes RePORTER fail."""
+def pubmed_xml(records):
+    """The same records as PubMed efetch XML. Titles may hold markup (<i>), as in PubMed."""
+    out = ['<?xml version="1.0" ?>\n<PubmedArticleSet>']
+    for r in records:
+        types = "".join("<PublicationType>%s</PublicationType>" % escape(t) for t in r["pubTypeList"]["pubType"])
+        out.append(
+            '<PubmedArticle><MedlineCitation><PMID Version="1">%s</PMID><Article>'
+            '<Journal><JournalIssue><PubDate><Year>%s</Year></PubDate></JournalIssue><Title>%s</Title></Journal>'
+            '<ArticleTitle>%s</ArticleTitle><Abstract><AbstractText>%s</AbstractText></Abstract>'
+            '<PublicationTypeList>%s</PublicationTypeList></Article></MedlineCitation>'
+            '<PubmedData><ArticleIdList><ArticleId IdType="pubmed">%s</ArticleId>'
+            '<ArticleId IdType="doi">%s</ArticleId><ArticleId IdType="pmc">%s</ArticleId>'
+            '</ArticleIdList></PubmedData></PubmedArticle>'
+            % (r["pmid"], r["pubYear"], escape(r["journalInfo"]["journal"]["title"]), r["title"],
+               escape(r["abstractText"]), types, r["pmid"], r["doi"], r["pmcid"]))
+    out.append("</PubmedArticleSet>")
+    return "".join(out)
 
-    def __init__(self, papers=None, projects=None, epmc_page=2, fail=False, reject_fields=False):
+
+class FakeAPIs:
+    """All three APIs. Paper records (Europe PMC's shape; served to PubMed as
+    efetch XML) and RePORTER projects are served for a search that contains
+    (quoted) one of the names they are filed under, with paging by cursorMark
+    and by offset/limit. fail=True makes RePORTER fail. pubmed_count, if set,
+    is the hit count esearch reports."""
+
+    def __init__(self, papers=None, projects=None, epmc_page=2, fail=False, reject_fields=False, pubmed_count=None):
         self.papers, self.projects = papers or {}, projects or {}
         self.epmc_page, self.fail, self.reject_fields = epmc_page, fail, reject_fields
+        self.pubmed_count = pubmed_count
         self.calls = []
 
     def _select(self, table, text):
@@ -58,8 +81,18 @@ class FakeAPIs:
                         out.append(r)
         return out
 
-    def __call__(self, url, params=None, body=None):
-        self.calls.append((url, copy.deepcopy(params), copy.deepcopy(body)))
+    def __call__(self, url, params=None, body=None, form=None, raw=False):
+        self.calls.append((url, copy.deepcopy(params), copy.deepcopy(body or form)))
+        if url == ev.ESEARCH_API:
+            items = self._select(self.papers, form["term"])
+            ids = [r["pmid"] for r in items][:int(form["retmax"])]
+            count = self.pubmed_count if self.pubmed_count is not None else len(items)
+            return {"esearchresult": {"count": str(count), "idlist": ids}}
+        if url == ev.EFETCH_API:
+            assert raw
+            want = form["id"].split(",")
+            recs = {r["pmid"]: r for recs in self.papers.values() for r in recs}
+            return pubmed_xml([recs[i] for i in want])
         if url == ev.EPMC_API:
             items = self._select(self.papers, params["query"])
             start = 0 if params["cursorMark"] == "*" else int(params["cursorMark"])
@@ -171,6 +204,47 @@ class Pieces(unittest.TestCase):
         self.assertEqual(calls[0].get_method(), "POST")
         self.assertEqual(calls[0].get_header("User-agent"), ev.USER_AGENT)
 
+    def test_slow_trickle_is_cut_off(self):
+        class Slow:
+            def __init__(self):
+                self.n = 0
+            def read(self, size):
+                self.n += 1
+                return b"x"
+            def __enter__(self):
+                return self
+            def __exit__(self, *a):
+                return False
+        clock = iter(range(0, 10 ** 6, 10))
+        with mock.patch.object(ev.time, "monotonic", lambda: next(clock)):
+            with self.assertRaises(TimeoutError):
+                ev._read_all(Slow(), 60)
+        # In http_json a cut-off read is retried like any network error, then fails.
+        with mock.patch.object(ev.urllib.request, "urlopen", lambda req, timeout=None: Slow()), \
+                mock.patch.object(ev, "REQUEST_DEADLINE", -1):
+            with self.assertRaises(ev.FetchError):
+                ev.http_json(ev.ESEARCH_API, form={"term": "x"}, sleep=lambda s: None)
+
+    def test_form_post_and_raw(self):
+        seen = []
+        def urlopen(req, timeout=None):
+            seen.append(req)
+            return io.BytesIO(b"<x/>")
+        with mock.patch.object(ev.urllib.request, "urlopen", urlopen):
+            self.assertEqual(ev.http_json(ev.EFETCH_API, form={"id": "1,2"}, raw=True), "<x/>")
+        self.assertEqual(seen[0].get_method(), "POST")
+        self.assertEqual(seen[0].data, b"id=1%2C2")
+        self.assertEqual(seen[0].get_header("Content-type"), "application/x-www-form-urlencoded")
+
+    def test_pubmed_parsing(self):
+        rec = ev.parse_pubmed_xml(pubmed_xml([paper("7", "A <i>JX 594</i> case", "Abs & more",
+                                                    types=("Case Reports",))]))[0]
+        self.assertEqual(rec, {"pmid": "7", "title": "A JX 594 case", "abstract": "Abs & more",
+                               "journal": "Lancet Oncol", "year": 2011, "pub_types": ["Case Reports"],
+                               "doi": "10.1/7", "pmcid": "PMC7"})
+        q = ev.pubmed_query(["JX-594", "T-VEC"])
+        self.assertTrue(q.startswith('("JX-594"[tiab] OR "T-VEC"[tiab]) AND ("Clinical Trial"[pt] OR '))
+
     def test_400_is_not_retried(self):
         def urlopen(req, timeout=None):
             raise urllib.error.HTTPError(req.full_url, 400, "bad", {}, io.BytesIO(b"nope"))
@@ -218,16 +292,61 @@ class Fetching(unittest.TestCase):
         self.assertEqual(papers["1003"][1], "A JX 594 case")
         self.assertEqual(papers["1003"][4], "case_report")
         self.assertEqual(papers["1005"][4], "review")
-        # Paging: more records than one page, all fetched.
-        epmc = [c for c in apis.calls if c[0] == ev.EPMC_API]
-        self.assertTrue(any(c[1]["cursorMark"] != "*" for c in epmc))
-        self.assertTrue(all(c[1]["resultType"] == "core" and c[1]["format"] == "json" for c in epmc))
+        # PubMed by default; the query asks for clinical publication types.
+        self.assertFalse([c for c in apis.calls if c[0] == ev.EPMC_API])
+        terms = [c[2]["term"] for c in apis.calls if c[0] == ev.ESEARCH_API]
+        self.assertTrue(any('"JX-594"[tiab]' in t for t in terms))
+        self.assertTrue(all('"Case Reports"[pt]' in t for t in terms))
         # Abstracts are never stored.
         with open(self.out, "rb") as fh:
             blob = fh.read()
         self.assertNotIn(b"We gave", blob)
         self.assertNotIn(b"Patients got", blob)
         self.assertEqual(dict(self.rows("SELECT key, value FROM meta"))["complete"], "1")
+
+    def test_europepmc_source_gives_the_same_papers(self):
+        apis = standard_apis()
+        self.assertEqual(ev.fetch_all(self.out, REPO_REGISTRY, http=apis, log=self.logs.append,
+                                      papers_from="europepmc"), 0)
+        epmc_rows = self.rows("SELECT * FROM paper ORDER BY pmid")
+        epmc_hits = self.rows("SELECT * FROM paper_hit ORDER BY pmid, axp_id")
+        epmc = [c for c in apis.calls if c[0] == ev.EPMC_API]
+        self.assertTrue(any(c[1]["cursorMark"] != "*" for c in epmc))     # paged
+        self.assertTrue(all(c[1]["resultType"] == "core" and c[1]["format"] == "json" for c in epmc))
+        self.assertFalse([c for c in apis.calls if c[0] in (ev.ESEARCH_API, ev.EFETCH_API)])
+        self.assertEqual(self.run_fetch(standard_apis()), 0)
+        self.assertEqual(self.rows("SELECT * FROM paper ORDER BY pmid"), epmc_rows)
+        self.assertEqual(self.rows("SELECT * FROM paper_hit ORDER BY pmid, axp_id"), epmc_hits)
+
+    def test_pubmed_batches_ids(self):
+        many = [paper(str(5000 + i), "JX-594 report %d" % i) for i in range(5)]
+        apis = FakeAPIs({"JX-594": many})
+        recs, total, requests = ev.fetch_pubmed('"JX-594"[tiab]', http=apis, batch=2)
+        self.assertEqual((len(recs), total, requests), (5, 5, 4))           # 1 esearch + 3 efetch
+
+    def test_pubmed_over_the_cap_is_incomplete(self):
+        apis = FakeAPIs(standard_apis().papers, standard_apis().projects, pubmed_count=ev.PUBMED_MAX + 1)
+        self.assertEqual(self.run_fetch(apis), 3)
+        self.assertEqual(dict(self.rows("SELECT key, value FROM meta"))["complete"], "0")
+
+    def test_time_budget_writes_nothing(self):
+        self.assertEqual(self.run_fetch(standard_apis()), 0)
+        with open(self.out, "rb") as fh:
+            before = fh.read()
+        apis = standard_apis()
+        real = ev.http_json
+        # The real request function's budget check, in front of the fake.
+        def http(url, **kw):
+            if ev._deadline[0] is not None and ev.time.monotonic() > ev._deadline[0]:
+                raise ev.FetchError("time budget used up")
+            return apis(url, **kw)
+        self.assertIs(ev.http_json, real)
+        clock = iter(range(0, 10 ** 6, 100))
+        with mock.patch.object(ev.time, "monotonic", lambda: next(clock)):
+            self.assertEqual(ev.fetch_all(self.out, REPO_REGISTRY, http=http, log=self.logs.append, budget=250), 1)
+        with open(self.out, "rb") as fh:
+            self.assertEqual(fh.read(), before)
+        self.assertIsNone(ev._deadline[0])
 
     def test_grants(self):
         apis = FakeAPIs(standard_apis().papers, standard_apis().projects)
@@ -356,8 +475,10 @@ class Fetching(unittest.TestCase):
         apis = standard_apis()
         self.assertEqual(ev.dry_run(REPO_REGISTRY, http=apis, log=self.logs.append), 0)
         self.assertFalse(os.path.exists(self.out))
-        self.assertEqual(len([c for c in apis.calls if c[0] == ev.EPMC_API]), 1)
+        self.assertEqual(len([c for c in apis.calls if c[0] == ev.ESEARCH_API]), 1)
+        self.assertLessEqual(len([c for c in apis.calls if c[0] == ev.EFETCH_API]), 1)
         self.assertEqual(len([c for c in apis.calls if c[0] == ev.REPORTER_API]), 1)
+        self.assertEqual([c for c in apis.calls if c[0] == ev.EPMC_API], [])
         self.assertTrue(any("nothing written" in l for l in self.logs))
 
     def test_build_registry_consumes_it(self):
