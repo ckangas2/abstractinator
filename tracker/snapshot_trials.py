@@ -47,7 +47,7 @@ import urllib.request
 import zlib
 
 SCRIPT_VERSION = "2"
-SCHEMA_VERSION = "1"
+SCHEMA_VERSION = "2"
 API = "https://clinicaltrials.gov/api/v2/studies"
 USER_AGENT = "AbstractinatorTrialSnapshots/1 (+https://abstractinator.me)"
 PAGE_SIZE = 500
@@ -86,14 +86,17 @@ CREATE TABLE IF NOT EXISTS snapshot (
   n_new_versions INTEGER NOT NULL,
   manifest       TEXT NOT NULL                -- JSON: per-query counts and errors
 );
+-- An ordinary rowid table: its rows are a few KB each, and SQLite stores
+-- large rows more compactly this way than in a WITHOUT ROWID table.
 CREATE TABLE IF NOT EXISTS trial_version (
+  version_id   INTEGER PRIMARY KEY,
   nct_id       TEXT NOT NULL,
   content_hash TEXT NOT NULL,                 -- sha256 of record
   first_seen   TEXT NOT NULL REFERENCES snapshot(snapshot_date),
   record       TEXT NOT NULL,                 -- JSON: the tracked fields
   raw          BLOB,                          -- zlib JSON: the API record, contacts removed
-  PRIMARY KEY (nct_id, content_hash)
-) WITHOUT ROWID;
+  UNIQUE (nct_id, content_hash)
+);
 CREATE TABLE IF NOT EXISTS observation (
   snapshot_date         TEXT NOT NULL REFERENCES snapshot(snapshot_date),
   nct_id                TEXT NOT NULL,
@@ -357,7 +360,8 @@ def store_snapshot(con, day, records, raw, manifest):
         for nct in sorted(records):
             rec = records[nct]
             cur = con.execute(
-                "INSERT OR IGNORE INTO trial_version VALUES (?, ?, ?, ?, ?)",
+                "INSERT OR IGNORE INTO trial_version (nct_id, content_hash, first_seen, record, raw) "
+                "VALUES (?, ?, ?, ?, ?)",
                 (nct, rec["content_hash"], day,
                  json.dumps(tracked_fields(rec), sort_keys=True, ensure_ascii=False),
                  compress(strip_contacts(raw[nct])) if raw.get(nct) is not None else None))
