@@ -229,13 +229,18 @@ function tick(){
   var vis=nodes.filter(visible), i, j, a, b, dx, dy, d2, d, f;
   for(i=0;i<vis.length;i++){ a=vis[i];
     for(j=i+1;j<vis.length;j++){ b=vis[j]; dx=b.x-a.x; dy=b.y-a.y; d2=dx*dx+dy*dy||0.01;
-      if(d2>90000) continue; f=-900*alpha/d2; d=Math.sqrt(d2);
+      d=Math.sqrt(d2);
+      // Collision: dots (and a little room for a label) never overlap,
+      // whatever the temperature, so the settled layout stays readable.
+      var room=radius(a)+radius(b)+10;
+      if(d<room){ f=(room-d)*0.5/d; a.x-=dx*f/2; a.y-=dy*f/2; b.x+=dx*f/2; b.y+=dy*f/2; }
+      if(d2>250000) continue; f=-2400*alpha/d2;
       a.vx+=f*dx/d; a.vy+=f*dy/d; b.vx-=f*dx/d; b.vy-=f*dy/d; } }
   links.forEach(function(l){ if(!visible(l.s)||!visible(l.t)) return;
     dx=l.t.x-l.s.x; dy=l.t.y-l.s.y; d=Math.sqrt(dx*dx+dy*dy)||0.01;
-    var want=l.t.kind==='indication'?70:55; f=(d-want)*0.04*alpha/d;
+    var want=l.t.kind==='indication'?110:85; f=(d-want)*0.03*alpha/d;
     l.s.vx+=f*dx; l.s.vy+=f*dy; l.t.vx-=f*dx; l.t.vy-=f*dy; });
-  vis.forEach(function(n){ n.vx+=(W/2-n.x)*0.006*alpha; n.vy+=(H/2-n.y)*0.006*alpha;
+  vis.forEach(function(n){ n.vx+=(W/2-n.x)*0.003*alpha; n.vy+=(H/2-n.y)*0.003*alpha;
     if(n.fixed){n.vx=n.vy=0; return;} n.vx*=0.6; n.vy*=0.6; n.x+=n.vx; n.y+=n.vy; });
   alpha=Math.max(alpha*0.985, 0);
 }
@@ -246,13 +251,25 @@ function draw(){
   nodes.forEach(function(n){ n.el.style.display=visible(n)?'':'none';
     if(visible(n)) n.el.setAttribute('transform','translate('+n.x+','+n.y+')'); });
 }
+// Fit the visible graph into the frame, leaving room on the right for labels.
+function fit(){
+  var vis=nodes.filter(visible); if(!vis.length) return;
+  var x0=Infinity,y0=Infinity,x1=-Infinity,y1=-Infinity;
+  vis.forEach(function(n){var r=radius(n); x0=Math.min(x0,n.x-r); y0=Math.min(y0,n.y-r);
+    x1=Math.max(x1,n.x+r+70); y1=Math.max(y1,n.y+r);});
+  var pad=24, k=Math.min((W-2*pad)/Math.max(x1-x0,1),(H-2*pad)/Math.max(y1-y0,1),2.2);
+  view.k=k; view.x=(W-(x1-x0)*k)/2-x0*k; view.y=(H-(y1-y0)*k)/2-y0*k;
+}
+// Settle most of the layout before the first paint, so the page opens on a
+// spread-out, fitted graph rather than watching it unfold from a knot.
 var still=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-for(var w=0; w<(still?400:140); w++) tick();
-draw();
-var running=false;
+for(var w=0; w<400; w++) tick();     // alpha falls below the stopping point (0.985^400 < 0.004)
+fit(); draw();
+var running=false, refit=true;
 function run(){ if(running||still) {draw(); return;} running=true;
-  (function loop(){ tick(); draw(); if(alpha>0.004) requestAnimationFrame(loop); else running=false; })(); }
-function reheat(x){alpha=Math.max(alpha,x); if(still){for(var w=0;w<200;w++) tick(); draw();} else run();}
+  (function loop(){ tick(); if(refit) fit(); draw();
+    if(alpha>0.004) requestAnimationFrame(loop); else {running=false; refit=false;} })(); }
+function reheat(x){alpha=Math.max(alpha,x); if(still){for(var w=0;w<300;w++) tick(); if(refit) fit(); draw();} else run();}
 run();
 
 function toWorld(e){var r=root.getBoundingClientRect(), sx=W/r.width, sy=H/r.height;
@@ -310,14 +327,14 @@ function select(n){
 }
 document.querySelectorAll('.atlas-bar input[data-kind]').forEach(function(cb){
   cb.addEventListener('change',function(){shown[cb.getAttribute('data-kind')]=cb.checked;
-    if(sel&&!visible(sel)) select(null); reheat(0.6);});});
+    if(sel&&!visible(sel)) select(null); refit=true; reheat(0.6);});});
 var q=document.getElementById('atlas-q');
 q.addEventListener('keydown',function(e){ if(e.key!=='Enter') return; e.preventDefault();
   var t=q.value.trim().toLowerCase(); if(!t) {select(null); return;}
   var hit=nodes.filter(function(n){return visible(n)&&(n.label.toLowerCase().indexOf(t)>=0||
     (n.aka||[]).some(function(a){return a.toLowerCase().indexOf(t)>=0;}));})[0];
   if(!hit) return; select(hit); view.k=Math.max(view.k,1.6); view.x=W/2-hit.x*view.k; view.y=H/2-hit.y*view.k; draw();});
-document.getElementById('atlas-reset').addEventListener('click',function(){view={x:0,y:0,k:1}; select(null); draw();});
+document.getElementById('atlas-reset').addEventListener('click',function(){select(null); fit(); draw();});
 })();
 """
 
