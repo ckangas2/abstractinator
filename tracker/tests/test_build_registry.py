@@ -59,6 +59,10 @@ class Matching(unittest.TestCase):
         self.assertEqual((l["AXP1"]["method"], l["AXP1"]["status"]), ("intervention_text", "auto"))
         l = br.link_trial(rec("Biological: JX-594 low dose"), idx)  # a code inside: review it
         self.assertEqual((l["AXP1"]["method"], l["AXP1"]["status"]), ("intervention_text", "candidate"))
+        l = br.link_trial(rec("Biological: JX-594 low dose", title="JX-594 in liver cancer"), idx)
+        self.assertEqual(l["AXP1"]["status"], "auto")               # ...unless the title names it too
+        l = br.link_trial(rec("Oncolytic virus H101 injection", title="H101 plus PD-1"), idx)
+        self.assertEqual(l["AXP4"]["status"], "auto")
         l = br.link_trial(rec("AUTO1/22"), idx)                     # a different product containing a code
         self.assertEqual(l["AXP5"]["status"], "candidate")
         l = br.link_trial(rec("Imlygic injection"), idx)
@@ -67,8 +71,12 @@ class Matching(unittest.TestCase):
         self.assertEqual(l["AXP4"]["status"], "candidate")
         l = br.link_trial(rec("RP1"), idx)                          # ambiguous name: candidate only
         self.assertEqual(l["AXP2"]["status"], "candidate")
-        l = br.link_trial(rec("Placebo", title="MRTX1133 in pancreatic cancer"), idx)
-        self.assertEqual((l["AXP3"]["method"], l["AXP3"]["status"]), ("title", "candidate"))
+        l = br.link_trial(rec("Placebo", title="MRTX1133 in pancreatic cancer"), idx)   # a name in the title
+        self.assertEqual((l["AXP3"]["method"], l["AXP3"]["status"], l["AXP3"]["confidence"]), ("title", "auto", 0.6))
+        l = br.link_trial(rec("Placebo", title="JX-594 in liver cancer"), idx)          # a code in the title only
+        self.assertEqual((l["AXP1"]["method"], l["AXP1"]["status"]), ("title", "candidate"))
+        l = br.link_trial(rec("Placebo", title="RP1 and RP2 expression"), idx)          # too short to search text
+        self.assertNotIn("AXP2", l)
         l = br.link_trial(rec("Placebo", other=["MRTX-1133"], title="MRTX1133 study"), idx)
         self.assertEqual(l["AXP3"]["method"], "intervention_name")  # best evidence wins
         self.assertEqual(br.link_trial(rec("Radiotherapy", other=["Radiotherapy"]), idx), {})
@@ -136,12 +144,12 @@ class Build(unittest.TestCase):
     def test_links_and_changes_over_three_weeks(self):
         w1 = [trial("NCT01", "Pexa-Vec", title="Pexa-Vec in liver cancer"),
               trial("NCT02", "Sotorasib", title="AMG 510 study"),
-              trial("NCT03", "Placebo", title="MRTX1133 in pancreatic cancer"),
+              trial("NCT03", "Placebo", title="JAB-21822 in pancreatic cancer"),
               trial("NCT04", "Radiotherapy", other=("Radiotherapy",))]
         self.take("2026-11-11", w1)
         w2 = [trial("NCT01", "Pexa-Vec", title="Pexa-Vec in liver cancer", status="TERMINATED"),
               trial("NCT02", "Sotorasib", title="AMG 510 study", updated="2026-11-15"),   # bookkeeping only
-              trial("NCT03", "Placebo", title="MRTX1133 in pancreatic cancer"),
+              trial("NCT03", "Placebo", title="JAB-21822 in pancreatic cancer"),
               trial("NCT04", "Radiotherapy", other=("Radiotherapy",)),
               trial("NCT05", "Adagrasib", title="New KRAS trial", posted="2026-11-13"),
               trial("NCT07", "Sotorasib", title="Old trial newly in scope")]   # posted 2024: no event
@@ -150,10 +158,10 @@ class Build(unittest.TestCase):
         links = {(n, a): (m, s) for n, a, m, s in rows(self.out, "SELECT nct_id, axp_id, method, status FROM trial_link")}
         pexa = rows(self.out, "SELECT axp_id FROM alias WHERE alias='Pexa-Vec'")[0][0]
         soto = rows(self.out, "SELECT axp_id FROM program WHERE preferred_name='sotorasib'")[0][0]
-        mrtx = rows(self.out, "SELECT axp_id FROM program WHERE preferred_name='MRTX1133'")[0][0]
+        glec = rows(self.out, "SELECT axp_id FROM program WHERE preferred_name='glecirasib'")[0][0]
         self.assertEqual(links[("NCT01", pexa)], ("intervention_name", "auto"))
         self.assertEqual(links[("NCT02", soto)], ("intervention_name", "auto"))
-        self.assertEqual(links[("NCT03", mrtx)], ("title", "candidate"))
+        self.assertEqual(links[("NCT03", glec)], ("title", "candidate"))   # a code in the title only
         self.assertFalse(any(n == "NCT04" for n, _ in links))
         ev = {(n, t): (s, ax) for n, t, s, ax in rows(self.out, "SELECT nct_id, type, significance, axp_ids FROM change_event")}
         self.assertEqual(set(ev), {("NCT01", "trial.status_changed"), ("NCT05", "trial.new")})

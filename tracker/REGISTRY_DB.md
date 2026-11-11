@@ -68,7 +68,10 @@ Which trials are about which programs.
 | `confidence` | REAL: 0.95, 0.8, 0.6 for the three methods |
 | `status` | `auto` (used for counts and change feeds) or `candidate` (shown, flagged for review) |
 
-`title` matches are always `candidate`.
+`auto` when an intervention is named by the alias; when an INN or brand
+appears inside an intervention name or in the title; or when a code appears
+inside an intervention name and the title names it too. Codes seen only in a
+title, short names and ambiguous names stay `candidate`.
 
 ### change_event
 What changed between the two newest snapshots (and kept from earlier runs:

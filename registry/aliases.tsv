@@ -211,7 +211,7 @@ AXP000089	OH2	code	ncit	C172106	CC-BY-4.0			1	accepted	https://api-evsrest.nci.n
 AXP000089	oHSV2hGM-CSF	synonym	curator		CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C172106?include=synonyms	2026-11-11
 AXP000089	OH2 injection	synonym	ctgov	NCT04386967	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT04386967	2026-11-11
 AXP000090	BS-006	code	ncit	C188176	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C188176?include=synonyms	2026-11-11
-AXP000091	R130	code	ncit	C200561	CC-BY-4.0			1	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C200561?include=synonyms	2026-11-11
+AXP000091	R130	code	ncit	C200561	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C200561?include=synonyms	2026-11-11
 AXP000092	JNJ-87704916	code	ncit	C205181	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C205181?include=synonyms	2026-11-11
 AXP000093	olvimulogene nanivacirepvec	inn	ncit	C79833	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C79833?include=synonyms	2026-11-11
 AXP000093	GL-ONC1	former_code	ncit	C79833	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/C79833?include=synonyms	2026-11-11
@@ -310,3 +310,4 @@ AXP000138	ON-01	code	ctgov	NCT06562621	public-domain			1	accepted	https://clinic
 AXP000139	RGV005	code	ctgov	NCT07398963	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT07398963	2026-11-11
 AXP000139	CD19-CAR novel oncolytic vaccinia virus	synonym	ctgov	NCT07398963	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT07398963	2026-11-11
 AXP000003	Recombinant Human Adenovirus Type 5 Injection	synonym	ctgov	NCT05113290	public-domain			1	accepted	https://clinicaltrials.gov/study/NCT05113290	2026-11-11
+AXP000098	vvDD-hIL2-2-RG-1	synonym	ctgov	NCT07001592	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT07001592	2026-11-11

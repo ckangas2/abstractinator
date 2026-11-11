@@ -162,15 +162,30 @@ class AliasIndex:
 
 
 def link_trial(rec, index):
-    """Links for one trial (a canonical snapshot record): {axp_id: link dict}."""
+    """Links for one trial (a canonical snapshot record): {axp_id: link dict}.
+
+    auto (counted) when:
+      - an intervention's name or other name is one of the program's names;
+      - an INN or brand name appears inside an intervention name;
+      - a code appears inside an intervention name AND the title names it too
+        (two separate fields agree; "AUTO1/22" alone doesn't make AUTO1);
+      - an INN or brand name appears in the title (confidence 0.6).
+    Ambiguous names, short names, and codes seen only in a title stay
+    candidates for review.
+    """
     best = {}
+    title_keys = window_keys(rec.get("brief_title") or "")
 
     def offer(alias, method):
-        status = "auto"
-        if alias["ambiguous"] or method == "title":
-            status = "candidate"
-        if method == "intervention_text" and (len(alias["alias_key"]) < MIN_AUTO_TEXT_KEY
-                                              or alias.get("alias_type") not in AUTO_TEXT_TYPES):
+        key = alias["alias_key"]
+        named = alias.get("alias_type") in AUTO_TEXT_TYPES and len(key) >= MIN_AUTO_TEXT_KEY
+        if method == "intervention_name":
+            status = "auto"
+        elif method == "intervention_text":
+            status = "auto" if named or key in title_keys else "candidate"
+        else:
+            status = "auto" if named else "candidate"
+        if alias["ambiguous"]:
             status = "candidate"
         cand = {"axp_id": alias["axp_id"], "method": method, "matched": alias["alias"],
                 "confidence": CONFIDENCE[method], "status": status}

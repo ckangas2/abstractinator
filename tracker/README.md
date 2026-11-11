@@ -58,9 +58,10 @@ run by hand any time. It rebuilds `data/registry/registry.sqlite` from scratch:
 
 - **trial links**: a trial links to a program when one of the program's names
   is an intervention's name or other name (`auto`, confidence 0.95), appears
-  inside an intervention name (`auto` for INNs and brands, `candidate` for
-  codes, 0.8), or appears only in the title (`candidate`, 0.6). Ambiguous
-  names only ever give candidates. To review them, export them into your
+  inside an intervention name (0.8; `auto` for INNs and brands, and for codes
+  the title also names), or appears only in the title (0.6; `auto` for INNs
+  and brands, `candidate` for codes). Ambiguous names only ever give
+  candidates. To review them, export them into your
   reports folder: `python3 tracker/build_registry.py --export-review
   ~/abstractinator-reports/link_review-$(date +%F).tsv`. Accepted fixes go
   into the registry (a missing name, or `ambiguous = 1`).

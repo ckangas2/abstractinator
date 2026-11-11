@@ -69,6 +69,10 @@ Development before v2.0.0 was untagged; see the git history for detail.
 - The weekly trial snapshot also searches trial interventions for every name
   in the program registry, so each program's trials are followed even when
   they never say "oncolytic" (ONYX-015's, for example).
+- Trial links: a development code inside an intervention name now counts when
+  the trial's title names it too, and an INN or brand in a title counts (at
+  lower confidence); about 50 of the first 124 links held for review were
+  correct and now count. R130 is no longer marked ambiguous.
 - Uncertain trial links are exported on demand into your own reports folder
   (`build_registry.py --export-review FILE`) instead of being written next to
   the database on the server.
