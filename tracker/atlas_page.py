@@ -240,7 +240,13 @@ function tick(){
     dx=l.t.x-l.s.x; dy=l.t.y-l.s.y; d=Math.sqrt(dx*dx+dy*dy)||0.01;
     var want=l.t.kind==='indication'?110:85; f=(d-want)*0.03*alpha/d;
     l.s.vx+=f*dx; l.s.vy+=f*dy; l.t.vx-=f*dx; l.t.vy-=f*dy; });
-  vis.forEach(function(n){ n.vx+=(W/2-n.x)*0.003*alpha; n.vy+=(H/2-n.y)*0.003*alpha;
+  // Pull towards the centre, harder for dots with few visible links: a dot
+  // whose hubs are all switched off has nothing holding it, and repulsion
+  // alone would fling it across the frame. A soft wall catches the rest.
+  vis.forEach(function(n){ var deg=0; for(var q=0;q<n.nb.length;q++) if(visible(n.nb[q])) deg++;
+    var pull=deg===0?0.05:deg===1?0.02:0.003, cx=n.x-W/2, cy=n.y-H/2, dist=Math.sqrt(cx*cx+cy*cy), wall=Math.min(W,H)*0.75;
+    n.vx-=cx*pull*alpha; n.vy-=cy*pull*alpha;
+    if(dist>wall){ n.vx-=cx/dist*(dist-wall)*0.2; n.vy-=cy/dist*(dist-wall)*0.2; }
     if(n.fixed){n.vx=n.vy=0; return;} n.vx*=0.6; n.vy*=0.6; n.x+=n.vx; n.y+=n.vy; });
   alpha=Math.max(alpha*0.985, 0);
 }
@@ -252,11 +258,13 @@ function draw(){
     if(visible(n)) n.el.setAttribute('transform','translate('+n.x+','+n.y+')'); });
 }
 // Fit the visible graph into the frame, leaving room on the right for labels.
+// Frames every dot. (The centring pull and the soft wall above keep
+// stragglers close, so one loose dot can't shrink the whole map.)
 function fit(){
   var vis=nodes.filter(visible); if(!vis.length) return;
-  var x0=Infinity,y0=Infinity,x1=-Infinity,y1=-Infinity;
-  vis.forEach(function(n){var r=radius(n); x0=Math.min(x0,n.x-r); y0=Math.min(y0,n.y-r);
-    x1=Math.max(x1,n.x+r+70); y1=Math.max(y1,n.y+r);});
+  function q(arr,p){arr.sort(function(a,b){return a-b;}); return arr[Math.min(arr.length-1,Math.max(0,Math.round(p*(arr.length-1))))];}
+  var xs=vis.map(function(n){return n.x;}), ys=vis.map(function(n){return n.y;});
+  var x0=q(xs,0)-12, x1=q(xs,1)+80, y0=q(ys,0)-12, y1=q(ys,1)+12;
   var pad=24, k=Math.min((W-2*pad)/Math.max(x1-x0,1),(H-2*pad)/Math.max(y1-y0,1),2.2);
   view.k=k; view.x=(W-(x1-x0)*k)/2-x0*k; view.y=(H-(y1-y0)*k)/2-y0*k;
 }
