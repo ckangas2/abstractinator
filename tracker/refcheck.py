@@ -1,0 +1,236 @@
+#!/usr/bin/env python3
+"""Check that everything a registry entry cites can still be reached.
+
+A curated row is only as good as its evidence, so before a proposed alias is
+accepted, every link it rests on is visited:
+
+  * `evidence_url` on each alias, virus and approval row of the programs
+    checked (an HTTP GET; a 2xx or 3xx counts, anything else does not);
+  * every NCT number named in those programs' rows, against the
+    ClinicalTrials.gov API (the study must exist);
+  * every PMID named in them, against the NCBI E-utilities summary endpoint
+    (the record must exist and not be an error).
+
+NCT numbers and PMIDs are found in `notes`, `source_record` and the evidence
+links themselves, so a citation written in prose is checked too.
+
+    python3 tracker/refcheck.py --programs AXP000215-AXP000247
+    python3 tracker/refcheck.py --programs AXP000215-AXP000247 --accept
+
+Without --accept nothing is written: the run prints one line per reference
+and a summary, and exits 1 if anything is unreachable. With --accept, and
+only if every reference of a program resolved, that program's `proposed`
+aliases become `accepted` (aliases.tsv is rewritten in place after a
+timestamped backup in ~/abstractinator-backups/). A program with a bad
+reference is left alone and named in the summary.
+
+Standard library only, same HTTP manners as tracker/evidence.py: one request
+at a time, spaced out, retried on 429 and 5xx.
+"""
+import argparse
+import datetime
+import json
+import os
+import re
+import shutil
+import sys
+import time
+import urllib.error
+import urllib.parse
+import urllib.request
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import registry as reg  # noqa: E402
+
+USER_AGENT = "AbstractinatorRefcheck/1 (+https://abstractinator.me)"
+PAUSE_SECONDS = 1.0
+TIMEOUT = 45
+RETRIES = 3
+
+NCT_RE = re.compile(r"\bNCT[0-9]{8}\b")
+PMID_RE = re.compile(r"\bPMID[: ]*([0-9]{5,9})\b|pubmed\.ncbi\.nlm\.nih\.gov/([0-9]{5,9})")
+ID_RANGE_RE = re.compile(r"^AXP([0-9]{6})-AXP([0-9]{6})$")
+
+_last = [0.0]
+
+
+def say(msg):
+    print(msg, flush=True)
+
+
+def _pause():
+    wait = _last[0] + PAUSE_SECONDS - time.monotonic()
+    if wait > 0:
+        time.sleep(wait)
+    _last[0] = time.monotonic()
+
+
+def fetch(url, accept="*/*"):
+    """(ok, detail) for one GET. 2xx and 3xx are ok; everything else is not."""
+    req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT, "Accept": accept})
+    delay = 4.0
+    for attempt in range(RETRIES + 1):
+        _pause()
+        try:
+            with urllib.request.urlopen(req, timeout=TIMEOUT) as resp:
+                return True, "HTTP %d" % resp.status, resp.read(200000)
+        except urllib.error.HTTPError as e:
+            if e.code in (429, 500, 502, 503, 504) and attempt < RETRIES:
+                after = e.headers.get("Retry-After") if e.headers else None
+                time.sleep(float(after) if after and after.isdigit() else delay)
+                delay *= 2
+                continue
+            return False, "HTTP %d" % e.code, b""
+        except Exception as e:  # network error, TLS, timeout
+            if attempt < RETRIES:
+                time.sleep(delay)
+                delay *= 2
+                continue
+            return False, type(e).__name__ + ": " + str(e)[:120], b""
+    return False, "gave up", b""
+
+
+def check_url(url):
+    ok, detail, _ = fetch(url)
+    return ok, detail
+
+
+def check_nct(nct):
+    ok, detail, body = fetch("https://clinicaltrials.gov/api/v2/studies/" + nct,
+                             accept="application/json")
+    if not ok:
+        return False, detail
+    try:
+        data = json.loads(body.decode("utf-8"))
+    except ValueError:
+        return False, "reply was not JSON"
+    got = (data.get("protocolSection", {}).get("identificationModule", {}).get("nctId"))
+    return (got == nct), ("found" if got == nct else "registry returned %r" % got)
+
+
+def check_pmid(pmid):
+    url = ("https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&retmode=json&id="
+           + pmid)
+    ok, detail, body = fetch(url, accept="application/json")
+    if not ok:
+        return False, detail
+    try:
+        data = json.loads(body.decode("utf-8"))
+    except ValueError:
+        return False, "reply was not JSON"
+    rec = data.get("result", {}).get(pmid)
+    if not rec or "error" in rec:
+        return False, "no such PMID"
+    return True, "found"
+
+
+def wanted_ids(spec, programs):
+    """The AXP ids named by --programs: a range, a comma list, or 'all'."""
+    if spec in (None, "", "all"):
+        return [p["axp_id"] for p in programs if p["status"] == "active"]
+    m = ID_RANGE_RE.match(spec)
+    if m:
+        lo, hi = int(m.group(1)), int(m.group(2))
+        return ["AXP%06d" % n for n in range(lo, hi + 1)]
+    return [s.strip() for s in spec.split(",") if s.strip()]
+
+
+def references(rows, ids):
+    """{axp_id: {"urls": set, "ncts": set, "pmids": set}} for the rows given."""
+    out = {}
+    for kind, rs in rows.items():
+        for row in rs:
+            axp = row.get("axp_id")
+            if axp not in ids:
+                continue
+            ref = out.setdefault(axp, {"urls": set(), "ncts": set(), "pmids": set()})
+            url = row.get("evidence_url", "")
+            if url.startswith(("http://", "https://")):
+                ref["urls"].add(url)
+            text = " ".join(str(row.get(c, "")) for c in
+                            ("notes", "source_record", "evidence_url", "indication"))
+            ref["ncts"].update(NCT_RE.findall(text))
+            for a, b in PMID_RE.findall(text):
+                ref["pmids"].add(a or b)
+    return out
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser(description=__doc__,
+                                 formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--registry", default=reg.DEFAULT_DIR, help="registry directory")
+    ap.add_argument("--programs", default="all",
+                    help="AXP000215-AXP000247, a comma-separated list, or all (default)")
+    ap.add_argument("--accept", action="store_true",
+                    help="flip these programs' proposed aliases to accepted if every "
+                         "reference resolved")
+    ap.add_argument("--backup-dir", default=os.path.expanduser("~/abstractinator-backups"))
+    args = ap.parse_args(argv)
+
+    programs, _ = reg.read_tsv(os.path.join(args.registry, "programs.tsv"), reg.PROGRAM_COLUMNS)
+    aliases, _ = reg.read_tsv(os.path.join(args.registry, "aliases.tsv"), reg.ALIAS_COLUMNS)
+    extra = reg.read_optional(args.registry)
+    viruses, approvals = extra[0][0], extra[1][0]  # read_optional gives (rows, errors) each
+
+    ids = set(wanted_ids(args.programs, programs))
+    known = {p["axp_id"] for p in programs}
+    missing_ids = sorted(i for i in ids if i not in known)
+    if missing_ids:
+        say("no such program: %s" % ", ".join(missing_ids))
+        return 2
+    rows = {"programs": programs, "aliases": aliases, "virus": viruses, "approvals": approvals}
+    refs = references(rows, ids)
+
+    bad = {}
+    n_ok = 0
+    for axp in sorted(refs):
+        ref = refs[axp]
+        for url in sorted(ref["urls"]):
+            ok, detail = check_url(url)
+            say("%s %-10s %s  %s" % ("ok  " if ok else "FAIL", axp, url, detail))
+            n_ok += ok
+            if not ok:
+                bad.setdefault(axp, []).append("%s (%s)" % (url, detail))
+        for nct in sorted(ref["ncts"]):
+            ok, detail = check_nct(nct)
+            say("%s %-10s %s  %s" % ("ok  " if ok else "FAIL", axp, nct, detail))
+            n_ok += ok
+            if not ok:
+                bad.setdefault(axp, []).append("%s (%s)" % (nct, detail))
+        for pmid in sorted(ref["pmids"]):
+            ok, detail = check_pmid(pmid)
+            say("%s %-10s PMID %s  %s" % ("ok  " if ok else "FAIL", axp, pmid, detail))
+            n_ok += ok
+            if not ok:
+                bad.setdefault(axp, []).append("PMID %s (%s)" % (pmid, detail))
+
+    say("")
+    say("%d reference(s) reached, %d program(s) with a problem" % (n_ok, len(bad)))
+    for axp in sorted(bad):
+        say("  %s: %s" % (axp, "; ".join(bad[axp])))
+
+    if not args.accept:
+        return 1 if bad else 0
+
+    clean = sorted(i for i in refs if i not in bad)
+    changed = 0
+    for row in aliases:
+        if row["axp_id"] in clean and row["status"] == "proposed":
+            row["status"] = "accepted"
+            changed += 1
+    if changed:
+        os.makedirs(args.backup_dir, exist_ok=True)
+        stamp = datetime.datetime.now().strftime("%Y%m%d-%H%M")
+        path = os.path.join(args.registry, "aliases.tsv")
+        shutil.copy2(path, os.path.join(args.backup_dir, "aliases.tsv.bak-" + stamp))
+        with open(path, "w", encoding="utf-8") as fh:
+            fh.write("\t".join(reg.ALIAS_COLUMNS) + "\n")
+            for row in aliases:
+                fh.write("\t".join(row.get(c, "") for c in reg.ALIAS_COLUMNS) + "\n")
+    say("accepted %d alias row(s) across %d program(s); backup in %s"
+        % (changed, len(clean), args.backup_dir))
+    return 1 if bad else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

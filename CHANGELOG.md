@@ -70,6 +70,15 @@ Development before v2.0.0 was untagged; see the git history for detail.
   longer counts as support for a hepatitis B tag.
 
 ### Added
+- 33 phage therapy programs in the registry (AXP000215-AXP000247): every
+  bacteriophage product found with a registered trial or published human use,
+  from Stafal (the one phage medicine with an EU marketing authorisation)
+  and the Georgian Pyophage to engineered products (LBP-EC01, SNIPR001) and
+  the mycobacteriophage Muddy. Their names ship as `proposed`.
+- `tracker/refcheck.py`: visits every link, NCT number and PMID a set of
+  programs cites, and with `--accept` promotes those programs' proposed
+  aliases to `accepted` only when nothing cited is missing. A program with a
+  dead reference is left alone and named in the summary.
 - Registry routes for gene and cell therapy and for local phage dosing:
   `intracochlear`, `intracisternal`, `suprachoroidal`, `intramyocardial`,
   `intracoronary`, `intraarticular` and `intraurethral` (SPEC `virus.route`).

@@ -11,6 +11,7 @@ log. Nothing to install.
 | `evidence.py` | weekly search of PubMed and NIH RePORTER for the papers and grants that name each program |
 | `build_registry.py` | builds `registry.sqlite` under the state directory (programs, names, trial links, what changed) and the `www/changes.html` digest; layout in `REGISTRY_DB.md` |
 | `site_pages.py` | writes the registry's web pages (`www/registry/`) from that database |
+| `refcheck.py` | visits the links, NCT numbers and PMIDs a program cites; `--accept` promotes a program's proposed aliases once they all resolve |
 | `tests/` | `python3 -m unittest discover -s tracker/tests` (no network) |
 
 ## Where the files live
