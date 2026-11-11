@@ -2583,14 +2583,14 @@ a.landing-card-link:focus-visible .landing-card {
 .program-card .pc-count { font-size: 0.85em; }
 
 /* ==========================================================================
-   ATLAS SHOWCASE (landing page, below the feature cards)
+   ATLAS SHOWCASE (landing page, above the feature cards)
    ========================================================================== */
 .atlas-feature {
   display: flex;
   align-items: center;
   gap: 24px;
   max-width: 820px;
-  margin: 28px auto 0;
+  margin: 0 auto 28px;
   padding: 18px 24px;
   text-align: left;
   border: 1px solid rgba(255, 255, 255, 0.1);

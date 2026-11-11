@@ -228,6 +228,31 @@ fluidPage(
     
     
     
+    # Atlas showcase (beta): the registry's graph pages, one tab per field
+    # (tracker/atlas_page.py). Wider than the tool cards because it is a place
+    # to go rather than a tool for the search; it sits above them. The picture
+    # is decorative.
+    div(class = "atlas-feature",
+      tags$a(class = "atlas-feature-art", href = "registry/atlas.html", target = "_blank", rel = "noopener",
+             tabindex = "-1", `aria-hidden` = "true",
+             HTML(paste(readLines("app/partials/atlas-thumb.svg", warn = FALSE), collapse = ""))),
+      div(class = "atlas-feature-text",
+        span(class = "atlas-feature-tag", "New \u00b7 Beta"),
+        h4("Atlasinator"),
+        p("Every oncolytic virus, phage therapy and AAV gene therapy in the registry as one interactive map: ",
+          "virus families and capsids, transgenes, the diseases they target, and who is behind them."),
+        div(class = "atlas-feature-links",
+          tags$a(href = "registry/atlas.html", target = "_blank", rel = "noopener",
+                 class = "btn btn-sm atlas-feature-btn", "Oncolytic viruses \u2192"),
+          tags$a(href = "registry/atlas-phage.html", target = "_blank", rel = "noopener",
+                 class = "btn btn-sm atlas-feature-btn", "Phage therapy \u2192"),
+          tags$a(href = "registry/atlas-aav.html", target = "_blank", rel = "noopener",
+                 class = "btn btn-sm atlas-feature-btn", "AAV gene therapy \u2192")
+        )
+      )
+    ),
+    
+
     # Glowing "skyline" line over the feature cards. Decorative only; hidden
     # unless www/gotham.css is loaded.
     HTML(paste(readLines("app/partials/gotham-skyline.html", warn = FALSE), collapse = "\n")),
@@ -257,29 +282,6 @@ fluidPage(
       )
     }),
 
-    # Atlas showcase (beta): the registry's graph pages, one tab per field
-    # (tracker/atlas_page.py). Wider than the tool cards because it is a place
-    # to go rather than a tool for the search above. The picture is decorative.
-    div(class = "atlas-feature",
-      tags$a(class = "atlas-feature-art", href = "registry/atlas.html", target = "_blank", rel = "noopener",
-             tabindex = "-1", `aria-hidden` = "true",
-             HTML(paste(readLines("app/partials/atlas-thumb.svg", warn = FALSE), collapse = ""))),
-      div(class = "atlas-feature-text",
-        span(class = "atlas-feature-tag", "New \u00b7 Beta"),
-        h4("Atlasinator"),
-        p("Every oncolytic virus, phage therapy and AAV gene therapy in the registry as one interactive map: ",
-          "virus families and capsids, transgenes, the diseases they target, and who is behind them."),
-        div(class = "atlas-feature-links",
-          tags$a(href = "registry/atlas.html", target = "_blank", rel = "noopener",
-                 class = "btn btn-sm atlas-feature-btn", "Oncolytic viruses \u2192"),
-          tags$a(href = "registry/atlas-phage.html", target = "_blank", rel = "noopener",
-                 class = "btn btn-sm atlas-feature-btn", "Phage therapy \u2192"),
-          tags$a(href = "registry/atlas-aav.html", target = "_blank", rel = "noopener",
-                 class = "btn btn-sm atlas-feature-btn", "AAV gene therapy \u2192")
-        )
-      )
-    ),
-    
     # --- Share links (plain links: no tracking scripts or third-party widgets) ---
     local({
       site  <- "https://abstractinator.me"
