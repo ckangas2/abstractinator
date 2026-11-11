@@ -35,7 +35,7 @@ test_that("/program and /changes resolve IDs, names and merges", {
   con <- DBI::dbConnect(RSQLite::SQLite(), path)
   DBI::dbWriteTable(con, "meta", data.frame(
     key = c("schema_version", "registry_release", "latest_snapshot"),
-    value = c("2", "2026-11-11+abc", "2026-11-09")))
+    value = c("3", "2026-11-11+abc", "2026-11-09")))
   DBI::dbWriteTable(con, "virus", data.frame(
     axp_id = "AXP000001", role = "oncolytic", virus_family = "Orthoherpesviridae",
     virus = "herpes simplex virus 1", ncbi_taxon = "10298", strain = "JS1",
@@ -67,7 +67,26 @@ test_that("/program and /changes resolve IDs, names and merges", {
     lead_sponsor = "Amgen", phases = "PHASE3", start_date = "2009-04",
     primary_completion_date = "2012-01", completion_date = "2014-01",
     enrollment_count = NA_integer_, has_results = 1L, last_update_post_date = "",
-    first_seen = "2026-11-02"))
+    first_seen = "2026-11-02", conditions = '["Melanoma"]'))
+  # Paper 1004 is linked but its details were never fetched (no paper row).
+  DBI::dbWriteTable(con, "paper", data.frame(
+    pmid = c("1001", "1002", "1003"), title = c("Old trial", "New case", "Maybe"), journal = "J Clin Oncol",
+    year = c(2009L, 2021L, 2023L), kind = c("clinical_trial", "case_report", "clinical_other"),
+    doi = NA_character_, pmcid = NA_character_))
+  DBI::dbWriteTable(con, "paper_link", data.frame(
+    axp_id = "AXP000001", pmid = c("1001", "1002", "1003", "1004"),
+    method = c("trial_reference", "title", "abstract", "title"),
+    matched = c("NCT00000001", "T-VEC", "T-VEC", "Imlygic"),
+    nct_id = c("NCT00000001", NA, NA, NA), confidence = c(0.9, 0.85, 0.6, 0.85),
+    status = c("auto", "auto", "candidate", "auto")))
+  DBI::dbWriteTable(con, "grant_award", data.frame(
+    core_project_num = c("R01CA000001", "R21CA000002"), title = c("Older grant", "Newer grant"),
+    org = "Univ", pi = "SMITH, JANE", first_fy = c(2010L, 2019L), last_fy = c(2014L, 2022L),
+    url = c("https://reporter.nih.gov/project-details/1", "https://reporter.nih.gov/project-details/2")))
+  DBI::dbWriteTable(con, "grant_link", data.frame(
+    axp_id = "AXP000001", core_project_num = c("R01CA000001", "R21CA000002", "R01CA000003"),
+    method = c("title", "terms", "abstract"), matched = "T-VEC", confidence = c(0.85, 0.6, 0.6),
+    status = c("auto", "candidate", "candidate")))
   DBI::dbWriteTable(con, "trial_link", data.frame(
     nct_id = "NCT00000001", axp_id = "AXP000001", method = "intervention_name",
     matched = "T-VEC", confidence = 0.95, status = "auto"))
@@ -95,6 +114,34 @@ test_that("/program and /changes resolve IDs, names and merges", {
   other <- registry_program(path, "AXP000003")
   expect_true(is.na(other$body$virus))
   expect_equal(nrow(other$body$approvals), 0L)
+
+  # Papers: auto links first, then newest; a link without details has nulls.
+  papers <- by_name$body$papers
+  expect_equal(papers$pmid, c("1002", "1001", "1004", "1003"))
+  expect_equal(papers$link_status, c("auto", "auto", "auto", "candidate"))
+  expect_equal(papers$link_method[2], "trial_reference")
+  expect_equal(papers$nct_id[2], "NCT00000001")
+  expect_true(is.na(papers$nct_id[1]))
+  expect_true(is.na(papers$title[3]))
+  expect_equal(papers$kind[1], "case_report")
+  expect_equal(papers$year[1:2], c(2021L, 2009L))
+  expect_named(papers, c("pmid", "title", "journal", "year", "kind", "link_method",
+                         "link_confidence", "link_status", "nct_id"))
+  # Grants: newest first; a link without details goes last, with nulls.
+  grants <- by_name$body$grants
+  expect_equal(grants$core_project_num, c("R21CA000002", "R01CA000001", "R01CA000003"))
+  expect_equal(grants$first_fy[1:2], c(2019L, 2010L))
+  expect_true(is.na(grants$title[3]))
+  expect_named(grants, c("core_project_num", "title", "org", "pi", "first_fy", "last_fy", "url",
+                         "link_method", "link_confidence", "link_status"))
+  expect_equal(nrow(other$body$papers), 0L)
+  expect_equal(nrow(other$body$grants), 0L)
+  # As the API serialises them (unboxedJSON, na = "null"): null, and [] when none.
+  json <- as.character(jsonlite::toJSON(by_name$body, auto_unbox = TRUE, na = "null"))
+  expect_match(json, '"pmid":"1004","title":null', fixed = TRUE)
+  other_json <- as.character(jsonlite::toJSON(other$body, auto_unbox = TRUE, na = "null"))
+  expect_match(other_json, '"papers":[]', fixed = TRUE)
+  expect_match(other_json, '"grants":[]', fixed = TRUE)
   expect_true(by_name$body$trials$has_results)
   expect_length(by_name$body$recent_changes, 2)
   expect_equal(by_name$body$recent_changes[[1]]$significance, "major")
@@ -137,7 +184,7 @@ test_that("the API reads the database the Python build writes", {
   status <- system2(py, c(shQuote(file.path(repo_root, "tracker", "build_registry.py")),
                           "--registry", shQuote(file.path(repo_root, "registry")),
                           "--snapshots", shQuote(file.path(tempdir(), "no-snapshots.sqlite")),
-                          "--out", shQuote(out), "--page", "''"),
+                          "--out", shQuote(out), "--page", "''", "--site", "''", "--evidence", "''"),
                     stdout = FALSE, stderr = FALSE)
   expect_equal(status, 0L)
   tvec <- registry_program(out, "T-VEC")
@@ -145,5 +192,7 @@ test_that("the API reads the database the Python build writes", {
   expect_equal(tvec$body$program$preferred_name, "talimogene laherparepvec")
   expect_true("Imlygic" %in% tvec$body$aliases$alias)
   expect_equal(registry_program(out, "mrtx-1133")$body$program$preferred_name, "MRTX1133")
+  expect_true(is.data.frame(tvec$body$papers))
+  expect_true(is.data.frame(tvec$body$grants))
   expect_equal(registry_changes(out, since = "2026-01-01")$body$count, 0L)
 })

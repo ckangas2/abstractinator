@@ -644,8 +644,8 @@ async def program(
     virus, ncbi_taxon, strain, replication, modifications, transgenes, route,
     carrier; null otherwise), approvals (agency, region, date, status, brand,
     indication), aliases (each with
-    alias_type, ambiguous, source and evidence_url), trials and
-    recent_changes (up to 50, newest first, as in the changes tool).
+    alias_type, ambiguous, source and evidence_url), trials, papers, grants
+    and recent_changes (up to 50, newest first, as in the changes tool).
 
     Each trial is a ClinicalTrials.gov record linked to the program, with its
     status, phases, dates, enrollment and sponsor from the latest weekly
@@ -656,10 +656,22 @@ async def program(
     "auto" links are counted; "candidate" links are unreviewed and may be
     wrong, so check the trial before relying on one.
 
+    papers (up to 200, auto links first, then newest) are clinical papers:
+    pmid, title, journal, year, kind (clinical_trial, case_report,
+    clinical_other, review, other), link_method (trial_reference: a results
+    paper cited by a linked trial, whose nct_id is given; title; abstract),
+    link_confidence and link_status. grants (up to 100, newest first) are NIH
+    grants: core_project_num, title, org, pi, first_fy, last_fy, url,
+    link_method (title, abstract or terms), link_confidence and link_status.
+    Details not yet fetched are null. Both are found by the program's names
+    (Europe PMC and NIH RePORTER, refreshed weekly), with the same auto and
+    candidate rules as trials.
+
     A name shared by several programs returns program null and a candidates
     list of {axp_id, preferred_name}: ask again with the right AXP ID. An
-    unknown name returns an error. Use search_literature for papers about a
-    program; this tool is its identity, names and trials.
+    unknown name returns an error. Use search_literature for a wider search of
+    the literature; this tool is the program's identity, names, trials and
+    the clinical papers and grants that name it.
     """
     if not query.strip():
         return {"error": "Supply an AXP ID or a program name."}

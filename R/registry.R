@@ -13,9 +13,11 @@
 # R/ is loaded automatically by the Shiny app, so this file only defines
 # things. RSQLite is needed only when the database is actually read.
 
-REGISTRY_SCHEMA_VERSION <- "2"   # 2: virus and approval tables
+REGISTRY_SCHEMA_VERSION <- "3"   # 2: virus and approval tables; 3: trial conditions, papers, grants
 REGISTRY_SIGNIFICANCE   <- c("major", "minor", "info")
 REGISTRY_RECENT_CHANGES <- 50L
+REGISTRY_MAX_PAPERS     <- 200L
+REGISTRY_MAX_GRANTS     <- 100L
 
 # "MRTX-1133", "mrtx 1133" and "MRTX1133" all give "MRTX1133". Vectorised;
 # NA and names with no letters or digits give "".
@@ -147,7 +149,7 @@ registry_events <- function(con, progs, where, params, limit) {
   })
 }
 
-# GET /program: one program with its aliases, trials and recent changes.
+# GET /program: one program with its aliases, trials, papers, grants and recent changes.
 # query is already validated (agent/api.R).
 registry_program <- function(path, query) {
   registry_with_db(path, function(con, meta) {
@@ -201,13 +203,34 @@ registry_program <- function(path, query) {
       params = list(id))
     trials$has_results <- trials$has_results == 1
 
+    # Clinical papers: results papers its trials cite, and papers that name it
+    # (tracker/evidence.py). A link can exist before its paper's details have
+    # been fetched, hence the LEFT JOIN: missing details are NA (null).
+    papers <- DBI::dbGetQuery(con, paste(
+      "SELECT l.pmid, p.title, p.journal, p.year, p.kind,",
+      "l.method AS link_method, l.confidence AS link_confidence, l.status AS link_status, l.nct_id",
+      "FROM paper_link l LEFT JOIN paper p ON p.pmid = l.pmid",
+      "WHERE l.axp_id = ?",
+      "ORDER BY l.status = 'auto' DESC, p.year IS NULL, p.year DESC, l.confidence DESC, l.pmid",
+      "LIMIT ?"), params = list(id, REGISTRY_MAX_PAPERS))
+
+    # NIH grants that name it, newest first (by last fiscal year).
+    grants <- DBI::dbGetQuery(con, paste(
+      "SELECT l.core_project_num, g.title, g.org, g.pi, g.first_fy, g.last_fy, g.url,",
+      "l.method AS link_method, l.confidence AS link_confidence, l.status AS link_status",
+      "FROM grant_link l LEFT JOIN grant_award g ON g.core_project_num = l.core_project_num",
+      "WHERE l.axp_id = ?",
+      "ORDER BY g.last_fy IS NULL, g.last_fy DESC, g.first_fy DESC, l.core_project_num",
+      "LIMIT ?"), params = list(id, REGISTRY_MAX_GRANTS))
+
     # Events list the trial's auto-linked programs in axp_ids (a JSON list).
     recent <- registry_events(con, progs, "instr(e.axp_ids, ?) > 0",
                               list(paste0('"', id, '"')), REGISTRY_RECENT_CHANGES)
 
     registry_result(200, list(
       registry_release = release, query = query, program = program,
-      virus = virus, approvals = approvals, aliases = aliases, trials = trials, recent_changes = recent,
+      virus = virus, approvals = approvals, aliases = aliases, trials = trials,
+      papers = papers, grants = grants, recent_changes = recent,
       merged_from = hit$merged_from))
   })
 }

@@ -32,6 +32,7 @@ __pycache__/
 
 # Generated weekly by tracker/build_registry.py
 www/changes.html
+www/registry/
 
 # Shiny/bslib runtime cache
 app_cache/

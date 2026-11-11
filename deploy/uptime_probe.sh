@@ -143,3 +143,18 @@ if [ -r "$LIVE/data/trial_snapshots/trials.sqlite" ]; then
     track snapshot 0 "stale or incomplete" local
   fi
 fi
+
+# --- weekly evidence fetch ------------------------------------------------
+# Same idea for tracker/evidence.py (papers and grants that name each
+# program): complete and less than 8 days old. Unlike the snapshot, a missed
+# week can be fetched again, so this is a nudge rather than lost data.
+if [ -r "$LIVE/data/evidence/evidence.sqlite" ]; then
+  if /usr/bin/python3 "$LIVE/tracker/evidence.py" --status \
+       --out "$LIVE/data/evidence/evidence.sqlite" >/dev/null 2>&1; then
+    printf '%s,%s,%s,%s,%s\n' "$TS" local evidence "200,0,0" 0 >> "$CSV"
+    track evidence 1 200 local
+  else
+    printf '%s,%s,%s,%s,%s\n' "$TS" local evidence "500,0,0" 1 >> "$CSV"
+    track evidence 0 "stale or incomplete" local
+  fi
+fi

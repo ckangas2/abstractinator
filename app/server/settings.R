@@ -214,7 +214,12 @@
       # Each opens its hidden tab (handled in that tab's server part).
       hr(style = "border-top: 1px solid #444; margin: 22px 0 14px;"),
       h5("Beta", class = "settings-section"),
-      actionLink("open_therapinator", "Therapinator (beta)", icon = icon("flask"))
+      actionLink("open_therapinator", "Therapinator (beta)", icon = icon("flask")),
+      # The program registry's static pages (www/registry/, built weekly by
+      # tracker/site_pages.py). A plain link: it opens in a new tab.
+      tags$br(),
+      tags$a(href = "registry/index.html", target = "_blank", rel = "noopener",
+             icon("book"), " Registry")
       ) # End settings-modal
     )) # End modalDialog and showModal
   })

@@ -76,7 +76,8 @@ clinical trials `trial_status`, `trial_start`, `trial_end`, `phase`, `interventi
 
 **`program(query)`** looks up one therapy program in the program registry by its stable AXP ID or
 any name or code, and returns its aliases, linked ClinicalTrials.gov trials (each with how it was
-linked, a confidence, and `auto` or unreviewed `candidate` status) and recent changes.
+linked, a confidence, and `auto` or unreviewed `candidate` status), the clinical papers (Europe PMC)
+and NIH grants (RePORTER) that name it, linked the same way, and recent changes.
 
 **`changes(since, program, modality, significance="info", limit=100)`** returns change events
 (new trials, status and phase changes, results posted...) from weekly ClinicalTrials.gov snapshots
@@ -272,6 +273,10 @@ sudo -u shiny /usr/bin/Rscript -e 'source("R/log_utils_local.R"); print(summariz
 
 - One program from `data/registry/registry.sqlite` (override with `ABSTRACTINATOR_REGISTRY_DB`):
   its virus or vector (for virus-based programs), approvals, aliases, linked trials, recent changes; a merged ID resolves to its survivor (`merged_from`)
+- `papers` (up to 200; `pmid`, `title`, `journal`, `year`, `kind`, `link_method`, `link_confidence`,
+  `link_status`, `nct_id`; auto links first, then newest) and `grants` (up to 100, newest first;
+  `core_project_num`, `title`, `org`, `pi`, `first_fy`, `last_fy`, `url` and the link fields);
+  details not yet fetched are `null`. Layout and rules: `tracker/REGISTRY_DB.md`
 - An ambiguous name returns `"program": null` and `candidates`; no match is a 404, and a
   registry not built yet a 503
 

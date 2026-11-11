@@ -10,7 +10,8 @@ What it works out:
     registry's names against each trial's interventions and title;
   * what changed between consecutive snapshots (change_event): new trials,
     status and phase changes, results posted, enrolment and timeline changes;
-  * a weekly digest page (www/changes.html).
+  * a weekly digest page (www/changes.html), and the registry's web pages
+    (www/registry/, by site_pages.py).
 
 Uncertain ("candidate") trial links are exported on demand, by whoever wants
 to review them, into their own reports folder (--export-review), rather than
@@ -29,6 +30,8 @@ Options:
     --snapshots FILE  snapshot database (default: <repo>/data/trial_snapshots/trials.sqlite)
     --out FILE        output database (default: <repo>/data/registry/registry.sqlite)
     --page FILE       digest page (default: <repo>/www/changes.html; "" to skip)
+    --site DIR        registry web pages (default: <repo>/www/registry; "" to skip),
+                      written by tracker/site_pages.py
     --export-review FILE
                       don't build: write the existing database's candidate
                       links to FILE for review, e.g.
@@ -55,8 +58,10 @@ DEFAULT_REGISTRY = os.path.join(REPO, "registry")
 DEFAULT_SNAPSHOTS = os.path.join(REPO, "data", "trial_snapshots", "trials.sqlite")
 DEFAULT_OUT = os.path.join(REPO, "data", "registry", "registry.sqlite")
 DEFAULT_PAGE = os.path.join(REPO, "www", "changes.html")
+DEFAULT_SITE = os.path.join(REPO, "www", "registry")
+DEFAULT_EVIDENCE = os.path.join(REPO, "data", "evidence", "evidence.sqlite")
 
-SCHEMA_VERSION = "2"   # 2: virus and approval tables
+SCHEMA_VERSION = "3"   # 2: virus and approval tables; 3: trial conditions, papers and grants
 
 CONFIDENCE = {"intervention_name": 0.95, "intervention_text": 0.8, "title": 0.6}
 MIN_AUTO_TEXT_KEY = 5        # shorter names found inside text are only candidates
@@ -100,7 +105,24 @@ CREATE TABLE trial (
   nct_id TEXT PRIMARY KEY, snapshot_date TEXT, brief_title TEXT, overall_status TEXT,
   why_stopped TEXT, study_type TEXT, lead_sponsor TEXT, phases TEXT, start_date TEXT,
   primary_completion_date TEXT, completion_date TEXT, enrollment_count INTEGER,
-  has_results INTEGER, last_update_post_date TEXT, first_seen TEXT
+  has_results INTEGER, last_update_post_date TEXT, first_seen TEXT,
+  conditions TEXT          -- JSON list
+);
+CREATE TABLE paper (
+  pmid TEXT PRIMARY KEY, title TEXT, journal TEXT, year INTEGER, kind TEXT, doi TEXT, pmcid TEXT
+);
+CREATE TABLE paper_link (
+  axp_id TEXT NOT NULL, pmid TEXT NOT NULL, method TEXT NOT NULL, matched TEXT, nct_id TEXT,
+  confidence REAL NOT NULL, status TEXT NOT NULL, PRIMARY KEY (axp_id, pmid)
+);
+CREATE INDEX paper_link_by_pmid ON paper_link(pmid);
+CREATE TABLE grant_award (
+  core_project_num TEXT PRIMARY KEY, title TEXT, org TEXT, pi TEXT, first_fy INTEGER, last_fy INTEGER,
+  url TEXT
+);
+CREATE TABLE grant_link (
+  axp_id TEXT NOT NULL, core_project_num TEXT NOT NULL, method TEXT NOT NULL, matched TEXT,
+  confidence REAL NOT NULL, status TEXT NOT NULL, PRIMARY KEY (axp_id, core_project_num)
 );
 CREATE TABLE trial_link (
   nct_id TEXT NOT NULL, axp_id TEXT NOT NULL, method TEXT NOT NULL, matched TEXT NOT NULL,
@@ -295,6 +317,87 @@ def changes_between(snap, a_day, b_day):
 
 # --- build ---------------------------------------------------------------------
 
+# --- papers and grants ------------------------------------------------------------
+
+# ClinicalTrials.gov reference types that report the trial itself.
+TRIAL_RESULT_REF_TYPES = ("RESULT", "DERIVED")
+EVIDENCE_CONFIDENCE = {"trial_reference": 0.9, "title": 0.85, "abstract": 0.6, "terms": 0.6}
+
+
+def evidence_status(alias, field):
+    """auto or candidate for a paper/grant hit, by where the name was found.
+
+    A name in the title counts unless it is ambiguous or very short; in the
+    abstract or project terms, only INNs and brand names count."""
+    if alias is None or alias["ambiguous"]:
+        return "candidate"
+    key = alias["alias_key"]
+    named = alias.get("alias_type") in AUTO_TEXT_TYPES and len(key) >= MIN_AUTO_TEXT_KEY
+    if field == "title":
+        return "auto" if named or len(key) >= MIN_TEXT_KEY else "candidate"
+    return "auto" if named else "candidate"
+
+
+def add_evidence(db, evidence_path, alias_rows, links_by_trial, nct_refs):
+    """Fill paper, paper_link, grant_award and grant_link. Returns (papers, grants) links.
+
+    Papers come from two places: results papers that a linked trial's
+    registration cites (no fetching needed), and the hits that
+    tracker/evidence.py found by searching each program's names
+    (data/evidence/evidence.sqlite, optional). Grants come from the latter."""
+    by_alias = {}
+    for a in alias_rows:
+        by_alias.setdefault((a["axp_id"], a["alias_key"]), a)
+    best = {}
+
+    def offer(table, axp, ident, method, matched, status, conf, nct=None):
+        k = (table, axp, ident)
+        cand = (status == "auto", conf, method, matched, nct, status)
+        if k not in best or cand[:2] > best[k][:2]:
+            best[k] = cand
+
+    for nct, axps in links_by_trial.items():
+        for ref in nct_refs.get(nct, []):
+            if ref.get("pmid"):
+                for axp in axps:
+                    offer("paper", axp, ref["pmid"], "trial_reference", nct, "auto",
+                          EVIDENCE_CONFIDENCE["trial_reference"], nct)
+
+    have_evidence = bool(evidence_path) and os.path.isfile(evidence_path)
+    with db:
+        if have_evidence:
+            ev = sqlite3.connect("file:%s?mode=ro" % evidence_path, uri=True)
+            try:
+                for pmid, title, journal, year, kind, doi, pmcid in ev.execute(
+                        "SELECT pmid, title, journal, year, kind, doi, pmcid FROM paper"):
+                    db.execute("INSERT OR REPLACE INTO paper VALUES (?,?,?,?,?,?,?)",
+                               (pmid, title, journal, year, kind, doi, pmcid))
+                for row in ev.execute("SELECT core_project_num, title, org, pi, first_fy, last_fy, url FROM grant_award"):
+                    db.execute("INSERT OR REPLACE INTO grant_award VALUES (?,?,?,?,?,?,?)", row)
+                for pmid, axp, matched, field in ev.execute("SELECT pmid, axp_id, matched, field FROM paper_hit"):
+                    alias = by_alias.get((axp, reg.alias_key(matched)))
+                    offer("paper", axp, pmid, field, matched, evidence_status(alias, field),
+                          EVIDENCE_CONFIDENCE.get(field, 0.6))
+                for core, axp, matched, field in ev.execute(
+                        "SELECT core_project_num, axp_id, matched, field FROM grant_hit"):
+                    alias = by_alias.get((axp, reg.alias_key(matched)))
+                    offer("grant", axp, core, field, matched, evidence_status(alias, field),
+                          EVIDENCE_CONFIDENCE.get(field, 0.6))
+            finally:
+                ev.close()
+        n_p = n_g = 0
+        for (table, axp, ident), (_, conf, method, matched, nct, status) in sorted(best.items()):
+            if table == "paper":
+                db.execute("INSERT INTO paper_link VALUES (?,?,?,?,?,?,?)",
+                           (axp, ident, method, matched, nct, conf, status))
+                n_p += 1
+            else:
+                db.execute("INSERT INTO grant_link VALUES (?,?,?,?,?,?)",
+                           (axp, ident, method, matched, conf, status))
+                n_g += 1
+    return n_p, n_g
+
+
 def registry_release(registry_dir, today):
     h = hashlib.sha256()
     for name in ("programs.tsv", "aliases.tsv"):
@@ -303,7 +406,7 @@ def registry_release(registry_dir, today):
     return "%s+%s" % (today, h.hexdigest()[:12])
 
 
-def build(registry_dir, snapshots, out, today=None, log=print):
+def build(registry_dir, snapshots, out, today=None, log=print, evidence=None):
     today = today or dt.date.today().isoformat()
     problems = reg.validate(registry_dir)
     if problems:
@@ -347,6 +450,7 @@ def build(registry_dir, snapshots, out, today=None, log=print):
 
     latest = previous = ""
     n_links = n_events = 0
+    links_by_trial, nct_refs = {}, {}
     review = []
     if os.path.isfile(snapshots):
         snap = sqlite3.connect("file:%s?mode=ro" % snapshots, uri=True)
@@ -359,17 +463,22 @@ def build(registry_dir, snapshots, out, today=None, log=print):
                 index = AliasIndex(alias_rows)
                 names = {p["axp_id"]: p["preferred_name"] for p in programs}
                 links_by_trial = {}
+                nct_refs = {}
                 with db:
                     for nct, (h, rec_json) in sorted(records_for(snap, latest).items()):
                         rec = json.loads(rec_json)
                         obs = snap.execute("SELECT last_update_post_date FROM observation "
                                            "WHERE snapshot_date = ? AND nct_id = ?", (latest, nct)).fetchone()
-                        db.execute("INSERT INTO trial VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", (
+                        db.execute("INSERT INTO trial VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", (
                             nct, latest, rec.get("brief_title"), rec.get("overall_status"), rec.get("why_stopped"),
                             rec.get("study_type"), rec.get("lead_sponsor"), "/".join(rec.get("phases") or []),
                             rec.get("start_date"), rec.get("primary_completion_date"), rec.get("completion_date"),
                             rec.get("enrollment_count"), int(bool(rec.get("has_results"))),
-                            obs[0] if obs else None, first_seen.get(nct)))
+                            obs[0] if obs else None, first_seen.get(nct),
+                            json.dumps(rec.get("conditions") or [], ensure_ascii=False)))
+                        if nct_refs is not None:
+                            nct_refs[nct] = [r for r in rec.get("references") or []
+                                             if (r.get("type") or "") in TRIAL_RESULT_REF_TYPES]
                         for axp, l in sorted(link_trial(rec, index).items()):
                             db.execute("INSERT INTO trial_link VALUES (?,?,?,?,?,?)",
                                        (nct, axp, l["method"], l["matched"], l["confidence"], l["status"]))
@@ -390,6 +499,8 @@ def build(registry_dir, snapshots, out, today=None, log=print):
     else:
         log("no snapshot database at %s; programs and names only" % snapshots)
 
+    n_papers, n_grants = add_evidence(db, evidence, alias_rows, links_by_trial, nct_refs)
+
     with db:
         for k, v in (("schema_version", SCHEMA_VERSION),
                      ("built_at", dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds")),
@@ -400,8 +511,10 @@ def build(registry_dir, snapshots, out, today=None, log=print):
     db.close()
     os.replace(tmp, out)
 
-    log("built %s: %d programs, %d names, %d trial links (%d to review), %d change events; latest snapshot %s"
-        % (os.path.basename(out), len(programs), len(alias_rows), n_links, len(review), n_events, latest or "none"))
+    log("built %s: %d programs, %d names, %d trial links (%d to review), %d change events, "
+        "%d paper links, %d grant links; latest snapshot %s"
+        % (os.path.basename(out), len(programs), len(alias_rows), n_links, len(review), n_events,
+           n_papers, n_grants, latest or "none"))
     return out
 
 
@@ -483,7 +596,8 @@ def write_page(db_path, page_path, log=print):
     body.append("</table>")
     body.append("<footer>Registry release %s. Trials link to programs by the names in the open "
                 '<a href="https://github.com/ckangas2/abstractinator/tree/main/registry">program registry</a> '
-                "(CC BY 4.0). Source: ClinicalTrials.gov; not endorsed by NLM. "
+                "(CC BY 4.0); every program has its own page in the "
+                '<a href="registry/index.html">registry pages</a>. Source: ClinicalTrials.gov; not endorsed by NLM. '
                 '<a href="/">The Abstractinator</a></footer>' % esc(meta.get("registry_release", "")))
     page = ('<!doctype html><html lang="en"><head><meta charset="utf-8">'
             '<meta name="viewport" content="width=device-width,initial-scale=1">'
@@ -528,15 +642,21 @@ def main(argv=None):
     ap.add_argument("--snapshots", default=DEFAULT_SNAPSHOTS)
     ap.add_argument("--out", default=DEFAULT_OUT)
     ap.add_argument("--page", default=DEFAULT_PAGE)
+    ap.add_argument("--site", default=DEFAULT_SITE, help='registry web pages ("" to skip)')
+    ap.add_argument("--evidence", default=DEFAULT_EVIDENCE,
+                    help="papers and grants found by tracker/evidence.py (optional)")
     ap.add_argument("--export-review", metavar="FILE",
                     help="don't build; write the candidate links of the existing database to FILE")
     args = ap.parse_args(argv)
     if args.export_review:
         export_review(args.out, os.path.expanduser(args.export_review))
         return 0
-    out = build(args.registry, args.snapshots, args.out)
+    out = build(args.registry, args.snapshots, args.out, evidence=args.evidence)
     if args.page:
         write_page(out, args.page)
+    if args.site:
+        import site_pages  # here, not at the top: site_pages imports this module
+        site_pages.write_site(out, args.site)
     return 0
 
 

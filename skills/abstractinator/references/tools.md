@@ -54,9 +54,14 @@ Returns `program` (`preferred_name`, `status`, `modality`, `platform`,
 `targets`, `originator`, `sponsor`, `ncit`, `wikidata`, `unii`), `virus`
 (for virus-based programs: `role`, `virus_family`, `virus`, `strain`,
 `replication`, `modifications`, `transgenes`, `route`; else null),
-`approvals`, `aliases`, `trials` and `recent_changes`. Each trial has `link_method`
+`approvals`, `aliases`, `trials`, `papers`, `grants` and `recent_changes`. Each trial has `link_method`
 (`intervention_name`, `intervention_text`, `title`), `link_confidence` and
 `link_status`: `auto` links are counted, `candidate` links are unreviewed.
+`papers` (clinical papers: `pmid`, `title`, `journal`, `year`, `kind`, `link_method`
+`trial_reference`/`title`/`abstract`, `nct_id`; auto first, then newest, max 200) and
+`grants` (NIH: `core_project_num`, `title`, `org`, `pi`, `first_fy`, `last_fy`, `url`,
+`link_method` `title`/`abstract`/`terms`; newest first, max 100) carry the same
+`link_confidence` and `link_status`; details not yet fetched are null.
 An ambiguous name returns `program: null` and `candidates`.
 
 ## changes

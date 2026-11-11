@@ -197,6 +197,52 @@ class Build(unittest.TestCase):
         self.build()
         self.assertEqual(rows(self.out, "SELECT event_id FROM change_event ORDER BY event_id"), before)
 
+    def test_papers_and_grants(self):
+        # A linked trial's registration cites a results paper.
+        self.take("2026-11-11", [trial("NCT01", "Pexa-Vec", pmids=("11111111",))])
+        ev = os.path.join(self.dir, "evidence.sqlite")
+        con = sqlite3.connect(ev)
+        con.executescript("""
+          CREATE TABLE meta (key TEXT PRIMARY KEY, value TEXT);
+          CREATE TABLE paper (pmid TEXT PRIMARY KEY, title TEXT, journal TEXT, year INTEGER, kind TEXT,
+                              doi TEXT, pmcid TEXT);
+          CREATE TABLE paper_hit (pmid TEXT, axp_id TEXT, matched TEXT, field TEXT, PRIMARY KEY (pmid, axp_id));
+          CREATE TABLE grant_award (core_project_num TEXT PRIMARY KEY, title TEXT, org TEXT, pi TEXT,
+                                    first_fy INTEGER, last_fy INTEGER, url TEXT);
+          CREATE TABLE grant_hit (core_project_num TEXT, axp_id TEXT, matched TEXT, field TEXT,
+                                  PRIMARY KEY (core_project_num, axp_id));
+        """)
+        con.commit()
+        con.close()
+        br.build(REPO_REGISTRY, self.snapdb, self.out, today="2026-11-22", log=self.logs.append, evidence=ev)
+        pexa = rows(self.out, "SELECT axp_id FROM alias WHERE alias='Pexa-Vec'")[0][0]
+        self.assertEqual(rows(self.out, "SELECT axp_id, pmid, method, nct_id, status FROM paper_link"),
+                         [(pexa, "11111111", "trial_reference", "NCT01", "auto")])
+        con = sqlite3.connect(ev)
+        con.executemany("INSERT INTO paper_hit VALUES (?,?,?,?)", [
+            ("22222222", pexa, "JX-594", "title"),       # code in a title: counts
+            ("33333333", pexa, "JX-594", "abstract"),    # code only in an abstract: review
+            ("44444444", pexa, "pexastimogene devacirepvec", "abstract"),  # INN in an abstract: counts
+            ("11111111", pexa, "JX-594", "abstract")])   # weaker evidence for an existing link: ignored
+        con.execute("INSERT INTO paper VALUES ('22222222','JX-594 in HCC','J',2010,'clinical_trial',NULL,NULL)")
+        con.execute("INSERT INTO grant_award VALUES ('R01CA000001','Pexa-Vec biology','Univ','Smith, J',2010,2014,NULL)")
+        con.executemany("INSERT INTO grant_hit VALUES (?,?,?,?)", [
+            ("R01CA000001", pexa, "Pexa-Vec", "title"), ("R21CA000002", pexa, "JX-594", "terms")])
+        con.commit()
+        con.close()
+        br.build(REPO_REGISTRY, self.snapdb, self.out, today="2026-11-22", log=self.logs.append, evidence=ev)
+        links = {p: (m, st) for p, m, st in rows(self.out, "SELECT pmid, method, status FROM paper_link")}
+        self.assertEqual(links["11111111"], ("trial_reference", "auto"))
+        self.assertEqual(links["22222222"], ("title", "auto"))
+        self.assertEqual(links["33333333"], ("abstract", "candidate"))
+        self.assertEqual(links["44444444"], ("abstract", "auto"))
+        self.assertEqual(rows(self.out, "SELECT title FROM paper WHERE pmid='22222222'"), [("JX-594 in HCC",)])
+        grants = {g: (m, st) for g, m, st in rows(self.out, "SELECT core_project_num, method, status FROM grant_link")}
+        self.assertEqual(grants, {"R01CA000001": ("title", "auto"), "R21CA000002": ("terms", "candidate")})
+        # Trial conditions are kept for disease views (e.g. pancreatic cancer).
+        (conds,), = rows(self.out, "SELECT conditions FROM trial WHERE nct_id='NCT01'")
+        self.assertIn("Renal Cell Carcinoma", json.loads(conds))
+
     def test_bad_registry_builds_nothing(self):
         bad = os.path.join(self.dir, "bad")
         shutil.copytree(REPO_REGISTRY, bad)

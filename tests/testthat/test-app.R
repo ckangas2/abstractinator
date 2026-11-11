@@ -74,3 +74,11 @@ test_that("the Therapinator, kept out of the tab bar, opens from the settings me
   expect_false(grepl("} else {", landscape, fixed = TRUE))
   expect_match(landscape, "output$landscapeTable", fixed = TRUE)
 })
+
+test_that("the settings menu links to the program registry pages", {
+  # www/registry/ is written by tracker/site_pages.py; the link is relative so
+  # it works under any URL prefix.
+  settings <- paste(readLines(file.path(repo_root, "app/server/settings.R"), warn = FALSE), collapse = "\n")
+  expect_match(settings, 'tags$a(href = "registry/index.html", target = "_blank"', fixed = TRUE)
+  expect_match(settings, '" Registry")', fixed = TRUE)
+})

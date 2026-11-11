@@ -13,7 +13,7 @@ Readers must open it read-only (`file:...?mode=ro` URI in SQLite).
 ### meta
 | key | value |
 |---|---|
-| `schema_version` | `2` (2 added `virus` and `approval`) |
+| `schema_version` | `3` (2 added `virus` and `approval`; 3 added `trial.conditions`, papers and grants) |
 | `built_at` | UTC ISO 8601 |
 | `registry_release` | `YYYY-MM-DD+<first 12 hex of sha256 of programs.tsv + aliases.tsv>` |
 | `latest_snapshot` | the newest snapshot date used, or empty |
@@ -56,6 +56,7 @@ The latest observation of every trial in the newest snapshot.
 | `has_results` | INTEGER 0/1 |
 | `last_update_post_date` | TEXT |
 | `first_seen` | first snapshot date we saw this trial |
+| `conditions` | JSON list of the conditions studied (for disease views, e.g. pancreatic cancer) |
 
 ### trial_link
 Which trials are about which programs.
@@ -72,6 +73,42 @@ Which trials are about which programs.
 appears inside an intervention name or in the title; or when a code appears
 inside an intervention name and the title names it too. Codes seen only in a
 title, short names and ambiguous names stay `candidate`.
+
+### paper, paper_link
+Clinical papers about programs. `paper` (pmid PRIMARY KEY, title, journal,
+year INTEGER, kind, doi, pmcid) holds metadata fetched by `tracker/evidence.py`
+(absent until it has run: a link may have no `paper` row yet). `kind` is one
+of `clinical_trial`, `case_report`, `clinical_other`, `review`, `other`.
+
+`paper_link` (axp_id, pmid, method, matched, nct_id, confidence, status):
+
+| method | confidence | status |
+|---|---|---|
+| `trial_reference`: a RESULT/DERIVED reference in an auto-linked trial's registration (`nct_id` says which) | 0.9 | auto |
+| `title`: a program name in the paper's title | 0.85 | auto unless the name is ambiguous or under 4 characters |
+| `abstract`: only in the abstract | 0.6 | auto for INNs and brands, else candidate |
+
+### grant_award, grant_link
+NIH grants about programs, from NIH RePORTER via `tracker/evidence.py`.
+`grant_award` (core_project_num PRIMARY KEY, title, org, pi, first_fy, last_fy,
+url); `grant_link` (axp_id, core_project_num, method `title`/`abstract`/`terms`,
+matched, confidence, status), with the same rules as papers.
+
+## evidence.sqlite (input, written by tracker/evidence.py on bigtop)
+
+`data/evidence/evidence.sqlite`, rebuilt weekly before the registry build.
+It stores search hits, not judgements: build_registry decides auto/candidate.
+Abstracts are never stored (licensing): `field` records where the name was found.
+
+| table | columns |
+|---|---|
+| `meta` | key, value (`schema_version` = `1`, `fetched_at`, `complete` = `1`/`0`) |
+| `paper` | pmid PRIMARY KEY, title, journal, year INTEGER, kind, doi, pmcid |
+| `paper_hit` | pmid, axp_id, matched (the alias text searched), field (`title`/`abstract`), PRIMARY KEY (pmid, axp_id) |
+| `grant_award` | core_project_num PRIMARY KEY, title, org, pi, first_fy INTEGER, last_fy INTEGER, url |
+| `grant_hit` | core_project_num, axp_id, matched, field (`title`/`abstract`/`terms`), PRIMARY KEY (core_project_num, axp_id) |
+
+When a name matches in both title and abstract, `field` is `title`.
 
 ### change_event
 What changed between the two newest snapshots (and kept from earlier runs:
@@ -125,6 +162,9 @@ Event types:
  "merged_from": null}
 ```
 - `virus` is null for programs that aren't virus-based; `approvals` is `[]` when none.
+- `papers`: `[{pmid, title, journal, year, kind, link_method, link_confidence, link_status, nct_id}]`,
+  auto links first then by year (newest first), max 200; `grants`: `[{core_project_num, title, org, pi,
+  first_fy, last_fy, url, link_method, link_confidence, link_status}]`, newest first, max 100.
 - A merged ID resolves to its survivor and says so in `merged_from`.
 - A name matching several programs (ambiguous alias) returns 200 with
   `"program": null` and `"candidates": [{axp_id, preferred_name}]`.

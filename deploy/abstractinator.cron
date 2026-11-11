@@ -12,8 +12,13 @@ PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 45 4 * * * shiny cd /srv/shiny-server/abstractinator && /usr/bin/Rscript deploy/warm_mesh.R --pending >> logs/mesh_warm.log 2>&1
 
 # Sundays at 11:30pm: snapshot the tracked ClinicalTrials.gov records (see
-# tracker/snapshot_trials.py), then rebuild the registry database: trial links,
-# what changed, and the www/changes.html digest (tracker/build_registry.py).
+# tracker/snapshot_trials.py); search Europe PMC and NIH RePORTER for the
+# clinical papers and grants that name each program (tracker/evidence.py);
+# then rebuild the registry database: trial, paper and grant links, what
+# changed, and the www/changes.html digest (tracker/build_registry.py).
+# Separated by ";" so one failing step doesn't stop the rest: a failed
+# evidence fetch leaves last week's file in place for the build.
 # History can't be fetched later, so a missed week is lost; the uptime probe
-# alerts on a stale snapshot. Check by hand: python3 tracker/snapshot_trials.py --status
-30 23 * * 0 shiny cd /srv/shiny-server/abstractinator && /usr/bin/python3 tracker/snapshot_trials.py >> logs/trial_snapshots.log 2>&1; /usr/bin/python3 tracker/build_registry.py >> logs/registry_build.log 2>&1
+# alerts on a stale snapshot or evidence file. Check by hand:
+#   python3 tracker/snapshot_trials.py --status; python3 tracker/evidence.py --status
+30 23 * * 0 shiny cd /srv/shiny-server/abstractinator && /usr/bin/python3 tracker/snapshot_trials.py >> logs/trial_snapshots.log 2>&1; /usr/bin/python3 tracker/evidence.py >> logs/evidence.log 2>&1; /usr/bin/python3 tracker/build_registry.py >> logs/registry_build.log 2>&1

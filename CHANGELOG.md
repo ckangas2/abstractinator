@@ -66,6 +66,14 @@ Development before v2.0.0 was untagged; see the git history for detail.
   longer counts as support for a hepatitis B tag.
 
 ### Added
+- Registry web pages at abstractinator.me/registry/: an index by virus
+  family, a page per program (names, virus, approvals, trials, changes,
+  papers, grants, how to cite) and a pancreatic cancer view; linked from the
+  settings menu.
+- Clinical papers (Europe PMC) and NIH grants (RePORTER) that name each
+  program, fetched weekly; `/program` and the `program` MCP tool return them.
+- 74 viral-vector products added to the registry: gene therapies, cancer
+  vaccines and infectious-disease vaccines (approved or phase 3).
 - The weekly trial snapshot also searches trial interventions for every name
   in the program registry, so each program's trials are followed even when
   they never say "oncolytic" (ONYX-015's, for example).

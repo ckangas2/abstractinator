@@ -110,9 +110,15 @@ survives it and says so in merged_from. Returns registry_release, program
 (preferred_name, status, modality, platform, targets, originator, sponsor,
 ncit, wikidata, unii), virus (for virus-based programs: role, family, virus,
 strain, replication, modifications, transgenes, route; else null), approvals,
-aliases, trials and recent_changes. Each trial carries
+aliases, trials, papers, grants and recent_changes. Each trial carries
 link_method (intervention_name, intervention_text or title), link_confidence
 and link_status: "auto" links are counted, "candidate" links are unreviewed.
+papers are clinical papers that name the program or report its trials (pmid,
+title, journal, year, kind, link_method trial_reference/title/abstract,
+nct_id), auto first then newest, up to 200; grants are NIH grants that name
+it (core_project_num, title, org, pi, first_fy, last_fy, url, link_method
+title/abstract/terms), newest first, up to 100. Both carry link_confidence
+and link_status like trials.
 A name shared by several programs returns program null and candidates.
 
 ### Tool: changes

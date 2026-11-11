@@ -45,7 +45,7 @@ VIRUS_ROLES = {"oncolytic", "in_vivo_gene_transfer", "ex_vivo_gene_transfer", "v
 REPLICATION = {"replicating", "conditionally_replicating", "non_replicating"}
 ROUTES = {"intratumoral", "intravenous", "intra_arterial", "intravesical", "intraperitoneal", "intrapleural",
           "intracerebral", "intrathecal", "subretinal", "intravitreal", "intramuscular", "subcutaneous",
-          "intradermal", "intranasal", "oral", "topical", "ex_vivo"}
+          "intradermal", "intranasal", "inhaled", "oral", "topical", "ex_vivo"}
 AGENCIES = {"FDA", "EMA", "PMDA", "NMPA", "MFDS", "MHRA", "Health Canada", "TGA", "other"}
 APPROVAL_STATUSES = {"approved", "conditional", "withdrawn"}
 FAMILY_RE = re.compile(r"^[A-Z][a-z]+(viridae|viricetes)$")

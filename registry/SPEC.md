@@ -118,7 +118,7 @@ trials, not from here.
 | `replication` | `replicating`, `conditionally_replicating` (engineered to replicate selectively, e.g. E1A-deleted adenovirus) or `non_replicating` |
 | `modifications` | the engineering, briefly: `ICP34.5 and ICP47 deleted`, `TK deleted`, `E1B-55K deleted; E3 deleted` |
 | `transgenes` | what it delivers, `; `-separated: HGNC symbols for human genes (`CSF2`, `SMN1`), else the common name (`GALV-GP`, `LacZ`, `CAR (anti-CD19)`) |
-| `route` | how it is given, `; `-separated: `intratumoral`, `intravenous`, `intra_arterial`, `intravesical`, `intraperitoneal`, `intrapleural`, `intracerebral`, `intrathecal`, `subretinal`, `intravitreal`, `intramuscular`, `subcutaneous`, `intradermal`, `intranasal`, `oral`, `topical`, `ex_vivo` |
+| `route` | how it is given, `; `-separated: `intratumoral`, `intravenous`, `intra_arterial`, `intravesical`, `intraperitoneal`, `intrapleural`, `intracerebral`, `intrathecal`, `subretinal`, `intravitreal`, `intramuscular`, `subcutaneous`, `intradermal`, `intranasal`, `inhaled` (nebulised or aerosol, to the lungs), `oral`, `topical`, `ex_vivo` |
 | `carrier` | a cell or other carrier it is delivered in, e.g. `mesenchymal stem cells`; empty if none |
 | `evidence_url` | a source for these facts (a paper, label or company page) |
 
