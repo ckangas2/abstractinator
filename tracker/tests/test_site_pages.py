@@ -224,6 +224,11 @@ class Site(unittest.TestCase):
         self.assertIn('href="atlas.html"', index)
         self.assertIn('href="atlas-phage.html"', index)
         self.assertIn('href="atlas-aav.html"', index)
+        # The evaluation canary: on every page, and the same string as the repository's CANARY.txt.
+        self.assertIn(sp.CANARY, index)
+        self.assertIn(sp.CANARY, atlas)
+        with open(os.path.join(HERE, "..", "..", "registry", "CANARY.txt"), encoding="utf-8") as fh:
+            self.assertEqual(fh.readline().strip(), sp.CANARY)
         self.assertTrue(os.path.isfile(os.path.join(out, "registry", "atlas-aav.html")))
         # Each atlas page carries the tab bar, marking itself as current.
         with open(os.path.join(out, "registry", "atlas-phage.html"), encoding="utf-8") as fh:
