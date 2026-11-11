@@ -5,7 +5,9 @@ A curated row is only as good as its evidence, so before a proposed alias is
 accepted, every link it rests on is visited:
 
   * `evidence_url` on each alias, virus and approval row of the programs
-    checked (an HTTP GET; a 2xx or 3xx counts, anything else does not);
+    checked (an HTTP GET; a 2xx or 3xx counts, anything else does not).
+    Links to EMA are confirmed against the two lists EMA publishes of its
+    medicine pages and EPAR documents, because its site refuses robots;
   * every NCT number named in those programs' rows, against the
     ClinicalTrials.gov API (the study must exist);
   * every PMID named in them, against the NCBI E-utilities summary endpoint
@@ -52,10 +54,22 @@ RETRIES = 3
 # Some hosts rate-limit a run of requests even at one a second. EMA answered
 # 429 to nine EPAR pages in a row on 2026-11-11, so its requests are spaced
 # further apart; anything not listed keeps the one-second default.
-# EMA answered 200 to the first request and 429 to the second at 6 s apart
-# (bigtop, 2026-11-11), so its interval is 15 s: nine EPAR links then cost
-# about two and a half minutes, which is cheaper than retrying.
-HOST_PAUSE = {"www.ema.europa.eu": 15.0, "ema.europa.eu": 15.0}
+HOST_PAUSE = {"www.ema.europa.eu": 4.0, "ema.europa.eu": 4.0}
+
+# EMA's medicine pages sit behind a filter that answers 429 however slowly we
+# knock (bigtop, 2026-11-11: the PDF under /en/documents/ came back 200 while
+# /en/medicines/human/EPAR/... was refused four times at 15 s apart). Rather
+# than knock harder, read the lists EMA publishes for exactly this purpose:
+# two JSON files, refreshed twice a day, naming every centrally authorised
+# medicine's page and every EPAR document. A link that appears there is live,
+# which is a better check than a 200 anyway, and it costs two requests for the
+# whole run instead of one per citation. Nothing from these files is kept:
+# they are read to confirm links and then dropped.
+EMA_MEDICINES_JSON = ("https://www.ema.europa.eu/en/documents/report/"
+                      "medicines-output-medicines_json-report_en.json")
+EMA_EPAR_DOCUMENTS_JSON = ("https://www.ema.europa.eu/en/documents/report/"
+                           "documents-output-epar_documents_json-report_en.json")
+EMA_HOSTS = {"www.ema.europa.eu", "ema.europa.eu"}
 # A 429 is the host asking us to wait, not a dead link, so it is retried more
 # patiently than a server error, and Retry-After is obeyed when given. The
 # waits are capped and announced: a silent five-minute sleep looks exactly
@@ -69,6 +83,7 @@ PMID_RE = re.compile(r"\bPMID[: ]*([0-9]{5,9})\b|pubmed\.ncbi\.nlm\.nih\.gov/([0
 ID_RANGE_RE = re.compile(r"^AXP([0-9]{6})-AXP([0-9]{6})$")
 
 _last = {}        # host -> when it was last asked
+_ema_index = [None]   # the URLs EMA publishes, read at most once per run
 _seen = {}        # url -> (ok, detail, body), so a link shared by several
                   # programs is fetched once
 
@@ -84,6 +99,49 @@ def _pause(host):
     if wait > 0:
         time.sleep(wait)
     _last[host] = time.monotonic()
+
+
+def _read_json(url):
+    """The whole of a published JSON file (fetch() caps its reads, so this does
+    its own request). None if it cannot be read."""
+    host = urllib.parse.urlsplit(url).netloc
+    req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT,
+                                               "Accept": "application/json"})
+    for attempt in range(RETRIES + 1):
+        _pause(host)
+        try:
+            with urllib.request.urlopen(req, timeout=TIMEOUT * 4) as resp:
+                return json.loads(resp.read().decode("utf-8"))
+        except Exception as e:
+            if attempt < RETRIES:
+                time.sleep(5.0 * (attempt + 1))
+                continue
+            say("     could not read %s (%s)" % (url.rsplit("/", 1)[-1], type(e).__name__))
+            return None
+
+
+def ema_index():
+    """Every medicine page and EPAR document URL EMA publishes, lower-cased
+    and without trailing slashes. An empty set means the lists could not be
+    read, and callers fall back to fetching the page itself."""
+    if _ema_index[0] is not None:
+        return _ema_index[0]
+    urls = set()
+    say("     reading EMA's published medicine and document lists (two files)")
+    for source, field in ((EMA_MEDICINES_JSON, "medicine_url"),
+                          (EMA_EPAR_DOCUMENTS_JSON, "document_url")):
+        data = _read_json(source)
+        for row in (data or {}).get("data", []):
+            value = row.get(field)
+            if value:
+                urls.add(value.rstrip("/").lower())
+            for t in (row.get("translations") or {}).values():
+                if isinstance(t, str) and t.startswith("http"):
+                    urls.add(t.rstrip("/").lower())
+    if urls:
+        say("     EMA lists %d medicine and document links" % len(urls))
+    _ema_index[0] = urls
+    return urls
 
 
 def fetch(url, accept="*/*"):
@@ -140,6 +198,12 @@ def fetch(url, accept="*/*"):
 
 
 def check_url(url):
+    if urllib.parse.urlsplit(url).netloc in EMA_HOSTS:
+        listed = ema_index()
+        if listed and url.rstrip("/").lower() in listed:
+            return True, "listed in EMA's published data"
+        # Not listed, or the lists could not be read: ask the site itself,
+        # which still works for documents and older pages.
     ok, detail, _ = fetch(url)
     return ok, detail
 

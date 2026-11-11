@@ -184,6 +184,31 @@ class FetchManners(unittest.TestCase):
         self.assertLessEqual(sum(self.slept), budget)
         self.assertLess(budget, 300, "a single URL must not be able to eat five minutes")
 
+    def test_an_ema_link_is_confirmed_from_the_published_lists(self):
+        # 2026-11-11: EMA's medicine pages answer 429 to any robot, so they are
+        # checked against the lists EMA publishes instead of being fetched.
+        refcheck._ema_index[0] = None
+        self.addCleanup(lambda: refcheck._ema_index.__setitem__(0, None))
+        meds = {"data": [{"medicine_url": "https://www.ema.europa.eu/en/medicines/human/EPAR/glybera"}]}
+        docs = {"data": [{"document_url": "https://www.ema.europa.eu/en/documents/x_en.pdf",
+                          "translations": {"fr": "https://www.ema.europa.eu/fr/documents/x_fr.pdf"}}]}
+        reads = [meds, docs]
+        refcheck._read_json = lambda url: reads.pop(0) if reads else None
+        self.addCleanup(setattr, refcheck, "_read_json", refcheck._read_json)
+        self.serve([])  # any live fetch here would answer 200, so a pass must
+                        # come from the lists, which the call count proves
+        ok, detail = refcheck.check_url("https://www.ema.europa.eu/en/medicines/human/EPAR/glybera")
+        self.assertTrue(ok)
+        self.assertIn("published data", detail)
+        self.assertEqual(self.opened, [], "a listed EMA link is not fetched")
+        ok, detail = refcheck.check_url("https://www.ema.europa.eu/fr/documents/x_fr.pdf")
+        self.assertTrue(ok, "translations count too")
+        self.assertEqual(self.opened, [])
+        # something EMA does not list still gets asked for directly
+        ok, _ = refcheck.check_url("https://www.ema.europa.eu/en/documents/older_en.pdf")
+        self.assertTrue(ok)
+        self.assertEqual(len(self.opened), 1)
+
     def test_a_throttled_out_url_says_it_is_not_known_to_be_dead(self):
         self.serve([429, 429, 429, 429, 429])
         ok, detail, _ = refcheck.fetch("https://www.ema.europa.eu/en/medicines/human/EPAR/z")

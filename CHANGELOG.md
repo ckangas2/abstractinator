@@ -9,6 +9,14 @@ Development before v2.0.0 was untagged; see the git history for detail.
 ## [Unreleased]
 
 ### Fixed
+- EMA links are no longer fetched one by one. Its medicine pages answer 429
+  to any robot however slowly we knock, so the checker now confirms them
+  against the two JSON lists EMA publishes of its medicine pages and EPAR
+  documents (refreshed twice a day): two requests for a whole run instead of
+  one per citation, and a stronger check than a 200, since the link has to
+  appear in EMA's own data. Anything EMA does not list is still fetched
+  directly, and if the lists cannot be read the checker falls back to
+  fetching. Nothing from the files is stored.
 - The reference checker's retry waits are capped at 30 s and announced as they
   happen, and a URL that is still throttled at the end says so rather than
   being reported like a 404. The first version doubled its wait up to 160 s in
