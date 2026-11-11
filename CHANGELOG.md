@@ -9,6 +9,10 @@ Development before v2.0.0 was untagged; see the git history for detail.
 ## [Unreleased]
 
 ### Fixed
+- The reference checker's retry waits are capped at 30 s and announced as they
+  happen, and a URL that is still throttled at the end says so rather than
+  being reported like a 404. The first version doubled its wait up to 160 s in
+  silence, which read as a hang.
 - The reference checker treated a throttled host as a dead link: nine EMA
   pages in a row answered 429 and the AAV acceptance run refused them. It now
   spaces requests per host (further apart for hosts that throttle), obeys

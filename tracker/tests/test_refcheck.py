@@ -170,6 +170,27 @@ class FetchManners(unittest.TestCase):
     def test_throttling_host_gets_its_own_interval(self):
         self.assertGreater(refcheck.HOST_PAUSE["www.ema.europa.eu"], refcheck.PAUSE_SECONDS)
 
+    def test_no_single_wait_is_longer_than_the_cap(self):
+        # 2026-11-11: uncapped doubling slept 160 s in silence and looked hung.
+        # Two kinds of sleep happen here: the retry backoff, capped by
+        # THROTTLE_MAX_WAIT, and this host's own pacing interval. Both are
+        # bounded, so a throttled-out URL costs a known, small amount of time.
+        host_gap = refcheck.HOST_PAUSE["www.ema.europa.eu"]
+        self.serve([429, 429, 429, 429, 429])
+        ok, _, _ = refcheck.fetch("https://www.ema.europa.eu/en/medicines/human/EPAR/y")
+        self.assertFalse(ok)
+        self.assertLessEqual(max(self.slept), max(refcheck.THROTTLE_MAX_WAIT, host_gap))
+        budget = (refcheck.THROTTLE_MAX_WAIT + host_gap) * (refcheck.THROTTLE_RETRIES + 1)
+        self.assertLessEqual(sum(self.slept), budget)
+        self.assertLess(budget, 300, "a single URL must not be able to eat five minutes")
+
+    def test_a_throttled_out_url_says_it_is_not_known_to_be_dead(self):
+        self.serve([429, 429, 429, 429, 429])
+        ok, detail, _ = refcheck.fetch("https://www.ema.europa.eu/en/medicines/human/EPAR/z")
+        self.assertFalse(ok)
+        self.assertIn("429", detail)
+        self.assertIn("not shown to be dead", detail)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -52,11 +52,17 @@ RETRIES = 3
 # Some hosts rate-limit a run of requests even at one a second. EMA answered
 # 429 to nine EPAR pages in a row on 2026-11-11, so its requests are spaced
 # further apart; anything not listed keeps the one-second default.
-HOST_PAUSE = {"www.ema.europa.eu": 6.0, "ema.europa.eu": 6.0}
+# EMA answered 200 to the first request and 429 to the second at 6 s apart
+# (bigtop, 2026-11-11), so its interval is 15 s: nine EPAR links then cost
+# about two and a half minutes, which is cheaper than retrying.
+HOST_PAUSE = {"www.ema.europa.eu": 15.0, "ema.europa.eu": 15.0}
 # A 429 is the host asking us to wait, not a dead link, so it is retried more
-# patiently than a server error, and Retry-After is obeyed when given.
-THROTTLE_RETRIES = 5
-THROTTLE_BACKOFF = 10.0
+# patiently than a server error, and Retry-After is obeyed when given. The
+# waits are capped and announced: a silent five-minute sleep looks exactly
+# like a hang, which is how the first version of this read on 2026-11-11.
+THROTTLE_RETRIES = 4
+THROTTLE_BACKOFF = 8.0
+THROTTLE_MAX_WAIT = 30.0
 
 NCT_RE = re.compile(r"\bNCT[0-9]{8}\b")
 PMID_RE = re.compile(r"\bPMID[: ]*([0-9]{5,9})\b|pubmed\.ncbi\.nlm\.nih\.gov/([0-9]{5,9})")
@@ -102,8 +108,12 @@ def fetch(url, accept="*/*"):
         except urllib.error.HTTPError as e:
             if e.code == 429 and throttled < THROTTLE_RETRIES:
                 after = e.headers.get("Retry-After") if e.headers else None
-                time.sleep(float(after) if after and str(after).isdigit() else throttle_delay)
-                throttle_delay *= 2
+                wait = min(float(after) if after and str(after).isdigit() else throttle_delay,
+                           THROTTLE_MAX_WAIT)
+                say("     429 from %s, waiting %ds (try %d of %d)"
+                    % (host, round(wait), throttled + 1, THROTTLE_RETRIES))
+                time.sleep(wait)
+                throttle_delay = min(throttle_delay * 2, THROTTLE_MAX_WAIT)
                 throttled += 1
                 continue
             if e.code in (500, 502, 503, 504) and attempt < RETRIES:
@@ -111,7 +121,11 @@ def fetch(url, accept="*/*"):
                 delay *= 2
                 attempt += 1
                 continue
-            out = (False, "HTTP %d" % e.code, b"")
+            detail = "HTTP %d" % e.code
+            if e.code == 429:
+                detail = ("HTTP 429 (still throttled after %d tries; not shown to be dead)"
+                          % THROTTLE_RETRIES)
+            out = (False, detail, b"")
             _seen[url] = out
             return out
         except Exception as e:  # network error, TLS, timeout
@@ -240,9 +254,15 @@ def main(argv=None):
                 bad.setdefault(axp, []).append("PMID %s (%s)" % (pmid, detail))
 
     say("")
-    say("%d reference(s) reached, %d program(s) with a problem" % (n_ok, len(bad)))
+    throttled_only = {a for a, ps in bad.items() if all("429" in p for p in ps)}
+    say("%d reference(s) reached, %d program(s) with a problem%s"
+        % (n_ok, len(bad),
+           " (%d of them only throttled, so not shown to be wrong)" % len(throttled_only)
+           if throttled_only else ""))
     for axp in sorted(bad):
         say("  %s: %s" % (axp, "; ".join(bad[axp])))
+    if throttled_only:
+        say("  a throttled host is not a dead link: re-run and these usually pass")
 
     if not args.accept:
         return 1 if bad else 0
