@@ -2559,3 +2559,25 @@ a.landing-card-link:focus-visible .landing-card {
   text-decoration: none;
 }
 .program-chip:hover, .program-chip:focus { background: rgba(255, 213, 79, 0.15); color: #ffe082; text-decoration: none; }
+
+/* --- Therapinator: cards for the registered programs the results name --- */
+.program-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 10px;
+  margin: 6px 0 4px;
+}
+.program-card {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 213, 79, 0.45);
+  border-radius: 8px;
+  color: inherit;
+  text-decoration: none;
+}
+.program-card:hover, .program-card:focus { border-color: #ffd54f; background: rgba(255, 213, 79, 0.06); text-decoration: none; color: inherit; }
+.program-card .pc-name { color: #ffd54f; font-weight: bold; overflow-wrap: anywhere; }
+.program-card .pc-meta { font-size: 0.85em; opacity: 0.8; }
+.program-card .pc-count { font-size: 0.85em; }

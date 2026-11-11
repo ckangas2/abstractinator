@@ -27,6 +27,24 @@ landscape_df <- reactive({
   df
 })
 
+# Registered programs these results name (R/registry_chips.R), as cards.
+output$programCards <- renderUI({
+  df <- landscape_df()
+  req(df)
+  cards <- tryCatch(registry_program_cards(df), error = function(e) NULL)
+  if (is.null(cards)) {
+    return(p(class = "plot-caveat", "The program registry isn't available right now."))
+  }
+  if (nrow(cards) == 0L) {
+    return(p(class = "plot-caveat",
+             "None of these results names a registered program. The registry covers oncolytic viruses, viral-vector products and a few others: ",
+             tags$a(href = "registry/index.html", target = "_blank", rel = "noopener", "browse it"), "."))
+  }
+  more <- nrow(cards) - 24L
+  tagList(HTML(registry_cards_html(cards)),
+          if (more > 0) p(class = "plot-caveat", sprintf("And %d more, named less often.", more)))
+})
+
 output$landscapeTable <- DT::renderDataTable({
   df <- landscape_df()
   req(df)

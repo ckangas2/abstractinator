@@ -419,6 +419,45 @@ def collect_papers_pubmed(names, http=http_json, log=say, max_batches=None, max_
     return papers, hits, complete
 
 
+def trial_cited_pmids(names, snapshots=None, log=say):
+    """PMIDs of the results papers (RESULT/DERIVED references) that trials
+    linked to a program cite, in the newest snapshot. build_registry links
+    these papers to the program straight from the registration; fetching them
+    here gives them a title, journal and year even when the paper never names
+    the program in its title or abstract. Empty if there are no snapshots."""
+    path = snapshots or br.DEFAULT_SNAPSHOTS
+    if not os.path.isfile(path):
+        return set()
+    index = br.AliasIndex(names)
+    out = set()
+    snap = sqlite3.connect("file:%s?mode=ro" % path, uri=True)
+    try:
+        days = [r[0] for r in snap.execute("SELECT snapshot_date FROM snapshot ORDER BY snapshot_date")]
+        if not days:
+            return set()
+        for _nct, (_h, rec_json) in br.records_for(snap, days[-1]).items():
+            rec = json.loads(rec_json)
+            refs = [r.get("pmid") for r in rec.get("references") or []
+                    if (r.get("type") or "") in br.TRIAL_RESULT_REF_TYPES and r.get("pmid")]
+            if refs and any(l["status"] == "auto" for l in br.link_trial(rec, index).values()):
+                out.update(str(p) for p in refs)
+    finally:
+        snap.close()
+    return out
+
+
+def fetch_pmids(pmids, http=http_json, batch=None):
+    """Paper rows for these PMIDs from PubMed efetch (no search, no hits)."""
+    batch = batch or EFETCH_BATCH
+    ids, rows = sorted(pmids), {}
+    for i in range(0, len(ids), batch):
+        text = http(EFETCH_API, form={"db": "pubmed", "id": ",".join(ids[i:i + batch]), "retmode": "xml"}, raw=True)
+        for rec in parse_pubmed_xml(text):
+            rows[rec["pmid"]] = (rec["pmid"], _clean(rec["title"]) or None, rec["journal"], rec["year"],
+                                 paper_kind(rec["pub_types"]), rec["doi"], rec["pmcid"])
+    return rows
+
+
 # --- Europe PMC ---------------------------------------------------------------------
 
 def epmc_query(terms, clinical_only=True):
@@ -449,7 +488,7 @@ def paper_kind(pub_types):
     """clinical_trial, case_report, review, clinical_other or other, from a
     record's publication types (first match wins, in that order)."""
     types = {str(t).strip().lower() for t in pub_types or []}
-    if any(t.startswith("clinical trial") and "protocol" not in t for t in types) or \
+    if any(t.startswith("clinical trial") and "protocol" not in t and "veterinary" not in t for t in types) or \
             types & {"randomized controlled trial", "controlled clinical trial", "pragmatic clinical trial",
                      "equivalence trial", "adaptive clinical trial"}:
         return "clinical_trial"
@@ -457,8 +496,10 @@ def paper_kind(pub_types):
         return "case_report"
     if types & {"review", "systematic review", "meta-analysis", "scoping review"}:
         return "review"
-    if types & {"clinical study", "observational study", "clinical trial protocol", "multicenter study",
-                "comparative study", "evaluation study", "validation study"}:
+    # Not "Comparative Study", "Evaluation Study" or "Validation Study": PubMed
+    # gives those to lab work as often as to studies in people (an assay
+    # validation, a cell-line comparison).
+    if types & {"clinical study", "observational study", "clinical trial protocol", "multicenter study"}:
         return "clinical_other"
     return "other"
 
@@ -695,7 +736,7 @@ def write_db(out, papers, paper_hits, grants, grant_hits, complete, fetched_at):
 
 
 def fetch_all(out, registry_dir=DEFAULT_REGISTRY, http=http_json, log=say, now=None, papers_from="pubmed",
-              clinical_only=False,
+              clinical_only=False, snapshots=None,
               budget=TIME_BUDGET):
     """Fetch both sources and write the database. Returns the exit code:
     0 written and complete, 3 written but incomplete, 1 nothing written.
@@ -711,6 +752,15 @@ def fetch_all(out, registry_dir=DEFAULT_REGISTRY, http=http_json, log=say, now=N
             papers, phits, p_ok = collect_papers(names, http=http, log=log, clinical_only=clinical_only)
         else:
             papers, phits, p_ok = collect_papers_pubmed(names, http=http, log=log, clinical_only=clinical_only)
+        if papers_from != "europepmc":
+            cited = trial_cited_pmids(names, snapshots, log=log) - set(papers)
+            if cited:
+                try:
+                    found = fetch_pmids(cited, http=http)
+                    papers.update(found)
+                    log("pubmed    trial-cited papers: %d not found by name, %d fetched" % (len(cited), len(found)))
+                except FetchError as e:     # a supplement: the build still links them, just without details
+                    log("pubmed    trial-cited papers: %d not fetched (%s)" % (len(cited), e))
         grants, ghits, g_ok = collect_grants(names, http=http, log=log)
     except (FetchError, BadRequest) as e:
         log("ERROR %s; nothing written, %s left as it was" % (e, out))

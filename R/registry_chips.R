@@ -31,8 +31,8 @@ registry_norm_text <- function(x) {
   x <- as.character(x)
   x[is.na(x)] <- ""
   x <- stringi::stri_replace_all_regex(x, "<[^>]*>", " ")
-  x <- stringi::stri_replace_all_regex(x, "[®™©]", "")
-  x <- stringi::stri_replace_all_fixed(x, "∆", "Δ")
+  x <- stringi::stri_replace_all_regex(x, "[\u00ae\u2122\u00a9]", "")
+  x <- stringi::stri_replace_all_fixed(x, "\u2206", "\u0394")
   stringi::stri_trans_nfkc(x)
 }
 
@@ -64,8 +64,8 @@ registry_as_written <- function(alias, text) {
   if (length(chars) == 0L) return(FALSE)
   body <- registry_norm_text(text)[1]
   around <- function(sep) paste0("(?<![\\p{L}\\p{N}])", paste(chars, collapse = sep), "(?![\\p{L}\\p{N}])")
-  joined <- around("[\\-‐-―_./]*")
-  spaced <- around("[\\s\\-‐-―_./]*")
+  joined <- around("[\\-\u2010-\u2015_./]*")
+  spaced <- around("[\\s\\-\u2010-\u2015_./]*")
   isTRUE(stringi::stri_detect_regex(body, joined, case_insensitive = TRUE)) ||
     isTRUE(stringi::stri_detect_regex(body, spaced))
 }
@@ -120,6 +120,7 @@ registry_chip_index <- local({
       programs <- data.frame(
         axp_id = ids,
         preferred_name = names_df$preferred_name[match(ids, names_df$axp_id)],
+        modality = names_df$modality[match(ids, names_df$axp_id)],
         family = family$virus_family[match(ids, family$axp_id)],
         stage = vapply(ids, function(id)
           registry_stage_label(phases$phases[phases$axp_id == id], id %in% approved), ""),
@@ -170,8 +171,8 @@ registry_match <- function(title, abstract, index) {
 registry_chip_html <- function(axp_id, alias, programs) {
   p <- programs[programs$axp_id == axp_id, , drop = FALSE]
   if (nrow(p) == 0L) return("")
-  label <- if (nzchar(p$stage[1])) paste0(alias, " · ", p$stage[1]) else alias
-  tip <- paste(c(p$preferred_name[1], if (nzchar(p$family[1])) p$family[1], axp_id), collapse = " · ")
+  label <- if (nzchar(p$stage[1])) paste0(alias, " \u00b7 ", p$stage[1]) else alias
+  tip <- paste(c(p$preferred_name[1], if (nzchar(p$family[1])) p$family[1], axp_id), collapse = " \u00b7 ")
   paste0('<a class="program-chip" href="registry/', axp_id, '.html" target="_blank" rel="noopener" ',
          'title="', htmltools::htmlEscape(tip, attribute = TRUE), '">',
          htmltools::htmlEscape(label), '</a>')
@@ -191,4 +192,76 @@ registry_programs_html <- function(titles, abstracts, index = registry_chip_inde
       registry_chip_html(m$axp_id[j], m$alias[j], index$programs), ""), collapse = " ")
   }
   out
+}
+
+
+# --- program cards in the Therapinator --------------------------------------
+
+# Rank of a stage label, for sorting: approved first, then the highest phase.
+registry_stage_rank <- function(stage) {
+  r <- c("approved" = 6, "phase 4" = 5, "phase 3" = 4, "phase 2" = 3, "phase 1" = 2, "early phase 1" = 1)
+  out <- unname(r[stage])
+  out[is.na(out)] <- 0
+  out
+}
+
+# The programs a set of results names, from the chips each result carries
+# (RegistryPrograms): one row per program with how many results name it,
+# split by kind of record. Most-named first, then the furthest along.
+registry_program_cards <- function(df, index = registry_chip_index()) {
+  empty <- data.frame(axp_id = character(0), preferred_name = character(0), detail = character(0),
+                      stage = character(0), n = integer(0), n_papers = integer(0),
+                      n_trials = integer(0), n_grants = integer(0), n_preprints = integer(0),
+                      stringsAsFactors = FALSE)
+  if (is.null(index) || is.null(df) || nrow(df) == 0L || !"RegistryPrograms" %in% names(df)) return(empty)
+  ids <- stringi::stri_extract_all_regex(as.character(df$RegistryPrograms), "AXP[0-9]{6}")
+  src <- tolower(as.character(df$Source))
+  src[is.na(src)] <- ""
+  kind <- ifelse(grepl("clinicaltrials", src), "trial",
+          ifelse(grepl("nih|nsf|reporter", src), "grant",
+          ifelse(grepl("biorxiv|medrxiv|preprint", src), "preprint", "paper")))
+  hits <- do.call(rbind, lapply(seq_along(ids), function(i) {
+    x <- unique(ids[[i]][!is.na(ids[[i]])])
+    if (length(x) == 0L) NULL else data.frame(axp_id = x, kind = kind[i], stringsAsFactors = FALSE)
+  }))
+  if (is.null(hits) || nrow(hits) == 0L) return(empty)
+  progs <- index$programs[index$programs$axp_id %in% hits$axp_id, , drop = FALSE]
+  if (nrow(progs) == 0L) return(empty)
+  count <- function(id, k = NULL) sum(hits$axp_id == id & (if (is.null(k)) TRUE else hits$kind == k))
+  out <- data.frame(
+    axp_id = progs$axp_id,
+    preferred_name = progs$preferred_name,
+    detail = ifelse(nzchar(progs$family), progs$family, progs$modality),
+    stage = progs$stage,
+    n = vapply(progs$axp_id, count, 0L),
+    n_papers = vapply(progs$axp_id, count, 0L, k = "paper"),
+    n_trials = vapply(progs$axp_id, count, 0L, k = "trial"),
+    n_grants = vapply(progs$axp_id, count, 0L, k = "grant"),
+    n_preprints = vapply(progs$axp_id, count, 0L, k = "preprint"),
+    stringsAsFactors = FALSE, row.names = NULL)
+  out$detail[is.na(out$detail)] <- ""
+  out[order(-out$n, -registry_stage_rank(out$stage), out$preferred_name), , drop = FALSE]
+}
+
+# The cards as HTML: name, family (or modality) and stage, and what kind of
+# results name it. Each links to the program's registry page.
+registry_cards_html <- function(cards, max_cards = 24L) {
+  if (nrow(cards) == 0L) return("")
+  cards <- utils::head(cards, max_cards)
+  plural <- function(n, one, many) if (n == 1L) paste(n, one) else paste(n, many)
+  one <- function(i) {
+    r <- cards[i, ]
+    parts <- c(if (r$n_papers > 0) plural(r$n_papers, "paper", "papers"),
+               if (r$n_trials > 0) plural(r$n_trials, "trial", "trials"),
+               if (r$n_grants > 0) plural(r$n_grants, "grant", "grants"),
+               if (r$n_preprints > 0) plural(r$n_preprints, "preprint", "preprints"))
+    meta <- paste(c(if (nzchar(r$detail)) r$detail, if (nzchar(r$stage)) r$stage), collapse = " \u00b7 ")
+    paste0('<a class="program-card" href="registry/', r$axp_id, '.html" target="_blank" rel="noopener">',
+           '<span class="pc-name">', htmltools::htmlEscape(r$preferred_name), '</span>',
+           '<span class="pc-meta">', htmltools::htmlEscape(meta), '</span>',
+           '<span class="pc-count">', htmltools::htmlEscape(paste0(
+             plural(r$n, "result", "results"), if (length(parts)) paste0(": ", paste(parts, collapse = ", ")))),
+           '</span></a>')
+  }
+  paste0('<div class="program-cards">', paste(vapply(seq_len(nrow(cards)), one, ""), collapse = ""), '</div>')
 }

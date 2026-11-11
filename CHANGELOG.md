@@ -9,6 +9,10 @@ Development before v2.0.0 was untagged; see the git history for detail.
 ## [Unreleased]
 
 ### Fixed
+- Registry pages: papers that a linked trial cites now always have a title,
+  journal and year (the weekly fetch looks them up), and lab papers PubMed
+  tags "Comparative", "Evaluation" or "Validation Study" are no longer listed
+  as clinical.
 - The Therapinator summary table errored on every search: a bare
   `validate()` resolved to jsonlite's JSON validator instead of Shiny's. Now
   `shiny::validate`, with a test that no server code uses the bare name.
@@ -66,6 +70,9 @@ Development before v2.0.0 was untagged; see the git history for detail.
   longer counts as support for a hepatitis B tag.
 
 ### Added
+- Therapinator (beta): cards for the registered programs a search's results
+  name, most-named first, with each one's virus family, stage and how many
+  papers, trials, grants and preprints name it.
 - Search results that name a registered program get a chip beside the title
   (name and stage, e.g. "T-VEC · approved") linking to its registry page. The
   app recognises names with the weekly linker's own rules, so a chip appears

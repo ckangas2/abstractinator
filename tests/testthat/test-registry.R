@@ -261,16 +261,53 @@ test_that("results get chips by the registry's linking rules", {
                   ""),
     index = index)
   expect_match(html[1], 'href="registry/AXP000001.html"', fixed = TRUE)
-  expect_match(html[1], "T-VEC · approved", fixed = TRUE)
+  expect_match(html[1], "T-VEC \u00b7 approved", fixed = TRUE)
   expect_match(html[1], "Orthoherpesviridae", fixed = TRUE)            # in the tooltip
   expect_equal(html[2], "")                                            # "on 01" is not ON-01
   expect_match(html[3], "AXP000001", fixed = TRUE)
   expect_equal(html[4], "")                                            # ambiguous names never chip
-  expect_match(html[5], "ON-01 · phase 2", fixed = TRUE)          # stage from a confirmed trial
+  expect_match(html[5], "ON-01 \u00b7 phase 2", fixed = TRUE)          # stage from a confirmed trial
 
   # A short code only in an abstract waits for review, so no chip.
   expect_equal(registry_programs_html("A study", "T-VEC was used", index = index), "")
   # No database: no chips, no error.
   expect_identical(registry_programs_html(c("T-VEC", "x"), c("", ""), index = NULL), c("", ""))
   expect_null(registry_chip_index(file.path(tempdir(), "no-such-registry.sqlite")))
+})
+
+test_that("the Therapinator's cards count the results that name each program", {
+  index <- list(
+    names = data.frame(),
+    programs = data.frame(
+      axp_id = c("AXP000001", "AXP000002", "AXP000003"),
+      preferred_name = c("talimogene laherparepvec", "ON-01", "<b>odd</b>"),
+      modality = c("Oncolytic virus", "Oncolytic virus", "Targeted small molecule"),
+      family = c("Orthoherpesviridae", "", ""),
+      stage = c("approved", "phase 2", ""),
+      stringsAsFactors = FALSE))
+  chip <- function(id) paste0('<a class="program-chip" href="registry/', id, '.html">x</a>')
+  df <- data.frame(
+    RegistryPrograms = c(chip("AXP000001"), "", paste(chip("AXP000001"), chip("AXP000002")),
+                         chip("AXP000003"), paste(chip("AXP000001"), chip("AXP000001"))),
+    Source = c("Europe PMC", "clinicaltrials.gov", "clinicaltrials.gov", "NIH RePORTER", "bioRxiv"),
+    stringsAsFactors = FALSE)
+  cards <- registry_program_cards(df, index)
+  expect_equal(cards$axp_id, c("AXP000001", "AXP000002", "AXP000003"))   # most-named, then furthest along
+  expect_equal(cards$n, c(3L, 1L, 1L))                                    # a program twice in one result counts once
+  expect_equal(c(cards$n_papers[1], cards$n_trials[1], cards$n_preprints[1]), c(1L, 1L, 1L))
+  expect_equal(cards$n_grants[3], 1L)
+  expect_equal(cards$detail, c("Orthoherpesviridae", "Oncolytic virus", "Targeted small molecule"))
+
+  html <- registry_cards_html(cards)
+  expect_match(html, 'href="registry/AXP000001.html"', fixed = TRUE)
+  expect_match(html, "3 results: 1 paper, 1 trial, 1 preprint", fixed = TRUE)
+  expect_match(html, "Orthoherpesviridae \u00b7 approved", fixed = TRUE)
+  expect_match(html, "1 result: 1 grant", fixed = TRUE)
+  expect_match(html, "&lt;b&gt;odd&lt;/b&gt;", fixed = TRUE)                # names are escaped
+  expect_false(grepl("<b>odd", html, fixed = TRUE))
+
+  expect_equal(nrow(registry_program_cards(df[0, ], index)), 0L)
+  expect_equal(nrow(registry_program_cards(data.frame(Source = "x"), index)), 0L)
+  expect_equal(nrow(registry_program_cards(df, NULL)), 0L)
+  expect_identical(registry_cards_html(registry_program_cards(df, NULL)), "")
 })

@@ -148,6 +148,11 @@ class Pieces(unittest.TestCase):
         self.assertEqual(ev.paper_kind(["Observational Study"]), "clinical_other")
         self.assertEqual(ev.paper_kind(["Clinical Trial Protocol"]), "clinical_other")
         self.assertEqual(ev.paper_kind(["Journal Article"]), "other")
+        # Lab-study types are not clinical, and a veterinary trial is not a clinical trial.
+        for lab in (["Validation Study", "Journal Article"], ["Evaluation Study"], ["Comparative Study"],
+                    ["Clinical Trial, Veterinary"]):
+            self.assertEqual(ev.paper_kind(lab), "other", lab)
+        self.assertEqual(ev.paper_kind(["Multicenter Study"]), "clinical_other")
         self.assertEqual(ev.paper_kind([]), "other")
 
     def test_names_skip_short_keys_and_keep_spellings(self):
@@ -365,6 +370,30 @@ class Fetching(unittest.TestCase):
                                       clinical_only=True), 0)
         terms = [c[2]["term"] for c in apis.calls if c[0] == ev.ESEARCH_API]
         self.assertTrue(terms and all('"Case Reports"[pt]' in t for t in terms))
+
+    def test_papers_that_linked_trials_cite_get_details(self):
+        import snapshot_trials as snap
+        from test_snapshot import FakeAPI, study
+        snap.PAUSE_SECONDS = 0
+        snapdb = os.path.join(self.dir, "trials.sqlite")
+        linked = study("NCT01", other_names=("JX-594",), pmids=("9001",))      # names a program
+        unlinked = study("NCT02", other_names=("Nothing registered",), pmids=("9002",))
+        unlinked["protocolSection"]["identificationModule"]["briefTitle"] = "A study of something else"
+        unlinked["protocolSection"]["armsInterventionsModule"]["interventions"] = [
+            {"type": "DRUG", "name": "Placebo", "otherNames": []}]
+        snap.take_snapshot(snapdb, [("q", "q")], today="2026-11-15", get=FakeAPI({"q": [linked, unlinked]}),
+                           log=self.logs.append)
+        names = ev.load_names(REPO_REGISTRY)
+        self.assertEqual(ev.trial_cited_pmids(names, snapdb), {"9001"})
+        self.assertEqual(ev.trial_cited_pmids(names, os.path.join(self.dir, "none.sqlite")), set())
+        # The fetch adds it even though no name search finds it.
+        apis = FakeAPIs(dict(standard_apis().papers, **{"(cited only)": [paper("9001", "Results of a phase 2 trial")]}),
+                        standard_apis().projects)
+        self.assertEqual(ev.fetch_all(self.out, REPO_REGISTRY, http=apis, log=self.logs.append, snapshots=snapdb), 0)
+        self.assertEqual(self.rows("SELECT title, kind FROM paper WHERE pmid='9001'"),
+                         [("Results of a phase 2 trial", "clinical_trial")])
+        self.assertEqual(self.rows("SELECT count(*) FROM paper_hit WHERE pmid='9001'"), [(0,)])
+        self.assertTrue(any("trial-cited papers: 1 not found by name, 1 fetched" in l for l in self.logs))
 
     def test_pubmed_over_the_cap_is_incomplete(self):
         apis = FakeAPIs(standard_apis().papers, standard_apis().projects, pubmed_count=ev.PUBMED_MAX + 1)
