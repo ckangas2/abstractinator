@@ -25,7 +25,9 @@ timestamped backup in ~/abstractinator-backups/). A program with a bad
 reference is left alone and named in the summary.
 
 Standard library only, same HTTP manners as tracker/evidence.py: one request
-at a time, spaced out, retried on 429 and 5xx.
+at a time, spaced per host (further apart for hosts that throttle, see
+HOST_PAUSE), each URL fetched once per run, 429 obeyed patiently and 5xx
+retried.
 """
 import argparse
 import datetime
@@ -47,47 +49,80 @@ PAUSE_SECONDS = 1.0
 TIMEOUT = 45
 RETRIES = 3
 
+# Some hosts rate-limit a run of requests even at one a second. EMA answered
+# 429 to nine EPAR pages in a row on 2026-11-11, so its requests are spaced
+# further apart; anything not listed keeps the one-second default.
+HOST_PAUSE = {"www.ema.europa.eu": 6.0, "ema.europa.eu": 6.0}
+# A 429 is the host asking us to wait, not a dead link, so it is retried more
+# patiently than a server error, and Retry-After is obeyed when given.
+THROTTLE_RETRIES = 5
+THROTTLE_BACKOFF = 10.0
+
 NCT_RE = re.compile(r"\bNCT[0-9]{8}\b")
 PMID_RE = re.compile(r"\bPMID[: ]*([0-9]{5,9})\b|pubmed\.ncbi\.nlm\.nih\.gov/([0-9]{5,9})")
 ID_RANGE_RE = re.compile(r"^AXP([0-9]{6})-AXP([0-9]{6})$")
 
-_last = [0.0]
+_last = {}        # host -> when it was last asked
+_seen = {}        # url -> (ok, detail, body), so a link shared by several
+                  # programs is fetched once
 
 
 def say(msg):
     print(msg, flush=True)
 
 
-def _pause():
-    wait = _last[0] + PAUSE_SECONDS - time.monotonic()
+def _pause(host):
+    """Keep this host's requests at least its own interval apart."""
+    gap = HOST_PAUSE.get(host, PAUSE_SECONDS)
+    wait = _last.get(host, 0.0) + gap - time.monotonic()
     if wait > 0:
         time.sleep(wait)
-    _last[0] = time.monotonic()
+    _last[host] = time.monotonic()
 
 
 def fetch(url, accept="*/*"):
-    """(ok, detail) for one GET. 2xx and 3xx are ok; everything else is not."""
+    """(ok, detail, body) for one GET. 2xx and 3xx are ok; everything else is
+    not. The same URL is fetched once per run, however many programs cite it."""
+    if url in _seen:
+        ok, detail, body = _seen[url]
+        return ok, detail + " (already checked)", body
+    host = urllib.parse.urlsplit(url).netloc
     req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT, "Accept": accept})
     delay = 4.0
-    for attempt in range(RETRIES + 1):
-        _pause()
+    throttle_delay = THROTTLE_BACKOFF
+    attempt = 0
+    throttled = 0
+    while True:
+        _pause(host)
         try:
             with urllib.request.urlopen(req, timeout=TIMEOUT) as resp:
-                return True, "HTTP %d" % resp.status, resp.read(200000)
+                out = (True, "HTTP %d" % resp.status, resp.read(200000))
+                _seen[url] = out
+                return out
         except urllib.error.HTTPError as e:
-            if e.code in (429, 500, 502, 503, 504) and attempt < RETRIES:
+            if e.code == 429 and throttled < THROTTLE_RETRIES:
                 after = e.headers.get("Retry-After") if e.headers else None
-                time.sleep(float(after) if after and after.isdigit() else delay)
-                delay *= 2
+                time.sleep(float(after) if after and str(after).isdigit() else throttle_delay)
+                throttle_delay *= 2
+                throttled += 1
                 continue
-            return False, "HTTP %d" % e.code, b""
+            if e.code in (500, 502, 503, 504) and attempt < RETRIES:
+                time.sleep(delay)
+                delay *= 2
+                attempt += 1
+                continue
+            out = (False, "HTTP %d" % e.code, b"")
+            _seen[url] = out
+            return out
         except Exception as e:  # network error, TLS, timeout
             if attempt < RETRIES:
                 time.sleep(delay)
                 delay *= 2
+                attempt += 1
                 continue
-            return False, type(e).__name__ + ": " + str(e)[:120], b""
-    return False, "gave up", b""
+            out = (False, type(e).__name__ + ": " + str(e)[:120], b"")
+            _seen[url] = out
+            return out
 
 
 def check_url(url):

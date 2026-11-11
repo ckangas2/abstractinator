@@ -590,7 +590,7 @@ AXP000248	AMT-011	former_code	curator	EMA EPAR Glybera	CC-BY-4.0			0	proposed	ht
 AXP000249	Luxturna	brand	fda	FDA Luxturna page	public-domain			0	proposed	https://www.fda.gov/vaccines-blood-biologics/cellular-gene-therapy-products/luxturna	2026-11-11
 AXP000249	AAV2-hRPE65v2	former_code	curator	EMA product information	CC-BY-4.0			0	proposed	https://www.ema.europa.eu/en/documents/product-information/luxturna-epar-product-information_en.pdf	2026-11-11
 AXP000250	Zolgensma	brand	fda	FDA Zolgensma page	public-domain			0	proposed	https://www.fda.gov/vaccines-blood-biologics/zolgensma	2026-11-11
-AXP000250	Itvisma	brand	press	Novartis formulary guide, FDA approval 2025-11-24	CC-BY-4.0			0	proposed	https://www.cdn.fuse.novartis.com/FA-11574491-1_ITA_Hospital_Formulary_Review_Guide_Digital_1-26/FA-11574491-1.PDF	2026-11-11
+AXP000250	Itvisma	brand	fda	FDA Itvisma page (STN BL 125856)	public-domain			0	proposed	https://www.fda.gov/vaccines-blood-biologics/cellular-gene-therapy-products/itvisma	2026-11-11
 AXP000250	AVXS-101	former_code	curator	EMA EPAR Zolgensma	CC-BY-4.0			0	proposed	https://www.ema.europa.eu/en/medicines/human/EPAR/zolgensma	2026-11-11
 AXP000250	OAV-101	code	curator	EMA EPAR Zolgensma	CC-BY-4.0			0	proposed	https://www.ema.europa.eu/en/medicines/human/EPAR/zolgensma	2026-11-11
 AXP000251	Upstaza	brand	curator	EMA EPAR Upstaza	CC-BY-4.0			0	proposed	https://www.ema.europa.eu/en/medicines/human/EPAR/upstaza	2026-11-11
@@ -601,8 +601,8 @@ AXP000252	Roctavian	brand	fda	FDA RMAT approvals list	public-domain			0	proposed
 AXP000252	BMN 270	former_code	curator	EMA EPAR Roctavian	CC-BY-4.0			0	proposed	https://www.ema.europa.eu/en/medicines/human/EPAR/roctavian	2026-11-11
 AXP000253	Hemgenix	brand	fda	FDA Hemgenix page	public-domain			0	proposed	https://www.fda.gov/vaccines-blood-biologics/vaccines/hemgenix	2026-11-11
 AXP000253	AMT-061	former_code	curator	EMA EPAR Hemgenix	CC-BY-4.0			0	proposed	https://www.ema.europa.eu/en/medicines/human/EPAR/hemgenix	2026-11-11
-AXP000254	Elevidys	brand	fda	FDA BLA 125781 review summary	public-domain			0	proposed	https://fda.gov/media/179485/download	2026-11-11
-AXP000254	SRP-9001	code	fda	FDA BLA 125781 review summary	public-domain			0	proposed	https://fda.gov/media/179485/download	2026-11-11
+AXP000254	Elevidys	brand	fda	FDA BLA 125781 review summary	public-domain			0	proposed	https://www.fda.gov/media/179485/download	2026-11-11
+AXP000254	SRP-9001	code	fda	FDA BLA 125781 review summary	public-domain			0	proposed	https://www.fda.gov/media/179485/download	2026-11-11
 AXP000255	Beqvez	brand	fda	FDA RMAT approvals list	public-domain			0	proposed	https://www.fda.gov/vaccines-blood-biologics/cellular-gene-therapy-products/cber-regenerative-medicine-advanced-therapy-rmat-approvals	2026-11-11
 AXP000255	Durveqtix	brand	curator	EMA EPAR Durveqtix	CC-BY-4.0			0	proposed	https://www.ema.europa.eu/en/medicines/human/EPAR/durveqtix	2026-11-11
 AXP000255	SPK-9001	former_code	curator	EMA EPAR Durveqtix	CC-BY-4.0			0	proposed	https://www.ema.europa.eu/en/medicines/human/EPAR/durveqtix	2026-11-11

@@ -101,5 +101,75 @@ class RefcheckTest(unittest.TestCase):
         self.assertEqual(self.run_main("--programs", "AXP999999"), 2)
 
 
+class FetchManners(unittest.TestCase):
+    """How fetch() treats throttling, repeats and server errors. Found on
+    2026-11-11: nine EMA pages in a row answered 429 and the run reported them
+    as dead links."""
+
+    def setUp(self):
+        refcheck._seen.clear()
+        refcheck._last.clear()
+        self.slept = []
+        self.opened = []
+        self._sleep = refcheck.time.sleep
+        refcheck.time.sleep = self.slept.append
+        self.addCleanup(setattr, refcheck.time, "sleep", self._sleep)
+        self._urlopen = refcheck.urllib.request.urlopen
+        self.addCleanup(setattr, refcheck.urllib.request, "urlopen", self._urlopen)
+        self.addCleanup(refcheck._seen.clear)
+        self.addCleanup(refcheck._last.clear)
+
+    def serve(self, codes):
+        """Answer each call with the next code; 200 means a good reply."""
+        codes = list(codes)
+
+        class Resp:
+            status = 200
+
+            def read(self, *a):
+                return b"body"
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *a):
+                return False
+
+        def fake(req, timeout=None):
+            self.opened.append(req.full_url)
+            code = codes.pop(0) if codes else 200
+            if code == 200:
+                return Resp()
+            raise refcheck.urllib.error.HTTPError(req.full_url, code, "no", None, None)
+
+        refcheck.urllib.request.urlopen = fake
+
+    def test_429_is_retried_patiently_then_succeeds(self):
+        self.serve([429, 429, 200])
+        ok, detail, _ = refcheck.fetch("https://www.ema.europa.eu/en/medicines/human/EPAR/x")
+        self.assertTrue(ok, detail)
+        self.assertEqual(len(self.opened), 3)
+        self.assertGreaterEqual(max(self.slept), refcheck.THROTTLE_BACKOFF)
+
+    def test_a_url_is_fetched_once_per_run(self):
+        self.serve([200])
+        url = "https://example.org/shared"
+        first = refcheck.fetch(url)
+        second = refcheck.fetch(url)
+        self.assertTrue(first[0] and second[0])
+        self.assertEqual(len(self.opened), 1)
+        self.assertIn("already checked", second[1])
+
+    def test_404_is_not_retried(self):
+        self.serve([404])
+        ok, detail, _ = refcheck.fetch("https://example.org/gone")
+        self.assertFalse(ok)
+        self.assertEqual(detail, "HTTP 404")
+        self.assertEqual(len(self.opened), 1)
+
+    def test_throttling_host_gets_its_own_interval(self):
+        self.assertGreater(refcheck.HOST_PAUSE["www.ema.europa.eu"], refcheck.PAUSE_SECONDS)
+
+
 if __name__ == "__main__":
     unittest.main()

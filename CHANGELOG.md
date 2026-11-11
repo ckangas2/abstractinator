@@ -9,6 +9,16 @@ Development before v2.0.0 was untagged; see the git history for detail.
 ## [Unreleased]
 
 ### Fixed
+- The reference checker treated a throttled host as a dead link: nine EMA
+  pages in a row answered 429 and the AAV acceptance run refused them. It now
+  spaces requests per host (further apart for hosts that throttle), obeys
+  Retry-After, retries a 429 patiently, and fetches each URL once per run
+  however many programs cite it.
+- Three AAV citations that did not resolve: two FDA review documents were
+  cited without the `www.` host and 404'd, and the Itvisma brand name rested
+  on a Novartis formulary PDF that is gone. Both FDA documents now use
+  `www.fda.gov`, and Itvisma cites the FDA's own product page (STN BL 125856),
+  which also dates that approval to 2025-11-24.
 - The registry validator now catches a program listing the same name key
   twice while the rows are still `proposed`, instead of only once they are
   accepted. Two phage rows shipped that way ("Stafal"/"STAFAL",
