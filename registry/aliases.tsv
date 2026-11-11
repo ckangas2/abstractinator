@@ -545,43 +545,43 @@ AXP000213	CEA(6D) VRP	synonym	ncit	C70644	CC-BY-4.0			0	accepted	https://api-evs
 AXP000214	AVX901	code	ncit	C99903	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/search?term=AVX901&type=contains&include=synonyms	2026-11-11
 AXP000214	VRP-HER2	synonym	ncit	C99903	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/search?term=AVX901&type=contains&include=synonyms	2026-11-11
 AXP000214	HER2 ECDTM VRP	synonym	ncit	C99903	CC-BY-4.0			0	accepted	https://api-evsrest.nci.nih.gov/api/v1/concept/ncit/search?term=AVX901&type=contains&include=synonyms	2026-11-11
-AXP000215	LBP-EC01	code	ctgov	NCT04191148	public-domain			0	proposed	https://clinicaltrials.gov/study/NCT04191148	2026-11-11
-AXP000216	SNIPR001	code	ctgov	NCT06938867	public-domain			0	proposed	https://clinicaltrials.gov/study/NCT06938867	2026-11-11
-AXP000217	BX004	code	ctgov	NCT06998043	public-domain			0	proposed	https://clinicaltrials.gov/study/NCT06998043	2026-11-11
-AXP000217	BX004-A	code	ctgov	NCT05010577	public-domain			0	proposed	https://clinicaltrials.gov/study/NCT05010577	2026-11-11
-AXP000218	BX211	code	press	BiomX topline release 2025-03-31	CC-BY-4.0			0	proposed	https://www.biospace.com/press-releases/biomx-announces-positive-topline-results-from-phase-2-trial-evaluating-bx211-for-the-treatment-of-diabetic-foot-osteomyelitis-dfo	2026-11-11
-AXP000219	BX005	code	ctgov	NCT05240300	public-domain			0	proposed	https://clinicaltrials.gov/study/NCT05240300	2026-11-11
-AXP000219	BX005-A	code	ctgov	NCT05240300	public-domain			0	proposed	https://clinicaltrials.gov/study/NCT05240300	2026-11-11
-AXP000220	AP-PA02	code	ctgov	NCT04596319	public-domain			0	proposed	https://clinicaltrials.gov/study/NCT04596319	2026-11-11
-AXP000221	AP-SA02	code	ctgov	NCT05184764	public-domain			0	proposed	https://clinicaltrials.gov/study/NCT05184764	2026-11-11
-AXP000222	AB-SA01	code	ctgov	NCT03395769	public-domain			0	proposed	https://clinicaltrials.gov/study/NCT03395769	2026-11-11
-AXP000223	AB-PA01	code	ctgov	NCT03395743	public-domain			0	proposed	https://clinicaltrials.gov/study/NCT03395743	2026-11-11
-AXP000224	TP-102	code	ctgov	NCT04803708	public-domain			0	proposed	https://clinicaltrials.gov/study/NCT04803708	2026-11-11
-AXP000225	EcoActive	code	ctgov	NCT03808103	public-domain			0	proposed	https://clinicaltrials.gov/study/NCT03808103	2026-11-11
-AXP000226	ShigActive	code	ctgov	NCT05182749	public-domain			0	proposed	https://clinicaltrials.gov/study/NCT05182749	2026-11-11
-AXP000227	VRELysin	code	ctgov	NCT05715619	public-domain			0	proposed	https://clinicaltrials.gov/study/NCT05715619	2026-11-11
-AXP000228	PP1131	code	paper	PMID 30292481	CC-BY-4.0			0	proposed	https://pubmed.ncbi.nlm.nih.gov/30292481/	2026-11-11
-AXP000229	PP1493	code	curator	ANSM compassionate access report	CC-BY-4.0			0	proposed	https://ansm.sante.fr/uploads/2024/02/23/20240223-aac-phages-resume-rapport-4.pdf	2026-11-11
-AXP000230	PP1815	code	curator	ANSM compassionate access report	CC-BY-4.0			0	proposed	https://ansm.sante.fr/uploads/2024/02/23/20240223-aac-phages-resume-rapport-4.pdf	2026-11-11
-AXP000231	Stafal	brand	paper	PMID 29923129	CC-BY-4.0			0	proposed	https://pubmed.ncbi.nlm.nih.gov/29923129/	2026-11-11
-AXP000232	TP-122A	code	ctgov	NCT06370598	public-domain			0	proposed	https://clinicaltrials.gov/study/NCT06370598	2026-11-11
-AXP000232	TP-122	code	ctgov	NCT06370598	public-domain			0	proposed	https://clinicaltrials.gov/study/NCT06370598	2026-11-11
-AXP000233	WPP-201	code	ctgov	NCT00663091	public-domain			0	proposed	https://clinicaltrials.gov/study/NCT00663091	2026-11-11
-AXP000234	DUOFAG	brand	ctgov	NCT06319235	public-domain			0	proposed	https://clinicaltrials.gov/study/NCT06319235	2026-11-11
-AXP000235	WRAIR-PAM-CF1	code	ctgov	NCT05453578	public-domain			0	proposed	https://clinicaltrials.gov/study/NCT05453578	2026-11-11
-AXP000236	MP101	code	ctgov	NCT07492771	public-domain			0	proposed	https://clinicaltrials.gov/study/NCT07492771	2026-11-11
-AXP000237	NTR-101	code	ctgov	NCT06750588	public-domain			0	proposed	https://clinicaltrials.gov/study/NCT06750588	2026-11-11
-AXP000238	BACTELIDE	brand	ctgov	NCT04815798	public-domain			0	proposed	https://clinicaltrials.gov/study/NCT04815798	2026-11-11
-AXP000238	PL-03-BM	code	ctgov	NCT04815798	public-domain			0	proposed	https://clinicaltrials.gov/study/NCT04815798	2026-11-11
-AXP000239	PGX-0100	code	ctgov	NCT04323475	public-domain			0	proposed	https://clinicaltrials.gov/study/NCT04323475	2026-11-11
-AXP000239	phage cocktail-SPK	synonym	ctgov	NCT04323475	public-domain			0	proposed	https://clinicaltrials.gov/study/NCT04323475	2026-11-11
-AXP000240	AchromoPhage	code	ctgov	NCT07275905	public-domain			0	proposed	https://clinicaltrials.gov/study/NCT07275905	2026-11-11
-AXP000241	DP-QB-MYA-002	code	ctgov	NCT07429162	public-domain			0	proposed	https://clinicaltrials.gov/study/NCT07429162	2026-11-11
-AXP000242	DP-QB-PSA-005	code	ctgov	NCT07698002	public-domain			0	proposed	https://clinicaltrials.gov/study/NCT07698002	2026-11-11
-AXP000243	DP-QB-STA-005	code	ctgov	NCT07698002	public-domain			0	proposed	https://clinicaltrials.gov/study/NCT07698002	2026-11-11
-AXP000244	Pyophage	brand	ctgov	NCT03140085	public-domain			0	proposed	https://clinicaltrials.gov/study/NCT03140085	2026-11-11
-AXP000244	Pyo bacteriophage	synonym	ctgov	NCT03140085	public-domain			0	proposed	https://clinicaltrials.gov/study/NCT03140085	2026-11-11
-AXP000245	T4 phage cocktail	synonym	ctgov	NCT00937274	public-domain			0	proposed	https://clinicaltrials.gov/study/NCT00937274	2026-11-11
-AXP000246	Muddy	synonym	paper	PMID 31068712	CC-BY-4.0			0	proposed	https://pubmed.ncbi.nlm.nih.gov/31068712/	2026-11-11
-AXP000246	Muddy_HRMN0052	code	ctgov	NCT07228702	public-domain			0	proposed	https://clinicaltrials.gov/study/NCT07228702	2026-11-11
-AXP000247	BFC-1	code	paper	PMID 19300511	CC-BY-4.0			0	proposed	https://pmc.ncbi.nlm.nih.gov/articles/PMC2654153	2026-11-11
+AXP000215	LBP-EC01	code	ctgov	NCT04191148	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT04191148	2026-11-11
+AXP000216	SNIPR001	code	ctgov	NCT06938867	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT06938867	2026-11-11
+AXP000217	BX004	code	ctgov	NCT06998043	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT06998043	2026-11-11
+AXP000217	BX004-A	code	ctgov	NCT05010577	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT05010577	2026-11-11
+AXP000218	BX211	code	press	BiomX topline release 2025-03-31	CC-BY-4.0			0	accepted	https://www.biospace.com/press-releases/biomx-announces-positive-topline-results-from-phase-2-trial-evaluating-bx211-for-the-treatment-of-diabetic-foot-osteomyelitis-dfo	2026-11-11
+AXP000219	BX005	code	ctgov	NCT05240300	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT05240300	2026-11-11
+AXP000219	BX005-A	code	ctgov	NCT05240300	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT05240300	2026-11-11
+AXP000220	AP-PA02	code	ctgov	NCT04596319	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT04596319	2026-11-11
+AXP000221	AP-SA02	code	ctgov	NCT05184764	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT05184764	2026-11-11
+AXP000222	AB-SA01	code	ctgov	NCT03395769	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT03395769	2026-11-11
+AXP000223	AB-PA01	code	ctgov	NCT03395743	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT03395743	2026-11-11
+AXP000224	TP-102	code	ctgov	NCT04803708	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT04803708	2026-11-11
+AXP000225	EcoActive	code	ctgov	NCT03808103	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT03808103	2026-11-11
+AXP000226	ShigActive	code	ctgov	NCT05182749	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT05182749	2026-11-11
+AXP000227	VRELysin	code	ctgov	NCT05715619	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT05715619	2026-11-11
+AXP000228	PP1131	code	paper	PMID 30292481	CC-BY-4.0			0	accepted	https://pubmed.ncbi.nlm.nih.gov/30292481/	2026-11-11
+AXP000229	PP1493	code	curator	ANSM compassionate access report	CC-BY-4.0			0	accepted	https://ansm.sante.fr/uploads/2024/02/23/20240223-aac-phages-resume-rapport-4.pdf	2026-11-11
+AXP000230	PP1815	code	curator	ANSM compassionate access report	CC-BY-4.0			0	accepted	https://ansm.sante.fr/uploads/2024/02/23/20240223-aac-phages-resume-rapport-4.pdf	2026-11-11
+AXP000231	Stafal	brand	paper	PMID 29923129	CC-BY-4.0			0	accepted	https://pubmed.ncbi.nlm.nih.gov/29923129/	2026-11-11
+AXP000232	TP-122A	code	ctgov	NCT06370598	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT06370598	2026-11-11
+AXP000232	TP-122	code	ctgov	NCT06370598	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT06370598	2026-11-11
+AXP000233	WPP-201	code	ctgov	NCT00663091	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT00663091	2026-11-11
+AXP000234	DUOFAG	brand	ctgov	NCT06319235	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT06319235	2026-11-11
+AXP000235	WRAIR-PAM-CF1	code	ctgov	NCT05453578	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT05453578	2026-11-11
+AXP000236	MP101	code	ctgov	NCT07492771	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT07492771	2026-11-11
+AXP000237	NTR-101	code	ctgov	NCT06750588	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT06750588	2026-11-11
+AXP000238	BACTELIDE	brand	ctgov	NCT04815798	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT04815798	2026-11-11
+AXP000238	PL-03-BM	code	ctgov	NCT04815798	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT04815798	2026-11-11
+AXP000239	PGX-0100	code	ctgov	NCT04323475	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT04323475	2026-11-11
+AXP000239	phage cocktail-SPK	synonym	ctgov	NCT04323475	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT04323475	2026-11-11
+AXP000240	AchromoPhage	code	ctgov	NCT07275905	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT07275905	2026-11-11
+AXP000241	DP-QB-MYA-002	code	ctgov	NCT07429162	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT07429162	2026-11-11
+AXP000242	DP-QB-PSA-005	code	ctgov	NCT07698002	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT07698002	2026-11-11
+AXP000243	DP-QB-STA-005	code	ctgov	NCT07698002	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT07698002	2026-11-11
+AXP000244	Pyophage	brand	ctgov	NCT03140085	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT03140085	2026-11-11
+AXP000244	Pyo bacteriophage	synonym	ctgov	NCT03140085	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT03140085	2026-11-11
+AXP000245	T4 phage cocktail	synonym	ctgov	NCT00937274	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT00937274	2026-11-11
+AXP000246	Muddy	synonym	paper	PMID 31068712	CC-BY-4.0			0	accepted	https://pubmed.ncbi.nlm.nih.gov/31068712/	2026-11-11
+AXP000246	Muddy_HRMN0052	code	ctgov	NCT07228702	public-domain			0	accepted	https://clinicaltrials.gov/study/NCT07228702	2026-11-11
+AXP000247	BFC-1	code	paper	PMID 19300511	CC-BY-4.0			0	accepted	https://pmc.ncbi.nlm.nih.gov/articles/PMC2654153	2026-11-11
