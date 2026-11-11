@@ -328,6 +328,10 @@ below adds one more judgment.
 The **code** is open source under the [MIT License](LICENSE): you're welcome to use, modify
 and build on it, as long as the copyright notice comes along.
 
+The **program registry** (`registry/` and the pages built from it) is under
+[CC BY 4.0](registry/LICENSE): reuse it for anything, with credit to "The Abstractinator
+program registry".
+
 The **name and branding** are not part of that license. "The Abstractinator", the *-inator*
 feature names (Searchinator, Deduplicatinator, Plotinator, Readinator, Agentinator) and the
 look of the site identify the official project at [abstractinator.me](https://abstractinator.me).
