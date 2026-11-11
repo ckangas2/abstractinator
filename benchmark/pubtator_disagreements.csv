@@ -1,0 +1,364 @@
+axis,outcome,pmid,ours,pubtator,title,query
+virus,conflict,25789969,Hepatitis B Virus,Hepatitis C Virus (9); Human Immunodeficiency Virus (3),T-cell exhaustion in chronic hepatitis B infection: current knowledge and clinical significance,chronic hepatitis B T cell exhaustion
+virus,PubTator called it a disease,42609479,Hepatitis B Virus,,Traditional Chinese Medicine in Chronic Hepatitis B: Integrating Antiviral Effects and Immune Modulation in the Context of T Cell Exhaustion,chronic hepatitis B T cell exhaustion
+virus,PubTator called it a disease,23112829,Hepatitis B Virus,,Upregulation of the Tim-3/Galectin-9 Pathway of T Cell Exhaustion in Chronic Hepatitis B Virus Infection,chronic hepatitis B T cell exhaustion
+virus,PubTator called it a disease,37243227,Hepatitis B Virus,,The Role of CTLA-4 in T Cell Exhaustion in Chronic Hepatitis B Virus Infection,chronic hepatitis B T cell exhaustion
+virus,PubTator found none,42993048,Hepatitis B Virus,,A Biologically Optimized PEG-IFN-α2 Variant Exhibits Potent Anti-HBV and Immunomodulatory Efficacy.,chronic hepatitis B T cell exhaustion
+virus,PubTator called it a disease,33507150,Hepatitis B Virus,,Peripheral natural killer cells in chronic hepatitis B patients display multiple molecular features of T cell exhaustion,chronic hepatitis B T cell exhaustion
+virus,PubTator called it a disease,42638743,Hepatitis B Virus,,The BTLA/HVEM axis as a key regulator for stratified functional cure in chronic hepatitis B.,chronic hepatitis B T cell exhaustion
+virus,PubTator called it a disease,31390978,Hepatitis B Virus,,CD4+ T cell exhaustion revealed by high PD-1 and LAG-3 expression and the loss of helper T cell function in chronic hepatitis B,chronic hepatitis B T cell exhaustion
+virus,conflict,42722105,Hepatitis B Virus,Adeno-Associated Virus (6),High HBV antigen levels drive loss of vaccine-induced CD8<sup>+</sup> T-cell function in carrier mice over time.,chronic hepatitis B T cell exhaustion
+virus,PubTator called it a disease,29666149,Hepatitis B Virus,,Retracted: Genetic and phenotypic difference in CD8 + T cell exhaustion between chronic hepatitis B infection and hepatocellular carcinoma,chronic hepatitis B T cell exhaustion
+virus,PubTator called it a disease,41314788,Hepatitis B Virus,,Decoding HBV-specific adaptive immunity: from natural clearance to cure.,chronic hepatitis B T cell exhaustion
+virus,PubTator called it a disease,38263743,Hepatitis B Virus,,Effects of co-infection with Clonorchis sinensis on T cell exhaustion levels in patients with chronic hepatitis B,chronic hepatitis B T cell exhaustion
+virus,PubTator called it a disease,42519330,Hepatitis B Virus,,From exhaustion to functional cure: frontiers in reversing HBV-specific T-cell immunity.,chronic hepatitis B T cell exhaustion
+virus,PubTator called it a disease,34685543,Hepatitis B Virus,,Unraveling the Multifaceted Nature of CD8 T Cell Exhaustion Provides the Molecular Basis for Therapeutic T Cell Reconstitution in Chronic He,chronic hepatitis B T cell exhaustion
+virus,PubTator called it a disease,42943995,Hepatitis B Virus,,Double-Edged Sword: HBV-Driven Lipid Metabolism Remodeling in Hepatocarcinogenesis Through Ferroptosis Regulation.,chronic hepatitis B T cell exhaustion
+virus,PubTator called it a disease,42757131,Hepatitis B Virus,,Regulatory T-cell remodeling across the HBV infection-cirrhosis continuum.,chronic hepatitis B T cell exhaustion
+virus,PubTator found none,37317515,Hepatitis B Virus,,Single-Cell RNA Sequencing Shows T-Cell Exhaustion Landscape in the Peripheral Blood of Patients with Hepatitis B Virus-Associated Acute-on-,chronic hepatitis B T cell exhaustion
+virus,conflict,42579169,Hepatitis C Virus,Human Immunodeficiency Virus (29),Viral coinfections and checkpoint-marker expression in HIV: An exploratory HCV-Related CD4⁺ T-Cell PD-L1 pattern.,chronic hepatitis B T cell exhaustion
+virus,supported (not PubTator's top),30473697,Hepatitis B Virus,Human Immunodeficiency Virus (6); Hepatitis B Virus (6),T-Cell Exhaustion in Chronic Infections: Reversing the State of Exhaustion and Reinvigorating Optimal Protective Immune Responses,chronic hepatitis B T cell exhaustion
+virus,conflict,42426350,Human Immunodeficiency Virus,Hepatitis B Virus (30),HIV dominates T-cell immune responses in HIV-HBV co-infection and is associated with increased HIV reservoir transcription.,chronic hepatitis B T cell exhaustion
+virus,supported (not PubTator's top),42347630,Epstein-Barr Virus,Hepatitis B Virus (6); Hepatitis C Virus (6); Human Immunodeficiency Virus (6); Human Papillomavirus (6); Epstein-Barr Virus (6),Therapeutic Vaccines for Chronic Viral Infections: From Immune Modulation to Clinical Translation.,chronic hepatitis B T cell exhaustion
+virus,PubTator found none,42993673,Human Immunodeficiency Virus,,Innate immune mechanisms of HIV control and reservoir regulation in elite and posttreatment controllers.,HIV reservoir latency
+virus,PubTator found none,42989937,Human Immunodeficiency Virus,,Natural killer cell engineering strategies for HIV cure and reservoir elimination.,HIV reservoir latency
+virus,PubTator found none,23737751,Human Immunodeficiency Virus,,Rapid Quantification of the Latent Reservoir for HIV-1 Using a Viral Outgrowth Assay,HIV reservoir latency
+virus,PubTator found none,42990099,Polyomavirus,,Association of HLA-B Leader With BK Polyomavirus and Cytomegalovirus Infections in Kidney Allograft Recipients.,cytomegalovirus NK cells
+virus,PubTator found none,15304389,Cytomegalovirus,,Imprint of human cytomegalovirus infection on the NK cell receptor repertoire,cytomegalovirus NK cells
+virus,PubTator called it a disease,42802464,Cytomegalovirus,,[Clinical Observation of Donor-Derived NK Cell Infusion in the Prevention of Cytomegalovirus Infection after Haploidentical Hematopoietic St,cytomegalovirus NK cells
+virus,PubTator called it a disease,9637493,Cytomegalovirus,,NK Cell Modulation of Murine Cytomegalovirus Retinitis,cytomegalovirus NK cells
+virus,PubTator called it a disease,20201038,Cytomegalovirus,,Influence of human cytomegalovirus infection on the NK cell receptor repertoire in children,cytomegalovirus NK cells
+virus,PubTator called it a disease,24958849,Cytomegalovirus,,Proapoptotic Bim regulates antigen-specific NK cell contraction and the generation of the memory NK cell pool after cytomegalovirus infectio,cytomegalovirus NK cells
+virus,PubTator found none,15210783,Cytomegalovirus,,Expansion and Contraction of the NK Cell Compartment in Response to Murine Cytomegalovirus Infection,cytomegalovirus NK cells
+virus,PubTator found none,42734184,Cytomegalovirus,,Clonal stochasticity in early NK cell response to mouse cytomegalovirus is generated by mature subsets of varying proliferative ability.,cytomegalovirus NK cells
+virus,PubTator found none,14978118,Cytomegalovirus,,Coordinate Expression of Cytokines and Chemokines by NK Cells during Murine Cytomegalovirus Infection,cytomegalovirus NK cells
+virus,conflict,24740502,Cytomegalovirus,Epstein-Barr Virus (20),Cutting Edge: NKG2ChiCD57+ NK Cells Respond Specifically to Acute Infection with Cytomegalovirus and Not Epstein–Barr Virus,cytomegalovirus NK cells
+virus,PubTator called it a disease,12907620,Epstein-Barr Virus,,Rapamycin inhibits the interleukin 10 signal transduction pathway and the growth of Epstein Barr virus B-cell lymphomas.,Epstein-Barr virus B cell lymphoma
+virus,missed,42923817,Non-descript,Human Immunodeficiency Virus (20),Extracavitary Primary Effusion Lymphoma in an HIV-Negative Patient With Aberrant Immunophenotypic Features.,Epstein-Barr virus B cell lymphoma
+virus,PubTator called it a disease,30549430,Epstein-Barr Virus,,Dual blockade of the PI3K/Akt/mTOR pathway inhibits posttransplant Epstein-Barr virus B cell lymphomas and promotes allograft survival,Epstein-Barr virus B cell lymphoma
+virus,PubTator called it a disease,14747554,Epstein-Barr Virus,,Lytic Induction Therapy for Epstein-Barr Virus-Positive B-Cell Lymphomas,Epstein-Barr virus B cell lymphoma
+virus,PubTator called it a disease,42964629,Epstein-Barr Virus,,Chronic Active Epstein-Barr Virus (EBV) Disease with Haemophagocytic Lymphohistiocytosis and Abnormal T/NK Cells.,Epstein-Barr virus B cell lymphoma
+virus,PubTator called it a disease,6245364,Epstein-Barr Virus,,Diffuse Polyclonal B-Cell Lymphoma during Primary Infection with Epstein–Barr Virus,Epstein-Barr virus B cell lymphoma
+virus,PubTator called it a disease,41914744,Epstein-Barr Virus,,Long-term Outcomes of Chronic Active Epstein-Barr Virus Infection in Childhood After Dominantly Infected Lymphocyte Subpopulation Management,Epstein-Barr virus B cell lymphoma
+virus,missed,42822732,Non-descript,Epstein-Barr Virus (3),Nodal large B-cell lymphoma with intrasinusoidal growth: A clinicopathologic study of a distinctive pattern with diagnostic overlap with int,Epstein-Barr virus B cell lymphoma
+virus,PubTator found none,42981739,Respiratory Syncytial Virus,,"A randomised, double-blind, multicentre, placebo-controlled phase 3 efficacy, safety, and immunogenicity study of an Ad26.RSV.preF/RSV prefu",RSV vaccine older adults
+virus,PubTator called it a disease,37018468,Respiratory Syncytial Virus,,Efficacy and Safety of a Bivalent RSV Prefusion F Vaccine in Older Adults,RSV vaccine older adults
+virus,PubTator found none,42989480,Respiratory Syncytial Virus,,"Respiratory syncytial virus (RSV) vaccine recommendations for adults: a review of available global, regional, and country level recommendati",RSV vaccine older adults
+virus,PubTator found none,38889247,Respiratory Syncytial Virus,,Humoral Immunogenicity of mRNA-1345 RSV Vaccine in Older Adults,RSV vaccine older adults
+virus,PubTator found none,39382431,Respiratory Syncytial Virus,,A New RSV Vaccine (mResvia) for Adults ≥60 Years Old,RSV vaccine older adults
+virus,supported (not PubTator's top),42974793,Respiratory Syncytial Virus,Human Metapneumovirus (41); Respiratory Syncytial Virus (38),A Phase 2 Trial of a Respiratory Syncytial Virus and Human Metapneumovirus Combination Virus-Like Particle Vaccine IVX-A12 in Adults ≥60 Yea,RSV vaccine older adults
+virus,PubTator found none,39230920,Respiratory Syncytial Virus,,RSV Vaccine Effectiveness Against Hospitalization Among US Adults 60 Years and Older,RSV vaccine older adults
+virus,conflict,42970041,Influenza,SARS-CoV-2 (3); Respiratory Syncytial Virus (3),Risk Factors for COVID-19 and Influenza Nonvaccination during the 2025-2026 Respiratory Season among a Cross-Sectional Sample of Older US Ad,RSV vaccine older adults
+virus,PubTator found none,39928572,Respiratory Syncytial Virus,,"Efficacy, Immunogenicity, and Safety of the Bivalent Respiratory Syncytial Virus (RSV) Prefusion F Vaccine in Older Adults Over 2 RSV Season",RSV vaccine older adults
+virus,PubTator found none,42895511,Respiratory Syncytial Virus,,Cost‑effectiveness analysis of the mRNA‑1345 RSV vaccine for older adults in Italy.,RSV vaccine older adults
+virus,PubTator called it a disease,28413427,Respiratory Syncytial Virus,,Immunogenicity and safety of a respiratory syncytial virus fusion protein (RSV F) nanoparticle vaccine in older adults,RSV vaccine older adults
+virus,PubTator called it a disease,40884493,Respiratory Syncytial Virus,,Bivalent RSV Prefusion F Protein–Based Vaccine for Preventing Cardiovascular Hospitalizations in Older Adults,RSV vaccine older adults
+virus,PubTator called it a disease,15663020,Influenza,,Influenza Vaccine Antibody Responses in Lung Transplant Recipients,influenza vaccine antibody response
+virus,PubTator called it a disease,25172499,Influenza,,Circulating CXCR5+PD-1+ Response Predicts Influenza Vaccine Antibody Responses in Young Adults but not Elderly Adults,influenza vaccine antibody response
+virus,PubTator found none,42990905,Influenza,,Longitudinal analysis of the effects of cladribine tablets on B and T cell memory recall responses to vaccine antigens in people with multip,influenza vaccine antibody response
+virus,PubTator called it a disease,25148380,Influenza,,Influenza Vaccine Antibody Response and 6-month Persistence in Lung Transplant Recipients Using Two Definitions of Seroprotection,influenza vaccine antibody response
+virus,PubTator called it a disease,42931441,Influenza,,Plant-Based Virus-like Particle (VLP) Vaccines Against Influenza and Hepatitis Viruses.,influenza vaccine antibody response
+virus,PubTator called it a disease,42945702,Influenza,,Hemagglutinin- and neuraminidase-targeting antibody responses after receipt of egg-based inactivated or recombinant influenza vaccines among,influenza vaccine antibody response
+virus,PubTator called it a disease,3998081,Influenza,,Studies on the prophylactic effect of influenza vaccine. Antibody response and side reaction in patients under treatment by hemodialysis.,influenza vaccine antibody response
+virus,PubTator called it a disease,42906723,Influenza,,Distinct regulation of influenza HA head- versus stem-specific B cell responses in HA mRNA-LNP vaccinated and naïve infant African green mon,influenza vaccine antibody response
+virus,supported (not PubTator's top),42944074,SARS-CoV-2,Respiratory Syncytial Virus (29); SARS-CoV-2 (26),"Immune Imprinting Across Respiratory Virus Infection, Vaccination, and Passive Immunization: Rethinking 'Original Antigenic Sin' in Influenz",influenza vaccine antibody response
+virus,PubTator found none,13332182,Influenza,,A SEROLOGIC RECAPITULATION OF PAST EXPERIENCES WITH INFLUENZA A; ANTIBODY RESPONSE TO MONOVALENT VACCINE,influenza vaccine antibody response
+virus,PubTator found none,42995487,Influenza,,Mosaic Hemagglutinin-Based Influenza B mRNA-LNP Vaccine Induces Strong Humoral Immune Response in Non-Human Primates.,influenza vaccine antibody response
+virus,conflict,13481247,Influenza,[Orthomyxoviridae] (3),PREDETERMINATION BY INFECTION AND BY VACCINATION OF ANTIBODY RESPONSE TO INFLUENZA VIRUS VACCINES,influenza vaccine antibody response
+virus,PubTator found none,13513330,Influenza,,ANTIBODY RESPONSE IN VOLUNTEERS TO ASIAN INFLUENZA VACCINE,influenza vaccine antibody response
+virus,PubTator called it a disease,25589639,Influenza,,High Preexisting Serological Antibody Levels Correlate with Diversification of the Influenza Vaccine Response,influenza vaccine antibody response
+virus,supported (not PubTator's top),2787416,Influenza,Human Immunodeficiency Virus (18); Influenza (12),The Influence of HIV Infection on Antibody Responses to a Two-Dose Regimen of Influenza Vaccine,influenza vaccine antibody response
+virus,conflict,42253097,Influenza,[Orthomyxoviridae] (3),Birth Cohort Effects in Adults Associated With Influenza A(H1N1)pdm09 Vaccine Effectiveness.,influenza vaccine antibody response
+virus,PubTator called it a disease,6858973,Influenza,,Clinical Reactions and Antibody Responses to Influenza Vaccines,influenza vaccine antibody response
+virus,PubTator called it a disease,37515000,SARS-CoV-2,,SARS-CoV-2 T Cell Immunity Responses following Natural Infection and Vaccination.,SARS-CoV-2 T cell immunity
+virus,PubTator found none,37705735,SARS-CoV-2,,Seeing the T cell Immunity of SARS-CoV-2 and SARS-CoV: Believing the Epitope-Oriented Vaccines,SARS-CoV-2 T cell immunity
+virus,PubTator found none,42992618,SARS-CoV-2,,The magnitude and durability of immune response to the SARS-CoV-2 vaccination among children.,SARS-CoV-2 T cell immunity
+virus,PubTator called it a disease,34730247,SARS-CoV-2,,T follicular helper cells in the humoral immune response to SARS-CoV-2 infection and vaccination,SARS-CoV-2 T cell immunity
+virus,PubTator found none,42957232,Human Papillomavirus,,Complete Response Demonstrated by [<sup>11</sup>C]methionine-PET Imaging of a Patient With Squamous-cell Carcinoma of the Tongue Treated Wit,HPV cervical cancer immunotherapy
+virus,PubTator found none,39735605,Human Papillomavirus,,The potential role of HPV oncoproteins in the PD-L1/PD-1 pathway in cervical cancer: new perspectives on cervical cancer immunotherapy,HPV cervical cancer immunotherapy
+virus,PubTator found none,41246557,Human Papillomavirus,,Cervical cancer immune microenvironment: Mechanisms of HPV‑mediated immune evasion and advances in immunotherapy (Review),HPV cervical cancer immunotherapy
+virus,missed,42900981,Non-descript,Human Papillomavirus (3),"Ubiquitin-specific proteases and the immune microenvironment in cervical cancer: mechanistic evidence, immunotherapy resistance, and therape",HPV cervical cancer immunotherapy
+virus,PubTator called it a disease,42888274,Human Papillomavirus,,"From HPV infection to cervical precancer: Molecular mechanisms, immune microenvironment and emerging technologies.",HPV cervical cancer immunotherapy
+virus,PubTator called it a disease,42803760,Human Papillomavirus,,"Spotlights on cervical cancer: progression, diagnosis and clinical manifestations, epidemiology, treatment approaches, role of artificial in",HPV cervical cancer immunotherapy
+virus,PubTator called it a disease,33990345,Human Papillomavirus,,Tumor Immunity and Immunotherapy for HPV-Related Cancers,HPV cervical cancer immunotherapy
+virus,PubTator found none,42769609,Human Papillomavirus,,Beyond approval: a mechanism-based review of novel anti-tumour agents in cervical cancer and when to use them.,HPV cervical cancer immunotherapy
+virus,missed,42787653,Non-descript,Human Papillomavirus (3),Role of hypoxia-inducible factor - 1 alpha on the progression of cervical intraepithelial neoplasia and cervical cancer: a narrative review.,HPV cervical cancer immunotherapy
+virus,supported (not PubTator's top),42939642,Dengue Virus,Zika Virus (39); Dengue Virus (21),Strain-Dependent Cross-Neutralization of Closely Related Asian-Lineage Zika Viruses by Dengue-Immune Sera.,Zika dengue cross-reactive antibodies
+virus,supported (not PubTator's top),42508521,Dengue Virus,Flavivirus (32); Zika Virus (9); Dengue Virus (3),"Broadly cross-reactive neutralizing and enhancing antibody responses to dengue, Japanese encephalitis and Zika viruses in sera from Vietname",Zika dengue cross-reactive antibodies
+virus,supported (not PubTator's top),35588060,Dengue Virus,Zika Virus (32); Dengue Virus (27),Cross-reactive antibodies facilitate innate sensing of dengue and Zika viruses,Zika dengue cross-reactive antibodies
+virus,supported (not PubTator's top),42928707,Dengue Virus,Zika Virus (44); Dengue Virus (3); Flavivirus (3),Cross-Reactive Neutralizing Antibodies Between ZIKV and DENV May Exhibit Serotype Specificity.,Zika dengue cross-reactive antibodies
+virus,conflict,34613812,Dengue Virus,Zika Virus (9),Dengue and Zika virus infections in children elicit cross-reactive protective and enhancing antibodies that persist long term,Zika dengue cross-reactive antibodies
+virus,PubTator found none,42987104,Dengue Virus,,"Estimation of ZIKV and DENV seroprevalence rates in Rio de Janeiro, Brazil, 2018.",Zika dengue cross-reactive antibodies
+virus,conflict,28422757,Zika Virus,Dengue Virus (9),Cross-reactive dengue human monoclonal antibody prevents severe pathologies and death from Zika virus infections,Zika dengue cross-reactive antibodies
+virus,supported (not PubTator's top),42935869,Zika Virus,Dengue Virus (26); Zika Virus (18); Flavivirus (6),IgM monoclonal antibodies reduce IgG-mediated antibody-dependent enhancement of Zika and dengue virus infectivity.,Zika dengue cross-reactive antibodies
+virus,conflict,28006649,Zika Virus,Dengue Virus (26); West Nile Virus (3); Flavivirus (3); Chikungunya Virus (3),Serodiagnosis of Zika virus (ZIKV) infections by a novel NS1-based ELISA devoid of cross-reactivity with dengue virus antibodies: a multicoh,Zika dengue cross-reactive antibodies
+virus,missed,42657456,Non-descript,Alphavirus (18); Flavivirus (12),Neglected arboviruses in South America: clinical manifestations and diagnostic challenges.,Zika dengue cross-reactive antibodies
+virus,conflict,28418292,Dengue Virus,Zika Virus (24),Lack of Durable Cross-Neutralizing Antibodies Against Zika Virus from Dengue Virus Infection,Zika dengue cross-reactive antibodies
+virus,supported (not PubTator's top),42661761,Chikungunya Virus,Yellow Fever Virus (6); Zika Virus (3); Dengue Virus (3); Chikungunya Virus (3),Limited IgM seroreactivity to arboviruses in free-ranging black-tufted marmosets (<i>Callithrix penicillata</i>).,Zika dengue cross-reactive antibodies
+virus,conflict,28039355,Zika Virus,Dengue Virus (20); Flavivirus (3),Dengue virus (DENV)-specific antibodies enhance Brazilian Zika virus (ZIKV) infection,Zika dengue cross-reactive antibodies
+virus,supported (not PubTator's top),42522003,Dengue Virus,West Nile Virus (32); Dengue Virus (3); Yellow Fever Virus (3),"Study of the circulation of dengue, yellow fever, and West Nile viruses in Guinea: implications for achieving the health objectives of the S",Zika dengue cross-reactive antibodies
+virus,supported (not PubTator's top),42504261,Dengue Virus,Zika Virus (9); Chikungunya Virus (3); Dengue Virus (3),Entomo-Molecular and Epidemiological Survey of Arboviruses in <i>Aedes</i> (<i>Stegomyia</i>) <i>aegypti</i> Mosquito Populations and Dengue,Zika dengue cross-reactive antibodies
+virus,PubTator called it a disease,41876605,Zika Virus,,Mathematical modeling of sequential Dengue-Zika infections: dynamic insights into antibody-dependent enhancement and neutralization effects.,Zika dengue cross-reactive antibodies
+virus,supported (not PubTator's top),29129917,Zika Virus,Dengue Virus (41); Zika Virus (32),Dengue virus-reactive CD8+ T cells mediate cross-protection against subsequent Zika virus challenge,Zika dengue cross-reactive antibodies
+virus,supported (not PubTator's top),27435464,Dengue Virus,Zika Virus (39); Dengue Virus (23); Flavivirus (9); Cytomegalovirus (3),Dengue Virus Envelope Dimer Epitope Monoclonal Antibodies Isolated from Dengue Patients Are Protective against Zika Virus,Zika dengue cross-reactive antibodies
+virus,PubTator called it a disease,32846135,Lymphocytic Choriomeningitis Virus,,Landscape of Exhausted Virus-Specific CD8 T Cells in Chronic LCMV Infection,LCMV chronic infection CD8
+virus,PubTator found none,42818858,Retrovirus,,Thy1 retroviral reporters: a versatile platform for congenic background-independent adoptive transfer and CD8<sup>+</sup> T cell differentia,LCMV chronic infection CD8
+virus,PubTator found none,32901001,Lymphocytic Choriomeningitis Virus,,Exhausted CD8+ T cells exhibit low and strongly inhibited TCR signaling during chronic LCMV infection,LCMV chronic infection CD8
+virus,PubTator called it a disease,42635387,Lymphocytic Choriomeningitis Virus,,A Bacterial Microbiome Is Dispensable for the Induction of CD8 T Cell Exhaustion.,LCMV chronic infection CD8
+virus,PubTator found none,40971956,Lymphocytic Choriomeningitis Virus,,Exploratory trajectory inference reveals convergent lineages for CD8 T cells in chronic LCMV infection,LCMV chronic infection CD8
+virus,missed,42485358,Non-descript,Lymphocytic Choriomeningitis Virus (3),In Vitro Inhibition of STAT5 Signaling Limits CD8+ T-cell Exhaustion and Improves Outcomes in Adoptive T-cell Therapy.,LCMV chronic infection CD8
+virus,supported (not PubTator's top),16788096,Lymphocytic Choriomeningitis Virus,Epstein-Barr Virus (9); Lymphocytic Choriomeningitis Virus (3),Hypogammaglobulinemia and exacerbated CD8 T-cell–mediated immunopathology in SAP-deficient mice with chronic LCMV infection mimics human XLP,LCMV chronic infection CD8
+virus,PubTator called it a disease,42294879,Lymphocytic Choriomeningitis Virus,,Simultaneous TCR and IL-2 agonism selectively enhances epitope-specific CD8 T-cell responses during chronic viral infection.,LCMV chronic infection CD8
+virus,missed,42405212,Non-descript,Lymphocytic Choriomeningitis Virus (3),Apoptotic-Cell Accumulation and Mertk Expression Are Linked to Diminished Antiviral CD8<sup>+</sup> T Cell Immunity in Chronic Infections.,LCMV chronic infection CD8
+virus,PubTator called it a disease,32034098,Lymphocytic Choriomeningitis Virus,,PD-1+ stemlike CD8 T cells are resident in lymphoid tissues during persistent LCMV infection,LCMV chronic infection CD8
+virus,PubTator called it a disease,42254011,Lymphocytic Choriomeningitis Virus,,Limited adaptability of virtual memory CD8 T cells to chronic viral infection.,LCMV chronic infection CD8
+virus,conflict,7966595,Lymphocytic Choriomeningitis Virus,Human Immunodeficiency Virus (3),CD4+ T cells are required to sustain CD8+ cytotoxic T-cell responses during chronic viral infection,LCMV chronic infection CD8
+virus,missed,42576916,Non-descript,Lymphocytic Choriomeningitis Virus (3),The ADAP-TRIM21-ZEB2 axis regulates CD8<sup>+</sup> T cell effector expansion and central memory-like differentiation.,LCMV chronic infection CD8
+virus,PubTator called it a disease,22160724,Lymphocytic Choriomeningitis Virus,,Antigen-specific CD4 T-cell help rescues exhausted CD8 T cells during chronic viral infection,LCMV chronic infection CD8
+virus,PubTator found none,42982510,Adenovirus,,Antiviral humoral immunity as biomarker and effector in oncolytic adenovirus TILT-123 therapy.,oncolytic adenovirus
+virus,PubTator found none,42855229,Adenovirus,,Oncolytic adenovirus-mediated delivery of anti-CLDN18.2 IgG3 for the treatment of solid tumors.,oncolytic adenovirus
+virus,PubTator called it a disease,29904022,Adenovirus,,Designer Oncolytic Adenovirus: Coming of Age,oncolytic adenovirus
+virus,PubTator found none,33202717,Adenovirus,,Oncolytic Adenovirus in Cancer Immunotherapy,oncolytic adenovirus
+virus,PubTator found none,42666315,Adenovirus,,Novel therapeutic strategies for ccRCC through integration of systemic drug combinations and oncolytic adenovirus immunotherapy.,oncolytic adenovirus
+virus,PubTator found none,42747203,Adenovirus,,Collagen-Binding IL-15 Immunocytokine Armed Oncolytic Adenovirus Establishes a Self-Reinforcing Immunostimulatory Milieu to Potentiate Antit,oncolytic adenovirus
+virus,PubTator found none,42989365,Adenovirus,,TBID-armed oncolytic adenovirus KD01 engages a CDCA8-associated mitotic vulnerability for anti-glioma therapy.,oncolytic adenovirus
+virus,PubTator called it a disease,30563466,Herpes Simplex Virus,,Oncolytic herpes simplex virus and immunotherapy,oncolytic herpes simplex virus
+virus,PubTator found none,42193877,Herpes Simplex Virus,,Reprogramming the Immunosuppressive Microenvironment in Glioblastoma Through Oncolytic Herpes Simplex Virus Therapy: A Systematic Review.,oncolytic herpes simplex virus
+virus,PubTator called it a disease,26927159,Herpes Simplex Virus,,Retargeting Strategies for Oncolytic Herpes Simplex Viruses,oncolytic herpes simplex virus
+virus,PubTator found none,42193104,Herpes Simplex Virus,,"Oncolytic Herpes Simplex Virus for Glioblastoma: Molecular Engineering, Tumor Microenvironment Barriers, and Clinical Translation.",oncolytic herpes simplex virus
+virus,PubTator found none,18957963,Herpes Simplex Virus,,Hypoxia Enhances the Replication of Oncolytic Herpes Simplex Virus,oncolytic herpes simplex virus
+virus,PubTator found none,41675687,Herpes Simplex Virus,,Strategically engineering an oncolytic herpes simplex virus to improve systemic delivery.,oncolytic herpes simplex virus
+virus,PubTator found none,16510565,Herpes Simplex Virus,,Degradation of Fibrillar Collagen in a Human Melanoma Xenograft Improves the Efficacy of an Oncolytic Herpes Simplex Virus Vector,oncolytic herpes simplex virus
+virus,PubTator found none,33659221,Herpes Simplex Virus,,The Current State of Oncolytic Herpes Simplex Virus for Glioblastoma Treatment,oncolytic herpes simplex virus
+virus,PubTator found none,41764166,Herpes Simplex Virus,,Targeting leucine-rich repeat kinase 2 overcomes resistance to oncolytic herpes simplex virus-based therapies in glioblastoma.,oncolytic herpes simplex virus
+virus,PubTator found none,40872965,Herpes Simplex Virus,,"Oncolytic Herpes Simplex Virus Therapy: Latest Advances, Core Challenges, and Future Outlook.",oncolytic herpes simplex virus
+virus,PubTator found none,28695111,Herpes Simplex Virus,,Modulation of the Intratumoral Immune Landscape by Oncolytic Herpes Simplex Virus Virotherapy,oncolytic herpes simplex virus
+virus,PubTator found none,41394271,Herpes Simplex Virus,,An oncolytic herpes simplex virus armed with IL-12 for treatment of preclinical glioblastoma.,oncolytic herpes simplex virus
+virus,PubTator found none,41935032,Herpes Simplex Virus,,"Arming oncolytic herpes simplex virus with CXCL-11, IL-12 and a single-chain antibody against PD-1 to enhance CAR-T cell therapy in pancreat",oncolytic herpes simplex virus
+virus,PubTator found none,18483263,Herpes Simplex Virus,,Cancer Cell Death Enhances the Penetration and Efficacy of Oncolytic Herpes Simplex Virus in Tumors,oncolytic herpes simplex virus
+virus,PubTator found none,40285023,Herpes Simplex Virus,,Advances in the Drug Development and Quality Evaluation Principles of Oncolytic Herpes Simplex Virus.,oncolytic herpes simplex virus
+virus,PubTator found none,28710334,Herpes Simplex Virus,,Stem cell-released oncolytic herpes simplex virus has therapeutic efficacy in brain metastatic melanomas,oncolytic herpes simplex virus
+virus,PubTator found none,40247049,Herpes Simplex Virus,,Investigation of an oncolytic herpes simplex virus as a potential therapeutic agent for gastroenteropancreatic neuroendocrine neoplasms.,oncolytic herpes simplex virus
+virus,conflict,12788648,Herpes Simplex Virus,Retrovirus (3),Expression of a fusogenic membrane glycoprotein by an oncolytic herpes simplex virus potentiates the viral antitumor effect,oncolytic herpes simplex virus
+virus,PubTator found none,40791814,Herpes Simplex Virus,,Oncolytic herpes simplex virus reprograms cancer-associated fibroblasts to enhance antitumor immunity in pancreatic cancer.,oncolytic herpes simplex virus
+virus,PubTator found none,39046631,Herpes Simplex Virus,,Advances in antitumour therapy with oncolytic herpes simplex virus combinations.,oncolytic herpes simplex virus
+virus,PubTator found none,30008259,Herpes Simplex Virus,,Oncolytic Herpes Simplex Virus Immunovirotherapy in Combination with Immune Checkpoint Blockade to Treat Glioblastoma,oncolytic herpes simplex virus
+virus,PubTator found none,39771971,Herpes Simplex Virus,,4-1BBL-Armed Oncolytic Herpes Simplex Virus Exerts Antitumor Effects in Pancreatic Ductal Adenocarcinoma.,oncolytic herpes simplex virus
+virus,PubTator found none,22146341,Herpes Simplex Virus,,Construction of an Oncolytic Herpes Simplex Virus That Precisely Targets Hepatocellular Carcinoma Cells,oncolytic herpes simplex virus
+virus,supported (not PubTator's top),39536909,Herpes Simplex Virus,Human Papillomavirus (6); Herpes Simplex Virus (6),The anti-tumor efficacy of a recombinant oncolytic herpes simplex virus mediated CRISPR/Cas9 delivery targeting in HPV16-positive cervical c,oncolytic herpes simplex virus
+virus,PubTator called it a disease,24999342,Herpes Simplex Virus,,Oncolytic herpes simplex virus-based strategies: toward a breakthrough in glioblastoma therapy,oncolytic herpes simplex virus
+virus,PubTator found none,42994118,Zika Virus,,A modified vaccinia Ankara (MVA) virus vectored Zika vaccine that generates neutralising antibodies and potent T cell responses in type I in,vaccinia virus vector vaccine
+virus,supported (not PubTator's top),42707259,Adeno-Associated Virus,Vaccinia Virus (26); Adeno-Associated Virus (20); SARS-CoV-2 (6),A viral-vectored multipathogen vaccine platform based on replication-competent vaccinia virus and adeno-associated virus.,vaccinia virus vector vaccine
+virus,conflict,42970347,Parapoxvirus,[Foot-and-mouth disease virus] (32); [Bovine papular stomatitis virus] (23),Novel recombinant bovine papular stomatitis virus expressing foot-and-mouth disease virus-like particles elicits neutralizing antibodies in ,vaccinia virus vector vaccine
+virus,no category,42944145,Non-descript,[Bluetongue virus] (35),Advances in Bluetongue Virus Antigenicity and Vaccine Strategies: Progress and Perspectives.,vaccinia virus vector vaccine
+virus,conflict,42287073,Poxviridae,Vaccinia Virus (3),Recent advances for the pharmaceutical production of highly attenuated poxviruses as viral vector platforms.,vaccinia virus vector vaccine
+virus,conflict,42784343,Mpox Virus,[Orthopoxvirus] (3),"Toward Precision Vaccinology for Mpox: Rational Antigen Design, Next-Generation Platforms, and Immune Correlates of Protection.",vaccinia virus vector vaccine
+virus,conflict,42878689,Vaccinia Virus,SARS-CoV-2 (29),Safety and immunogenicity of a first-generation modified vaccinia virus Ankara-vectored SARS-CoV-2 vaccine candidate with mRNA-based booster,vaccinia virus vector vaccine
+virus,conflict,29581442,Zika Virus,Chikungunya Virus (3),A vaccinia-based single vector construct multi-pathogen vaccine protects against both Zika and chikungunya viruses,vaccinia virus vector vaccine
+virus,supported (not PubTator's top),42177200,Ebola Virus,Vaccinia Virus (23); Ebola Virus (23),Heterologous vaccination with a next-generation vaccinia virus and Ad26 induces Ebola-specific immunity in macaques.,vaccinia virus vector vaccine
+virus,PubTator found none,42655681,Orthopoxvirus,,Current Strategies for Selecting Recombinant Orthopoxvirus Proteins for Immunobiological and Diagnostic Applications.,vaccinia virus vector vaccine
+virus,conflict,42646698,Mpox Virus,[Orthopoxvirus] (32),Dynamics of Orthopoxvirus Stability Under Simulated Luminal Conditions of the Gastrointestinal Tract for Assessing the Feasibility of Oral I,vaccinia virus vector vaccine
+virus,no category,42042814,Non-descript,[Bovine viral diarrhea virus 1] (32); [Bovine viral diarrhea virus 2] (6); [Viruses] (3),Construction and Immunogenicity of Modified Vaccinia Ankara (MVA) Viruses Expressing E1 and E2 Proteins of Bovine Viral Diarrhea Virus.,vaccinia virus vector vaccine
+virus,PubTator found none,40591406,Measles Virus,,Correction to: Erratum to: TRLS-11. PNOC005: ONCOLYTIC MEASLES VIRUS FOR THE TREATMENT OF CHILDREN AND YOUNG ADULTS WITH RECURRENT MEDULLOBL,oncolytic measles virus
+virus,PubTator found none,21468006,Measles Virus,,MicroRNA-sensitive Oncolytic Measles Viruses for Cancer-specific Vector Tropism,oncolytic measles virus
+virus,PubTator called it a disease,39731493,Measles Virus,,Oncolytic measles virus-induced cell killing in radio-resistant and drug-resistant nasopharyngeal carcinoma.,oncolytic measles virus
+virus,PubTator called it a disease,39599854,Measles Virus,,Production of Oncolytic Measles Virus in Vero Cells: Impact of Culture Medium and Multiplicity of Infection.,oncolytic measles virus
+virus,PubTator called it a disease,27512675,Measles Virus,,Advances in the design and development of oncolytic measles viruses,oncolytic measles virus
+virus,PubTator called it a disease,37376594,Measles Virus,,Combination of Oncolytic Measles Virus and Ursolic Acid Synergistically Induces Oncolysis of Hepatocellular Carcinoma Cells.,oncolytic measles virus
+virus,PubTator found none,38895151,Measles Virus,,Formulation for the Targeted Delivery of a Vaccine Strain of Oncolytic Measles Virus (OMV) in Hyaluronic Acid Coated Thiolated Chitosan as a,oncolytic measles virus
+virus,PubTator found none,20379224,Measles Virus,,Oncolytic measles viruses encoding interferon β and the thyroidal sodium iodide symporter gene for mesothelioma virotherapy,oncolytic measles virus
+virus,PubTator called it a disease,19208845,Measles Virus,,Tumor and Vascular Targeting of a Novel Oncolytic Measles Virus Retargeted against the Urokinase Receptor,oncolytic measles virus
+virus,PubTator found none,23596044,Adeno-Associated Virus,,Immune responses to AAV vectors: overcoming barriers to successful gene therapy,AAV gene therapy immune response
+virus,PubTator found none,42972024,Adeno-Associated Virus,,Challenges and innovations in cardiac AAV gene delivery as a platform for cardiac regeneration.,AAV gene therapy immune response
+virus,PubTator found none,34485594,Adeno-Associated Virus,,Characterizing the cellular immune response to subretinal AAV gene therapy in the murine retina,AAV gene therapy immune response
+virus,PubTator found none,24460861,Adeno-Associated Virus,,Role of the vector genome and underlying factor IX mutation in immune responses to AAV gene therapy for hemophilia B,AAV gene therapy immune response
+virus,PubTator found none,42828162,Adeno-Associated Virus,,"Sterile inflammation in LHON: mitochondrial stress, innate immune signaling, and implications for AAV gene therapy.",AAV gene therapy immune response
+virus,PubTator found none,42392182,Adeno-Associated Virus,,Increased gene therapy efficacy through the use of extended half-life clotting factors.,AAV gene therapy immune response
+virus,PubTator found none,18650463,Adeno-Associated Virus,,TLR3 signaling does not affect organ-specific immune responses to factor IX in AAV gene therapy,AAV gene therapy immune response
+virus,PubTator found none,42990835,Adeno-Associated Virus,,AAV encoding miRNAs as a new therapeutic for choroidal neovascularization.,AAV gene therapy immune response
+virus,PubTator found none,34569971,Adeno-Associated Virus,,The Effect of Immunomodulatory Treatments on Anti-Dystrophin Immune Response After AAV Gene Therapy in Dystrophin Deficient mdx Mice,AAV gene therapy immune response
+virus,PubTator found none,35694446,Lentivirus,,Physiological lentiviral vectors for the generation of improved CAR-T cells,lentiviral vector CAR-T
+virus,PubTator found none,31314617,Lentivirus,,Production of CAR T-cells by GMP-grade lentiviral vectors: latest advances and future prospects,lentiviral vector CAR-T
+virus,missed,42759984,Non-descript,Retrovirus (3),Gene regulatory elements determine efficacy of BCMA-targeted CAR-T cell products.,lentiviral vector CAR-T
+virus,PubTator found none,38861668,Lentivirus,,In vivo CAR T-cell generation in nonhuman primates using lentiviral vectors displaying a multidomain fusion ligand,lentiviral vector CAR-T
+virus,PubTator found none,40676833,Lentivirus,,Efficient in vivo generation of CAR T cells using a retargeted fourth-generation lentiviral vector,lentiviral vector CAR-T
+virus,PubTator found none,34518288,Lentivirus,,Bispecific binder redirected lentiviral vector enables in vivo engineering of CAR-T cells,lentiviral vector CAR-T
+virus,PubTator found none,35919458,Lentivirus,,Physiological lentiviral vectors for the generation of improved CAR-T cells,lentiviral vector CAR-T
+virus,PubTator found none,40867610,Lentivirus,,Introducing CAR-T Therapy in Kazakhstan: Establishing Academic-Scale Lentiviral Vector and CAR-T Cell Production,lentiviral vector CAR-T
+virus,conflict,41942453,Lentivirus,[Dolphin morbillivirus] (9),In vivo CAR T cell generation using retargeted and functionalized lentiviral vectors with reduced immunogenicity,lentiviral vector CAR-T
+virus,conflict,34729382,Lentivirus,Vesicular Stomatitis Virus (6),Monitoring CAR T cell generation with a CD8-targeted lentiviral vector by single-cell transcriptomics,lentiviral vector CAR-T
+virus,PubTator found none,37904721,Lentivirus,,CAR Gene Delivery by T‐cell Targeted Lentiviral Vectors is Enhanced by Rapamycin Induced Reduction of Antiviral Mechanisms,lentiviral vector CAR-T
+virus,PubTator found none,42670153,Lentivirus,,Isolating T-Cell Potent Lentiviral Vector Subpopulations through Rational Design of Nanofiber Anion-Exchange Adsorbents.,lentiviral vector CAR-T
+virus,PubTator found none,41800026,Lentivirus,,From Ex Vivo to In Vivo : Advances in Lentiviral Vector Engineering for CAR-T Therapy,lentiviral vector CAR-T
+virus,PubTator found none,34047682,Lentivirus,,Establishing functional lentiviral vector production in a stirred bioreactor for CAR-T cell therapy,lentiviral vector CAR-T
+virus,conflict,42182120,Lentivirus,Human Immunodeficiency Virus (3),LVV SMRTcap reveals extensive proviral variation in lentiviral vector-transduced CAR T cells,lentiviral vector CAR-T
+virus,PubTator found none,41907291,Lentivirus,,Enhancing the transduction efficiency of lentiviral vectors in CAR-T cell therapy through an optimization workflow,lentiviral vector CAR-T
+virus,PubTator called it a disease,24595373,Norovirus,,The Effect of Malnutrition on Norovirus Infection,norovirus infection
+virus,PubTator called it a disease,19036950,Norovirus,,Structural and functional changes of the duodenum in human norovirus infection,norovirus infection
+virus,PubTator called it a disease,25378626,Norovirus,,Enteric bacteria promote human and mouse norovirus infection of B cells,norovirus infection
+virus,PubTator called it a disease,42158036,Norovirus,,Management of Norovirus Infection in Solid Organ Transplant Recipients: A Scoping Review.,norovirus infection
+virus,PubTator called it a disease,42750841,Norovirus,,Colon Single Stripe Sign in Chronic NSAID Use During Norovirus Infection: A Two-Hit Model of Ischemic Colitis.,norovirus infection
+virus,PubTator called it a disease,41668226,Norovirus,,Norovirus infection control in Korea: points to consider.,norovirus infection
+virus,PubTator called it a disease,42198741,Norovirus,,A Prolonged Norovirus Infection and the Molecular Evolution of Human Norovirus Within-Host in a Child with Burkitt Lymphoma.,norovirus infection
+virus,PubTator called it a disease,24351661,Norovirus,,Decoding Norovirus Infection in Crohnʼs Disease,norovirus infection
+virus,PubTator found none,10577495,Rotavirus,,Withdrawal of Rotavirus Vaccine Recommendation,rotavirus vaccine
+virus,PubTator found none,42981013,Rotavirus,,Rotavirus Vaccine Effectiveness Against Hospitalization for Rotavirus Gastroenteritis in Children Under 5 years: A Test-Negative Study in So,rotavirus vaccine
+virus,conflict,42479772,Sapovirus,Rotavirus (26),Human Sapovirus in the Post-Rotavirus Vaccine Era: From an Overlooked Gastroenteritis Pathogen to a Target for Precision Surveillance.,rotavirus vaccine
+virus,PubTator called it a disease,42931369,Varicella-Zoster Virus,,Determinants of Herpes Zoster Vaccine Hesitancy: An Updated Systematic Review Based on the 5C Model.,herpes zoster vaccine
+virus,PubTator called it a disease,41451931,Varicella-Zoster Virus,,"Herpes Zoster, Vaccine, and Stroke Risk.",herpes zoster vaccine
+virus,PubTator called it a disease,25144544,Varicella-Zoster Virus,,Update on recommendations for use of herpes zoster vaccine.,herpes zoster vaccine
+virus,PubTator called it a disease,42398453,Influenza,,Influenza and herpes zoster vaccine effectiveness in autoimmune or immune-mediated diseases.,herpes zoster vaccine
+virus,PubTator called it a disease,20439573,Varicella-Zoster Virus,,Barriers to the Use of Herpes Zoster Vaccine,herpes zoster vaccine
+virus,PubTator found none,42020970,Varicella-Zoster Virus,,Herpes zoster vaccine may protect against dementia.,herpes zoster vaccine
+virus,PubTator called it a disease,21224457,Varicella-Zoster Virus,,Herpes Zoster Vaccine in Older Adults and the Risk of Subsequent Herpes Zoster Disease,herpes zoster vaccine
+virus,PubTator called it a disease,42322677,Varicella-Zoster Virus,,Outcomes in adult liver transplant patients receiving recombinant herpes zoster vaccine.,herpes zoster vaccine
+virus,PubTator found none,42261247,Varicella-Zoster Virus,,"Prospective evaluation of recombinant Herpes zoster vaccine in SSc: immunogenicity, safety and disease outcomes.",herpes zoster vaccine
+virus,PubTator called it a disease,20439572,Varicella-Zoster Virus,,Safety of Herpes Zoster Vaccine in the Shingles Prevention Study,herpes zoster vaccine
+virus,PubTator called it a disease,42506602,Varicella-Zoster Virus,,"Knowledge, Awareness, Attitudes, Acceptance, and Uptake of the Herpes Zoster Vaccine in Saudi Arabia: A Scoping Review.",herpes zoster vaccine
+virus,PubTator called it a disease,23858399,Varicella-Zoster Virus,,Herpes zoster vaccine in Korea,herpes zoster vaccine
+virus,PubTator called it a disease,42373488,Varicella-Zoster Virus,,[Analysis of the vaccination status and trends of the herpes zoster vaccine in Shandong Province from 2020 to 2024].,herpes zoster vaccine
+virus,PubTator called it a disease,29370152,Varicella-Zoster Virus,,Recommendations of the Advisory Committee on Immunization Practices for Use of Herpes Zoster Vaccines,herpes zoster vaccine
+virus,PubTator found none,40592553,Varicella-Zoster Virus,,Herpes Zoster Vaccine and Rheumatoid Arthritis.,herpes zoster vaccine
+virus,PubTator called it a disease,41600995,Varicella-Zoster Virus,,Beyond the Virological Benefits of the Herpes Zoster Vaccine in the Context of Primary Care.,herpes zoster vaccine
+virus,PubTator called it a disease,18419399,Varicella-Zoster Virus,,"The Epidemiological, Clinical, and Pathological Rationale for the Herpes Zoster Vaccine",herpes zoster vaccine
+virus,PubTator found none,40304454,Varicella-Zoster Virus,,Herpes Zoster Vaccine and Cardiovascular Disease Risk.,herpes zoster vaccine
+virus,PubTator called it a disease,41873191,Varicella-Zoster Virus,,Herpes Zoster Vaccine Uptake Among United States Adults With Rheumatic Disease: A Mixed-Methods Analysis.,herpes zoster vaccine
+virus,PubTator called it a disease,31258310,Varicella-Zoster Virus,,Shingrix: A New Herpes Zoster Vaccine.,herpes zoster vaccine
+virus,PubTator found none,42042807,Varicella-Zoster Virus,,Profiles of Hesitancy Toward the Herpes Zoster Vaccine Among Older Adults in China: A Latent Profile Analysis.,herpes zoster vaccine
+virus,PubTator called it a disease,36560671,Varicella-Zoster Virus,,Prevention of Herpes Zoster: A Focus on the Effectiveness and Safety of Herpes Zoster Vaccines,herpes zoster vaccine
+virus,PubTator called it a disease,41893747,Varicella-Zoster Virus,,From Knowledge to Action: Enhancing Herpes Zoster Vaccine Uptake in Diabetic Patients Through Targeted Interventions.,herpes zoster vaccine
+virus,PubTator found none,31682655,Varicella-Zoster Virus,,STATEMENT ON THE RECOMMENDED USE OF HERPES ZOSTER VACCINE,herpes zoster vaccine
+virus,PubTator called it a disease,40988174,Varicella-Zoster Virus,,Mapping the landscape of herpes zoster vaccine research: A bibliometric analysis.,herpes zoster vaccine
+virus,PubTator called it a disease,41439382,Varicella-Zoster Virus,,Herpes zoster vaccine uptake following provider prescription among older adults in the United States.,herpes zoster vaccine
+virus,PubTator called it a disease,42023333,Varicella-Zoster Virus,,"Assessment of populations' knowledge and willingness to receive Herpes Zoster Vaccine: A cross-sectional study from Qassim Region, Saudi Ara",herpes zoster vaccine
+virus,PubTator called it a disease,22669900,Varicella-Zoster Virus,,Herpes Zoster Vaccine and the Incidence of Recurrent Herpes Zoster in an Immunocompetent Elderly Population,herpes zoster vaccine
+virus,PubTator called it a disease,41873494,Varicella-Zoster Virus,,"Herpes zoster knowledge, attitudes, and herpes zoster vaccine acceptability among patients in a tertiary hospital and dermatologists in the ",herpes zoster vaccine
+virus,PubTator called it a disease,26908728,Varicella-Zoster Virus,,Declining Effectiveness of Herpes Zoster Vaccine in Adults Aged ≥60 Years,herpes zoster vaccine
+virus,PubTator called it a disease,41932224,Varicella-Zoster Virus,,Lower magnitude of humoral response to recombinant herpes zoster vaccine in immunocompromised Sjögren's disease patients: evidence from a ra,herpes zoster vaccine
+virus,PubTator found none,42735693,Mpox Virus,,Prevalence-adaptive sequential antigen and molecular testing for mpox at the point-of-care.,mpox
+virus,PubTator called it a disease,37574113,Mpox Virus,,Emergence of mpox in the post-smallpox era—a narrative review on mpox epidemiology,mpox
+virus,PubTator found none,42990094,Mpox Virus,,Willingness of Chinese medical students to work on the frontline during a potential mpox outbreak: a nationwide cross-sectional study.,mpox
+virus,PubTator found none,38711448,Mpox Virus,,Mpox-AISM: AI-mediated super monitoring for mpox and like-mpox,mpox
+virus,conflict,42945183,Mpox Virus,Human Immunodeficiency Virus (3),"Community knowledge and perceptions of social, ecological, and behavioural risk factors for mpox in Burundi: A nationwide cross-sectional su",mpox
+virus,PubTator called it a disease,38148355,Mpox Virus,,"Mpox (formerly monkeypox): pathogenesis, prevention and treatment",mpox
+virus,PubTator found none,42993744,Mpox Virus,,Immunisation and preventive measures against mpox in pregnant women and children: A scoping review.,mpox
+virus,PubTator called it a disease,42953360,Mpox Virus,,"Epidemiological trajectory of Mpox in Brazil, 2022-2025: evidence of geographic consolidation and syndemic burden.",mpox
+virus,conflict,37089133,Mpox Virus,Human Immunodeficiency Virus (9),Monkeypox (mpox) in immunosuppressed patients,mpox
+virus,conflict,42886859,Mpox Virus,Human Immunodeficiency Virus (6),Mpox and sexually transmitted infections: syndemic drivers of transmission and disease outcomes-A Narrative Review.,mpox
+virus,PubTator called it a disease,37902655,Mpox Virus,,Mpox,mpox
+virus,PubTator called it a disease,42886687,Mpox Virus,,Disclosing pathogenic processes of monkeypox (MPOX) and drug repurposing through host-transcriptomics analysis.,mpox
+virus,PubTator called it a disease,42956507,Mpox Virus,,Cost-effectiveness analysis of Mpox control policies: A hybrid rough set-machine learning approach.,mpox
+virus,PubTator called it a disease,42906372,Mpox Virus,,Early treatment with tecovirimat against mpox disease in cynomolgus macaques.,mpox
+virus,PubTator found none,38719852,Mpox Virus,,Predicting vaccine effectiveness for mpox,mpox
+virus,PubTator called it a disease,36546646,Mpox Virus,,A Position Statement on Mpox as a Sexually Transmitted Disease,mpox
+virus,PubTator called it a disease,39887004,Mpox Virus,,Evolving Epidemiology of Mpox in Africa in 2024,mpox
+virus,PubTator found none,42854705,Mpox Virus,,Informing an mpox stockpile investment case: epidemiological modelling and cost-benefit analysis.,mpox
+virus,PubTator called it a disease,37543543,Mpox Virus,,Mpox: a review of laboratory detection techniques,mpox
+virus,conflict,42808114,Mpox Virus,Human Immunodeficiency Virus (3),Severe Mpox-Associated Proctocolitis Mimicking Opportunistic Colitis in a Liver Transplant Recipient.,mpox
+virus,conflict,41740032,Mpox Virus,[Variola virus] (3),Tecovirimat for the Treatment of Mpox,mpox
+virus,PubTator called it a disease,36975744,Mpox Virus,,Mpox (monkeypox),mpox
+virus,conflict,41469169,Mpox Virus,Human Immunodeficiency Virus (12),Clade-specific ophthalmic manifestations of mpox: an umbrella review and meta-analysis of systematic reviews.,mpox
+virus,PubTator found none,39163302,Mpox Virus,,The Resurgence of Mpox in Africa,mpox
+virus,PubTator called it a disease,36905148,Mpox Virus,,A Case of Mpox Reinfection,mpox
+virus,PubTator called it a disease,42808141,Mpox Virus,,Mpox Vaccine Acceptance Among Health Care Workers in Central Asia: The Role of COVID-19 Experience.,mpox
+virus,supported (not PubTator's top),25426834,Ebola Virus,Adenovirus (20); Ebola Virus (3),Chimpanzee Adenovirus Vector Ebola Vaccine,Ebola vaccine
+virus,PubTator called it a disease,27387395,Ebola Virus,,Implementing an Ebola Vaccine Study — Sierra Leone,Ebola vaccine
+virus,supported (not PubTator's top),26289977,Ebola Virus,Adenovirus (23); Ebola Virus (20),Adenovirus-vectored Ebola vaccines,Ebola vaccine
+virus,conflict,26287857,Ebola Virus,Adenovirus (20),Chimpanzee Adenovirus Vector Ebola Vaccine — Preliminary Report,Ebola vaccine
+virus,PubTator called it a disease,29084758,Ebola Virus,,The story of Canada’s Ebola vaccine,Ebola vaccine
+virus,PubTator called it a disease,40053339,Ebola Virus,,Sudan Virus Disease Outbreak in Uganda Spurs First-Ever Ebola Vaccine Trial.,Ebola vaccine
+virus,PubTator found none,42342058,Lentivirus,,Attenuated Salmonella typhimurium L-forms combined with lentiviral shRNA-HOTAIR suppress tumorigenicity and aggressiveness of murine breast ,Salmonella cancer therapy
+virus,PubTator called it a disease,9141215,Influenza,,Influenza-specific immunity induced by recombinant Listeria monocytogenes vaccines,Listeria monocytogenes vaccine
+virus,PubTator called it a disease,42089309,Influenza,,Temporal type I IFN signaling orchestrates protective and pathogenic inflammation post-influenza.,Staphylococcus aureus neutrophils
+virus,PubTator found none,32174246,Cytomegalovirus,,The autophagic response to Staphylococcus aureus provides an intracellular niche in neutrophils,Staphylococcus aureus neutrophils
+virus,PubTator found none,36389774,Bacteriophage,,Phage therapy for Clostridioides difficile infection,Clostridioides difficile infection
+bacterium,no category,42861410,Non-descript,[Maribacter sp. HV3] (3),GPR82-mediated activation of TGF-β/SMAD signaling contributes to CD8<sup>+</sup> T cell dysfunction in HBV-ACLF.,chronic hepatitis B T cell exhaustion
+bacterium,PubTator found none,41994955,Streptococcus pneumoniae,,Immunogenicity and Safety of Co-administration of Adjuvanted Respiratory Syncytial Virus Prefusion F Protein Vaccine With 20-Valent Pneumoco,RSV vaccine older adults
+bacterium,PubTator found none,42797646,Streptococcus pneumoniae,,Immunogenicity and Safety of RSVPreF3 OA Coadministration Versus Sequential Administration in Adults: A Systematic Review and Meta-Analysis.,RSV vaccine older adults
+bacterium,PubTator found none,42970041,Streptococcus pneumoniae,,Risk Factors for COVID-19 and Influenza Nonvaccination during the 2025-2026 Respiratory Season among a Cross-Sectional Sample of Older US Ad,RSV vaccine older adults
+bacterium,no category,17346105,Non-descript,[Haererehalobacter sp. 10%1] (3),Clinical Trials with Oncolytic Adenovirus in China,oncolytic adenovirus
+bacterium,no category,30563466,Non-descript,[Halomonas sp. F10] (3),Oncolytic herpes simplex virus and immunotherapy,oncolytic herpes simplex virus
+bacterium,missed,42572581,Non-descript,Pseudomonas aeruginosa (3),An orthogonal transcription system enables high-efficiency rescue of measles virus-based vaccine vectors against multiple pathogens.,vaccinia virus vector vaccine
+bacterium,conflict,42881193,Klebsiella pneumoniae,Escherichia coli (3),Klebsiella-dominant gut communities are associated with impeded oral rotavirus vaccine response in infants.,rotavirus vaccine
+bacterium,missed,42897682,Non-descript,Escherichia coli (3),Incidence and aetiology of diarrhoeal disease among children under five years in the post-rotavirus vaccine introduction era in Manhiça Dist,rotavirus vaccine
+bacterium,PubTator found none,41600995,Streptococcus pneumoniae,,Beyond the Virological Benefits of the Herpes Zoster Vaccine in the Context of Primary Care.,herpes zoster vaccine
+bacterium,PubTator called it a disease,42868206,Mycobacterium tuberculosis,,MicroRNA-1246 regulates macrophage lipid metabolism and is involved in resistance to human Mycobacterium tuberculosis infection.,Mycobacterium tuberculosis macrophage
+bacterium,PubTator called it a disease,42953363,Mycobacterium tuberculosis,,New strategies for the treatment of tuberculosis: research progress and clinical translation in immune modulation and inflammation control.,Mycobacterium tuberculosis macrophage
+bacterium,PubTator found none,39558103,Salmonella,,Salmonella cancer therapy metabolically disrupts tumours at the collateral cost of T cell immunity.,Salmonella cancer therapy
+bacterium,PubTator called it a disease,42761723,Salmonella,,Salmonella Aortitis Causing a Contained Rupture of a Mycotic Infrarenal Abdominal Aortic Aneurysm Successfully Managed With Endovascular Rep,Salmonella cancer therapy
+bacterium,PubTator found none,31052558,Salmonella,,Salmonella-Based Targeted Cancer Therapy: Updates on A Promising and Innovative Tumor Immunotherapeutic Strategy,Salmonella cancer therapy
+bacterium,missed,42835091,Non-descript,Salmonella (3),A bacteria-releasing mucoadhesive sheet for localized delivery and penetrative therapy of gastrointestinal cancer,Salmonella cancer therapy
+bacterium,PubTator found none,42987992,Listeria,,Structural diversity and functional roles of the internalin family proteins in Listeria monocytogenes.,Listeria monocytogenes vaccine
+bacterium,PubTator found none,42986129,Listeria,,"Nationwide clinical-genomic epidemiology of listeriosis in Taiwan, 2018-2025: disease manifestations in relation to clonal background.",Listeria monocytogenes vaccine
+bacterium,missed,42867249,Non-descript,Staphylococcus aureus (3),Metaproteomic analysis of human sonicate fluid highlights neutrophil extracellular trap formation associated with periprosthetic joint infec,Staphylococcus aureus neutrophils
+bacterium,missed,42153329,Non-descript,Pseudomonas aeruginosa (3),Meteorin-like ameliorates acute bacterial lung infection by enhancing neutrophil function.,Staphylococcus aureus neutrophils
+bacterium,supported (not PubTator's top),42759389,Klebsiella pneumoniae,Staphylococcus aureus (3); Klebsiella pneumoniae (3),A novel chimeric antimicrobial peptide B5PL dual-targets bacterial cell membrane and neutrophils to combat multidrug-resistant bacterial inf,Staphylococcus aureus neutrophils
+bacterium,PubTator found none,42892751,Staphylococcus aureus,,"In Vitro Longitudinal Confocal Fluorescence Microscopy and Imaging Cytometry to Quantify Neutrophil Swarming, Opsonophagocytosis, and Vital ",Staphylococcus aureus neutrophils
+bacterium,missed,42089309,Non-descript,Staphylococcus aureus (3),Temporal type I IFN signaling orchestrates protective and pathogenic inflammation post-influenza.,Staphylococcus aureus neutrophils
+bacterium,PubTator called it a disease,20829608,Staphylococcus aureus,,agr-Dependent Interactions of Staphylococcus aureus USA300 with Human Polymorphonuclear Neutrophils,Staphylococcus aureus neutrophils
+bacterium,missed,42565631,Non-descript,Staphylococcus aureus (3); Pseudomonas aeruginosa (3),Obesity hampers bacteria killing by human neutrophils.,Staphylococcus aureus neutrophils
+bacterium,PubTator called it a disease,42968267,Helicobacter pylori,,Helicobacter pylori Infection Is Associated with Increased FGF7 Expression in Gastric Cancer.,Helicobacter pylori gastric inflammation
+bacterium,PubTator found none,42995146,Helicobacter pylori,,Molecular Profiling of Pediatric Helicobacter pylori Gastritis Using Raman Spectroscopy: Spectral Patterns Corresponding to Local Biochemica,Helicobacter pylori gastric inflammation
+bacterium,PubTator called it a disease,42821373,Helicobacter pylori,,Statement of Retraction: Everolimus ameliorates Helicobacter pylori infection-induced inflammation in gastric epithelial cells.,Helicobacter pylori gastric inflammation
+bacterium,PubTator called it a disease,42692878,Helicobacter pylori,,The association of Helicobacter pylori infection and inflammation with cognitive development in preadolescents.,Helicobacter pylori gastric inflammation
+bacterium,PubTator found none,42993715,Helicobacter pylori,,"Protocol for investigating the association between Helicobacter pylori exposure, antigen-specific serological responses, and resistant versu",Helicobacter pylori gastric inflammation
+bacterium,PubTator found none,42991682,Helicobacter pylori,,Analysis of gene expression patterns in various topographic sites of gastritis patients infected with <i>Helicobacter pylori</i>.,Helicobacter pylori gastric inflammation
+bacterium,PubTator called it a disease,42424374,Clostridioides difficile,,Clostridioides difficile Infection Deceleration: What Is Next?,Clostridioides difficile infection
+bacterium,PubTator called it a disease,42628834,Clostridioides difficile,,Type 2 immunity in Clostridioides difficile infection.,Clostridioides difficile infection
+bacterium,PubTator called it a disease,32104155,Clostridioides difficile,,Clostridioides difficile Infection,Clostridioides difficile infection
+bacterium,PubTator called it a disease,42799265,Clostridioides difficile,,Necrotizing Pancreatitis With Concurrent Clostridioides difficile Infection.,Clostridioides difficile infection
+bacterium,PubTator called it a disease,42547174,Clostridioides difficile,,Update on Clostridioides difficile Infection in Older Adults.,Clostridioides difficile infection
+bacterium,PubTator called it a disease,34003176,Clostridioides difficile,,"ACG Clinical Guidelines: Prevention, Diagnosis, and Treatment of Clostridioides difficile Infections",Clostridioides difficile infection
+bacterium,PubTator called it a disease,42949032,Clostridioides difficile,,Preventing Clostridioides difficile Infection and Recurrence: Practical Strategies for Clinical Practice.,Clostridioides difficile infection
+bacterium,PubTator called it a disease,31201141,Clostridioides difficile,,Fecal microbiota transplantation beyond Clostridioides difficile infections,Clostridioides difficile infection
+bacterium,conflict,42778087,Bifidobacterium,Clostridioides difficile (6),Bifidobacteria and Clostridioides difficile infection: review of emerging therapeutic perspectives.,Clostridioides difficile infection
+bacterium,PubTator called it a disease,34093740,Clostridioides difficile,,Epidemiology of community-acquired and recurrent Clostridioides difficile infection,Clostridioides difficile infection
+bacterium,PubTator called it a disease,42640228,Clostridioides difficile,,Genomic Epidemiology of Clostridioides difficile Infection: A cgMLST Analysis.,Clostridioides difficile infection
+bacterium,PubTator called it a disease,42538084,Clostridioides difficile,,The Changing Epidemiology of Clostridioides difficile Infection.,Clostridioides difficile infection
+bacterium,PubTator called it a disease,42786805,Clostridioides difficile,,Atypical Clostridioides difficile Infection: Defining a Mortality-Associated Dysmotility Phenotype.,Clostridioides difficile infection
+bacterium,PubTator called it a disease,32003951,Clostridioides difficile,,Clostridioides difficile Infection: Update on Management.,Clostridioides difficile infection
+bacterium,PubTator called it a disease,42962934,Clostridioides difficile,,Strain-level proteotyping and expression of specific toxins in patients with recurrent Clostridioides difficile infection.,Clostridioides difficile infection
+bacterium,PubTator called it a disease,42975770,Clostridioides difficile,,Breaking the vicious cycle: recent advances and clinical strategies for preventing recurrent clostridioides difficile infection.,Clostridioides difficile infection
+bacterium,PubTator called it a disease,37060545,Clostridioides difficile,,"VE303, a Defined Bacterial Consortium, for Prevention of Recurrent Clostridioides difficile Infection",Clostridioides difficile infection
+bacterium,conflict,33854066,Clostridioides difficile,Enterococcus (3); Bifidobacterium (3),Microbiota-based markers predictive of development of Clostridioides difficile infection,Clostridioides difficile infection
+bacterium,PubTator called it a disease,42618336,Clostridioides difficile,,Tigecycline combination therapy for fulminant Clostridioides difficile infection: an Australian experience.,Clostridioides difficile infection
+bacterium,PubTator called it a disease,33315710,Clostridioides difficile,,Clostridioides Difficile Infection,Clostridioides difficile infection
+bacterium,PubTator called it a disease,42628601,Clostridioides difficile,,Decreasing treatment for postoperative Clostridioides difficile infection in Pediatric Surgery patients.,Clostridioides difficile infection
+bacterium,PubTator called it a disease,39858303,Clostridioides difficile,,A Review of Therapies for Clostridioides difficile Infection,Clostridioides difficile infection
+bacterium,PubTator called it a disease,42538087,Clostridioides difficile,,Probiotics for Primary or Secondary Prevention of Clostridioides difficile Infection.,Clostridioides difficile infection
+bacterium,PubTator called it a disease,42274997,Clostridioides difficile,,Cost-effectiveness of Commercial or Traditional Fecal Microbiota Transplantation for Recurrent Clostridioides difficile Infection.,Clostridioides difficile infection
+bacterium,PubTator called it a disease,37850615,Clostridioides difficile,,[Clostridioides difficile infections].,Clostridioides difficile infection
+bacterium,missed,42873094,Non-descript,Bifidobacterium (3),Gut microbiota-considered pharmacotherapeutic management of hepatocellular carcinoma.,Akkermansia immunotherapy response
+bacterium,missed,29097494,Non-descript,Akkermansia (6),Gut microbiome influences efficacy of PD-1–based immunotherapy against epithelial tumors,Akkermansia immunotherapy response
+bacterium,missed,31337439,Non-descript,Akkermansia (3),Gut microbiome affects the response to anti-PD-1 immunotherapy in patients with hepatocellular carcinoma,Akkermansia immunotherapy response
+bacterium,missed,42851568,Non-descript,Akkermansia (3); Bifidobacterium (3),The microbiome–nitric oxide axis in cancer immunotherapy: a targeted qualitative systematic review of mechanistic and translational evidence,Akkermansia immunotherapy response
+bacterium,missed,42633329,Non-descript,Helicobacter pylori (3); Akkermansia (3),Gut Microbiome Composition and Response to Immune Checkpoint Inhibitors in Melanoma: A Systematic Review.,Akkermansia immunotherapy response
+bacterium,missed,42737447,Non-descript,Akkermansia (3),Microbiome-Immune Interactions as Determinants of Checkpoint Inhibitor Efficacy in Hepatocellular Carcinoma.,Akkermansia immunotherapy response
+bacterium,PubTator found none,40170844,Akkermansia,,Revealing gut microbiota biomarkers associated with melanoma immunotherapy response and key bacteria-fungi interaction relationships: eviden,Akkermansia immunotherapy response
+bacterium,missed,42785509,Non-descript,Akkermansia (6),Chronic ileitis ameliorates hyperglycemia via a 3-HB/NKX6.1 axis in mice.,Akkermansia immunotherapy response
+bacterium,no category,42291363,Non-descript,[Enterobacter] (3),Gut microbiome in advanced non-small cell lung cancer: effect of chemotherapy and impact on efficacy.,Akkermansia immunotherapy response
+bacterium,missed,42111748,Non-descript,Bifidobacterium (3); Akkermansia (3),Gut Microbiota and Extraintestinal Cancers: Mechanistic Insights and Microbiome-Targeted Interventions.,Akkermansia immunotherapy response
+bacterium,missed,41968757,Non-descript,Akkermansia (3); Klebsiella pneumoniae (3),How the gut microbiome affects the immunotherapy response in hepatocellular carcinoma,Akkermansia immunotherapy response
+bacterium,missed,42564172,Non-descript,Akkermansia (3),Microbiome as a prediction of immunotherapy response in lung cancer.,Akkermansia immunotherapy response
+virus,negative control tagged,42874111,Adeno-Associated Virus,,Integration-Associated Paraspinal Neoplasm after AAV Gene Therapy.,CMV promoter transgene expression
+virus,negative control tagged,8590733,Simian virus 40,,Interferon- γ Inhibits Transgene Expression Driven by SV40 or CMV Promoters but Augments Expression Driven by the Mammalian MHC I Promoter,CMV promoter transgene expression
+virus,negative control tagged,17704247,Cytomegalovirus,,Doxorubicin Enhances the Expression of Transgene Under Control of the CMV Promoter in Anaplastic Thyroid Carcinoma Cells,CMV promoter transgene expression
+virus,negative control tagged,42909043,Lentivirus,,An inducible human LDLR transgenic mouse model for enhanced lentiviral gene delivery to murine immune cells.,CMV promoter transgene expression
+virus,negative control tagged,15756650,Adeno-Associated Virus,,Improved neuronal transgene expression from an AAV‐2 vector with a hybrid CMV enhancer/PDGF‐β promoter,CMV promoter transgene expression
+virus,negative control tagged,42772178,Cytomegalovirus,,TCF3 transcription factor isoforms E12 and E47 activate endogenous SCX while repressing pCMV-driven transgene expression.,CMV promoter transgene expression
+virus,negative control tagged,18190688,Cytomegalovirus,,The CMV early enhancer/chicken β actin (CAG) promoter can be used to drive transgene expression during the differentiation of murine embryon,CMV promoter transgene expression
+virus,negative control tagged,42496571,Adeno-Associated Virus,,AAV Vector Toolkit for the Delivery and Expression of the Artificial microRNA in the Murine Heart.,CMV promoter transgene expression
+virus,negative control tagged,31661123,Cytomegalovirus,,The goat β‑casein/CMV chimeric promoter drives the expression of hLF in transgenic goats produced by cell transgene microinjection,CMV promoter transgene expression
+virus,negative control tagged,42545605,Cytomegalovirus,,A stable and potent buffalo EF1α1 promoter for robust gene expression in mammalian systems.,CMV promoter transgene expression
+virus,negative control tagged,15771962,Adeno-Associated Virus,,Proteasome Inhibition Enhances AAV-Mediated Transgene Expression in Human Synoviocytes in Vitro and in Vivo,CMV promoter transgene expression
+virus,negative control tagged,42405183,Adeno-Associated Virus,,Defining the safety and efficacy of liver-directed AAV gene therapy using a human liver tissue-equivalent platform.,CMV promoter transgene expression
+virus,negative control tagged,19688097,Cytomegalovirus,,Transgene Expression Is Associated with Copy Number and Cytomegalovirus Promoter Methylation in Transgenic Pigs,CMV promoter transgene expression
+virus,negative control tagged,33155423,Cytomegalovirus,,The CAG promoter maintains high‐level transgene expression in HEK293 cells,CMV promoter transgene expression
+virus,negative control tagged,42902394,Adeno-Associated Virus,,StitchR-based dual-AAV delivery strategies enable efficient transduction of defined neural cell populations.,CMV promoter transgene expression
+virus,negative control tagged,24714676,Cytomegalovirus,,Characterization of Constitutive Promoters for piggyBac Transposon-Mediated Stable Transgene Expression in Mesenchymal Stem Cells (MSCs),CMV promoter transgene expression
+virus,negative control tagged,42455247,Cytomegalovirus,,"EF-1α-driven nanobody-based CD19-redirected CAR-T cells retain the antitumor efficacy, antigen-driven expansion, and cytokine secretion of C",CMV promoter transgene expression
+virus,negative control tagged,31380464,Cytomegalovirus,,Neuronal Activation Stimulates Cytomegalovirus Promoter-Driven Transgene Expression,CMV promoter transgene expression
+virus,negative control tagged,11472109,Cytomegalovirus,,High and Sustained Transgene Expression in Vivo from Plasmid Vectors Containing a Hybrid Ubiquitin Promoter,CMV promoter transgene expression
+virus,negative control tagged,8650001,Cytomegalovirus,,The Human Ubiquitin C Promoter Directs High Ubiquitous Expression of Transgenes in Mice,CMV promoter transgene expression
+virus,negative control tagged,42778197,Adenovirus,,Targeting pancreatic cancer with adenoviral vectors equipped with transgenes.,CMV promoter transgene expression
+virus,negative control tagged,17464178,Cytomegalovirus,,Promoter effects of adeno-associated viral vector for transgene expression in the cochlea in vivo,CMV promoter transgene expression
