@@ -16,6 +16,8 @@ Development before v2.0.0 was untagged; see the git history for detail.
   same second signal, as it already did when the title named it too. Candel's
   own AdV-tk trials now count for aglatimagene besadenovec; a hospital's
   unrelated ADV-TK product stays a candidate for review.
+  Organisations are compared as whole words, and names are never split at
+  "and" or "&", so "Roche" doesn't match the University of Rochester.
 
 ### Fixed
 - The reference checker no longer calls a live study a dead citation when

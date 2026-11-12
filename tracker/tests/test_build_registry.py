@@ -120,6 +120,14 @@ class Matching(unittest.TestCase):
         self.assertEqual(br.org_keys("Spark Therapeutics (Roche)"), {"SPARKTHERAPEUTICS", "ROCHE"})
         self.assertEqual(br.org_keys("Candel Therapeutics, Inc."), {"CANDELTHERAPEUTICS"})
         self.assertEqual(br.org_keys("Inc."), set())
+        self.assertEqual(br.org_keys("Johnson & Johnson"), {"JOHNSONJOHNSON"})
+        roche = br.AliasIndex([], [{"axp_id": "A", "sponsor": "Roche", "originator": ""}])
+        self.assertTrue(roche.sponsor_agrees("A", {"lead_sponsor": "Hoffmann-La Roche"}))
+        self.assertFalse(roche.sponsor_agrees("A", {"lead_sponsor": "University of Rochester"}))
+        mayo = br.AliasIndex([], [{"axp_id": "M", "sponsor": "Mayo Clinic", "originator": ""}])
+        self.assertTrue(mayo.sponsor_agrees("M", {"lead_sponsor": "Mayo Clinic in Florida"}))
+        self.assertEqual(br.org_keys("Centers for Disease Control and Prevention"),
+                         {"CENTERSFORDISEASECONTROLANDPREVENTION"})
 
 
 class Diff(unittest.TestCase):

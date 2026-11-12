@@ -173,16 +173,29 @@ ORG_SUFFIXES = {"INC", "INCORPORATED", "LTD", "LIMITED", "LLC", "LLP", "CO", "CO
 MIN_ORG_KEY = 5
 
 
-def org_keys(text):
-    """Comparable keys for the organisations named in a sponsor field:
-    "Spark Therapeutics (Roche)" -> {"SPARKTHERAPEUTICS", "ROCHE"}."""
+def org_names(text):
+    """The organisations named in a sponsor field, each as a tuple of words:
+    "Spark Therapeutics (Roche)" -> {("SPARK", "THERAPEUTICS"), ("ROCHE",)}."""
     out = set()
-    for part in re.split(r"[;/(),]|\band\b|&", text or "", flags=re.I):
-        toks = [t for t in re.findall(r"[A-Za-z0-9]+", part.upper()) if t not in ORG_SUFFIXES]
-        key = "".join(toks)
-        if len(key) >= MIN_ORG_KEY:
-            out.add(key)
+    # Split on separators between organisations, never on "and" or "&": they
+    # sit inside names ("Johnson & Johnson", "Centers for Disease Control and
+    # Prevention"), and a fragment like "PREVENTION" would match strangers.
+    for part in re.split(r"[;/(),]", text or ""):
+        toks = tuple(t for t in re.findall(r"[A-Za-z0-9]+", part.upper()) if t not in ORG_SUFFIXES)
+        if len("".join(toks)) >= MIN_ORG_KEY:
+            out.add(toks)
     return out
+
+
+def org_keys(text):
+    return {"".join(t) for t in org_names(text)}
+
+
+def _contains_words(longer, shorter):
+    """Is `shorter` a run of whole words inside `longer`? ("ROCHE" is in "HOFFMANN LA ROCHE",
+    not in "UNIVERSITY OF ROCHESTER")."""
+    n = len(shorter)
+    return n > 0 and any(longer[i:i + n] == shorter for i in range(len(longer) - n + 1))
 
 
 class AliasIndex:
@@ -193,7 +206,7 @@ class AliasIndex:
         # Each program's sponsor and originator, the second signal that lets an
         # ambiguous name count (registry plan: "needs a second signal (sponsor
         # or target) before any auto-link").
-        self.orgs = {p["axp_id"]: org_keys(p.get("sponsor")) | org_keys(p.get("originator")) for p in programs}
+        self.orgs = {p["axp_id"]: org_names(p.get("sponsor")) | org_names(p.get("originator")) for p in programs}
 
     def sponsor_agrees(self, axp_id, rec):
         """Does the trial's lead sponsor or a collaborator name the program's sponsor or originator?"""
@@ -202,8 +215,11 @@ class AliasIndex:
             return False
         theirs = set()
         for o in [rec.get("lead_sponsor")] + list(rec.get("collaborators") or []):
-            theirs |= org_keys(o)
-        return any(m == t or (m in t) or (t in m and len(t) >= MIN_ORG_KEY + 3) for m in mine for t in theirs)
+            theirs |= org_names(o)
+        # Whole words either way round: "Candel Therapeutics" is in "Candel
+        # Therapeutics Inc", and "Mayo Clinic" in "Mayo Clinic in Florida".
+        return any(_contains_words(t, m) or (_contains_words(m, t) and len("".join(t)) >= MIN_ORG_KEY + 3)
+                   for m in mine for t in theirs)
 
     def exact(self, name):
         return self.by_key.get(reg.alias_key(name), [])
