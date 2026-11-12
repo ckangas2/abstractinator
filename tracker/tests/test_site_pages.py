@@ -128,15 +128,18 @@ class Site(unittest.TestCase):
         self.assertIn("2015-10-27", page)
         self.assertIn('href="https://clinicaltrials.gov/study/NCT01"', page)
         self.assertIn("Metastatic Disease; Pancreatic Cancer", page)   # conditions, as the snapshot sorts them
-        # papers: with metadata, without a paper row, and an unconfirmed one folded away
+        # key papers only: the results paper its trial cites comes first (even with
+        # no paper row yet), then title matches; a weak abstract-only candidate
+        # never appears publicly, and nothing is folded away
+        self.assertIn("<h2>Key papers</h2>", page)
         self.assertIn("T-VEC in melanoma", page)
-        self.assertIn('href="https://pubmed.ncbi.nlm.nih.gov/22222222/"', page)
-        self.assertLess(page.index("<details>"), page.index("33333333"))
-        # a preclinical paper goes under "Other papers", after the clinical ones;
-        # a results paper with no details yet counts as clinical
-        self.assertLess(page.index("<h2>Clinical papers</h2>"), page.index("22222222"))
-        self.assertLess(page.index("22222222"), page.index("<h2>Other papers</h2>"))
-        self.assertLess(page.index("<h2>Other papers</h2>"), page.index("T-VEC in a mouse model"))
+        self.assertLess(page.index("22222222"), page.index("T-VEC in melanoma"))
+        self.assertLess(page.index("T-VEC in melanoma"), page.index("T-VEC in a mouse model"))  # clinical first
+        self.assertNotIn("33333333", page)
+        self.assertNotIn("<details>", page)
+        self.assertNotIn("Unconfirmed", page)
+        self.assertIn("pubmed.ncbi.nlm.nih.gov/?term=", page)      # everything else is one link away
+        self.assertIn("matched to this program by name", page)
         # a grant whose url isn't http(s) links to RePORTER instead
         self.assertIn('href="https://reporter.nih.gov/project-details/R01CA000001"', page)
         self.assertNotIn("javascript:", page)
@@ -146,8 +149,8 @@ class Site(unittest.TestCase):
 
     def test_candidates_and_changes(self):
         glec = self.page("%s.html" % self.ids["glecirasib"])
-        self.assertIn("Unconfirmed matches (1)", glec)
-        self.assertLess(glec.index("<details>"), glec.index("NCT04"))
+        self.assertNotIn("NCT04", glec)              # a title-only candidate stays private
+        self.assertNotIn("Unconfirmed", glec)
         pexa = self.page("%s.html" % self.ids["pexastimogene devacirepvec"])
         self.assertIn("RECRUITING → TERMINATED", pexa)
         self.assertIn("2026-11-15", pexa)

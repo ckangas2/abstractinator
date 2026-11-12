@@ -8,6 +8,17 @@ Development before v2.0.0 was untagged; see the git history for detail.
 
 ## [Unreleased]
 
+### Changed
+- The public side of the registry now shows only strong matches. Program pages
+  and the MCP `program` tool list the trials that name a program as an
+  intervention, the results papers its trials cite, papers with its name in
+  the title (up to 10 on a page, 25 over MCP) and grants with its name in the
+  title. Weaker matches (a name only in an abstract or a trial title, an
+  ambiguous name) and every score and review status stay in the private review
+  report. The MCP `program` and `search_literature` results have plain field
+  names, an `about` line, a `matched_by` reason per link, and no empty or
+  placeholder fields (`agent/public_view.py`); the local REST API is unchanged.
+
 ### Fixed
 - The reference checker no longer calls a live study a dead citation when
   ClinicalTrials.gov answers oddly. A reply that is not JSON is retried before

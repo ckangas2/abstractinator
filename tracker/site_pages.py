@@ -58,9 +58,6 @@ ALIAS_TYPE_LABEL = {"preferred": "preferred name", "inn": "INN", "usan": "USAN",
                     "synonym": "synonym"}
 # Which names to show first as "also known as".
 ALIAS_PRIORITY = {"brand": 0, "inn": 1, "usan": 2, "code": 3, "synonym": 4, "former_code": 5, "former_name": 6}
-LINK_METHOD_LABEL = {"intervention_name": "intervention named", "intervention_text": "name in intervention",
-                     "title": "name in title", "trial_reference": "cited by trial", "abstract": "name in abstract",
-                     "terms": "name in project terms"}
 PHASE_RANK = {"EARLY_PHASE1": 0.5, "PHASE1": 1, "PHASE2": 2, "PHASE3": 3, "PHASE4": 4}
 MAX_CHANGES = 50
 
@@ -240,8 +237,34 @@ def group(rows, key="axp_id"):
     return out
 
 
+# What the public pages show: only strong matches. Weaker ones (a name only in
+# a trial's title or a paper's abstract, ambiguous names) stay in the private
+# review report; agent/public_view.py applies the same rule to the MCP server.
+PUBLIC_TRIAL_METHODS = ("intervention_name", "intervention_text")
+PUBLIC_PAPER_METHODS = ("trial_reference", "title")
+PUBLIC_GRANT_METHODS = ("title",)
+MAX_KEY_PAPERS = 10
+MAX_GRANTS = 10
+
+
 def auto_trials(d, axp):
-    return [t for t in d["trials"].get(axp, []) if t["link_status"] == "auto"]
+    """The trials a public page lists: those naming the program as an intervention."""
+    return [t for t in d["trials"].get(axp, [])
+            if t["link_status"] == "auto" and t.get("method") in PUBLIC_TRIAL_METHODS]
+
+
+def key_papers(d, axp, n=MAX_KEY_PAPERS):
+    """Results papers its trials cite, then papers with its name in the title; clinical first, newest first."""
+    papers = [x for x in d["papers"].get(axp, []) if x["status"] == "auto" and x.get("method") in PUBLIC_PAPER_METHODS]
+    papers.sort(key=lambda x: (x.get("method") != "trial_reference", not is_clinical(x),
+                               -(x.get("year") or 0), x["pmid"]))
+    return papers[:n]
+
+
+def key_grants(d, axp, n=MAX_GRANTS):
+    grants = [g for g in d["grants"].get(axp, []) if g["status"] == "auto" and g.get("method") in PUBLIC_GRANT_METHODS]
+    grants.sort(key=lambda g: (-(g.get("last_fy") or 0), g["core_project_num"]))
+    return grants[:n]
 
 
 def key_names(d, p, n=3):
@@ -411,7 +434,7 @@ def index_page(d):
 
 # --- program pages ---------------------------------------------------------------
 
-def trial_rows(trials, with_method=False):
+def trial_rows(trials):
     rows = []
     for t in trials:
         conds = conditions_of(t)
@@ -420,8 +443,6 @@ def trial_rows(trials, with_method=False):
                  esc(t.get("primary_completion_date") or ""),
                  "" if t.get("enrollment_count") is None else esc(str(t["enrollment_count"])),
                  esc("; ".join(conds))]
-        if with_method:
-            cells.append("%s: %s" % (esc(LINK_METHOD_LABEL.get(t["method"], t["method"])), esc(t.get("matched") or "")))
         rows.append("<tr>%s</tr>" % "".join(
             "<td%s>%s</td>" % (" class=num" if i == 6 else " class=nw" if i in (0, 3, 4, 5) else "", c)
             for i, c in enumerate(cells)))
@@ -432,7 +453,6 @@ TRIAL_HEADERS = ["Trial", "Title", "Status", "Phase", "Start", "Primary completi
 
 
 CLINICAL_KINDS = ("clinical_trial", "case_report", "clinical_other")
-MAX_OTHER_PAPERS = 100
 
 
 def is_clinical(p):
@@ -444,14 +464,9 @@ def paper_rows(papers):
     rows = []
     for p in papers:
         pm = link("https://pubmed.ncbi.nlm.nih.gov/%s/" % quote(p["pmid"]), "PMID " + p["pmid"], True)
-        how = esc(LINK_METHOD_LABEL.get(p["method"], p["method"]))
-        if p.get("nct_id"):
-            how += " " + nct_link(p["nct_id"])
-        elif p.get("matched"):
-            how += ": " + esc(p["matched"])
-        rows.append("<tr><td class=nw>%s</td><td>%s</td><td>%s</td><td class=nw>%s</td><td>%s</td></tr>" % (
+        rows.append("<tr><td class=nw>%s</td><td>%s</td><td>%s</td><td class=nw>%s</td></tr>" % (
             pm, esc(p.get("title") or ""), esc(p.get("journal") or ""),
-            esc("" if p.get("year") is None else str(p["year"])), how))
+            esc("" if p.get("year") is None else str(p["year"]))))
     return rows
 
 
@@ -461,26 +476,10 @@ def grant_rows(grants):
         num = g["core_project_num"]
         url = safe_url(g.get("url")) or "https://reporter.nih.gov/project-details/%s" % quote(num)
         fy = "–".join(str(x) for x in (g.get("first_fy"), g.get("last_fy")) if x is not None)
-        how = "%s: %s" % (esc(LINK_METHOD_LABEL.get(g["method"], g["method"])), esc(g.get("matched") or ""))
-        rows.append("<tr><td class=nw>%s</td><td>%s</td><td>%s</td><td>%s</td><td class=nw>%s</td><td>%s</td></tr>" % (
+        rows.append("<tr><td class=nw>%s</td><td>%s</td><td>%s</td><td>%s</td><td class=nw>%s</td></tr>" % (
             link(url, num, True), esc(g.get("title") or ""), esc(g.get("org") or ""), esc(g.get("pi") or ""),
-            esc(fy), how))
+            esc(fy)))
     return rows
-
-
-def auto_then_candidates(items, rows_fn, headers, what):
-    auto = [x for x in items if x["status"] == "auto"]
-    cand = [x for x in items if x["status"] != "auto"]
-    out = []
-    if auto:
-        out.append(table(headers, rows_fn(auto)))
-    else:
-        out.append('<p class="muted">No confirmed %s yet.</p>' % what)
-    if cand:
-        out.append("<details><summary>Unconfirmed matches (%d)</summary>"
-                   '<p class="muted">Found by a weaker match (an ambiguous or short name, or a name only in the '
-                   "abstract); not counted. Corrections welcome.</p>%s</details>" % (len(cand), table(headers, rows_fn(cand))))
-    return out
 
 
 def program_page(d, p):
@@ -560,19 +559,13 @@ def program_page(d, p):
     else:
         body.append('<p class="muted">No regulatory approval recorded.</p>')
 
-    trials = d["trials"].get(axp, [])
-    auto = by_start_desc([t for t in trials if t["link_status"] == "auto"])
-    cand = by_start_desc([t for t in trials if t["link_status"] != "auto"])
+    auto = by_start_desc(auto_trials(d, axp))
     body.append("<h2>Clinical trials <span class=\"muted\">(%d)</span></h2>" % len(auto))
     if auto:
         body.append(table(TRIAL_HEADERS, trial_rows(auto)))
     else:
-        body.append('<p class="muted">No trial in the latest ClinicalTrials.gov snapshot names this program.</p>')
-    if cand:
-        body.append("<details><summary>Unconfirmed matches (%d)</summary>"
-                    '<p class="muted">Trials that mention one of the names in a weaker way (a code only in the '
-                    "title, a short or ambiguous name). Not counted above.</p>%s</details>"
-                    % (len(cand), table(TRIAL_HEADERS + ["Matched by"], trial_rows(cand, with_method=True))))
+        body.append('<p class="muted">No trial in the latest ClinicalTrials.gov snapshot lists this program as an '
+                    "intervention.</p>")
 
     changes = d["changes"].get(axp, [])[:MAX_CHANGES]
     body.append("<h2>Recent changes</h2>")
@@ -589,29 +582,25 @@ def program_page(d, p):
     else:
         body.append('<p class="muted">No changes recorded in its trials yet.</p>')
 
-    papers = sorted(d["papers"].get(axp, []), key=lambda x: (-(x.get("year") or 0), x["pmid"]))
+    papers = key_papers(d, axp)
     if papers:
-        heads = ["PubMed", "Title", "Journal", "Year", "Linked by"]
-        clinical = [x for x in papers if is_clinical(x)]
-        other = [x for x in papers if not is_clinical(x)]
-        body.append("<h2>Clinical papers</h2>")
-        body += auto_then_candidates(clinical, paper_rows, heads, "clinical papers")
-        if other:
-            body.append("<h2>Other papers</h2>")
-            body.append('<p class="muted">Preclinical studies, reviews and other papers that name it'
-                        "%s.</p>" % (", newest %d shown" % MAX_OTHER_PAPERS if len(other) > MAX_OTHER_PAPERS else ""))
-            body += auto_then_candidates(other[:MAX_OTHER_PAPERS], paper_rows, heads, "other papers")
-    grants = sorted(d["grants"].get(axp, []), key=lambda x: (-(x.get("last_fy") or 0), x["core_project_num"]))
+        body.append("<h2>Key papers</h2>")
+        body.append('<p class="muted">Results papers its trials cite, and papers with its name in the title. '
+                    '<a href="https://pubmed.ncbi.nlm.nih.gov/?term=%s" rel="noopener">Everything on PubMed</a>.</p>'
+                    % esc(quote('"%s"' % p["preferred_name"])))
+        body.append(table(["PubMed", "Title", "Journal", "Year"], paper_rows(papers)))
+    grants = key_grants(d, axp)
     if grants:
         body.append("<h2>NIH grants</h2>")
-        body += auto_then_candidates(grants, grant_rows, ["Project", "Title", "Organisation", "PI", "Years",
-                                                          "Linked by"], "grants")
+        body.append(table(["Project", "Title", "Organisation", "PI", "Years"], grant_rows(grants)))
     if p["notes"]:
         body.append("<h2>Notes</h2><p>%s</p>" % esc(p["notes"]))
 
     release = meta.get("registry_release", "")
     body.append("<h2>How to cite</h2><blockquote>%s (%s). The Abstractinator program registry, release %s. "
                 "%s%s.html</blockquote>" % (esc(p["preferred_name"]), esc(vid), esc(release), SITE_URL, esc(axp)))
+    body.append('<p class="muted">Trials, papers and grants are matched to this program by name in '
+                "ClinicalTrials.gov, PubMed and NIH RePORTER.</p>")
     body.append('<p>Something wrong or missing? <a href="%s" rel="noopener">Suggest a correction</a> '
                 "(a GitHub issue; please link your evidence). Entry created %s, updated %s.</p>"
                 % (esc(ISSUE_URL + quote("Registry correction: %s" % axp, safe="")), esc(p["created"] or ""),
