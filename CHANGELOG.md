@@ -9,6 +9,12 @@ Development before v2.0.0 was untagged; see the git history for detail.
 ## [Unreleased]
 
 ### Fixed
+- The reference checker no longer calls a live study a dead citation when
+  ClinicalTrials.gov answers oddly. A reply that is not JSON is retried before
+  anything is concluded, and an answer carrying a different NCT id is reported
+  as reached under that id, because the API resolves a superseded record to the
+  one that survives it. Both cases came from the AAV batch of 2026-11-11, where
+  the study pages were live in the very same pass.
 - Three more AAV citations that did not resolve: EMA has renamed Durveqtix to
   Beqvez, so fidanacogene elaparvovec's EPAR links now point at
   `.../EPAR/beqvez`; and botaretigene sparoparvovec's facts moved off a J&J

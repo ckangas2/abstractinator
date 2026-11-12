@@ -161,6 +161,11 @@ def ema_index():
     return urls
 
 
+def _forget(url):
+    """Drop one URL from the per-run memo, so a retry really asks again."""
+    _seen.pop(url, None)
+
+
 def fetch(url, accept="*/*"):
     """(ok, detail, body) for one GET. 2xx and 3xx are ok; everything else is
     not. The same URL is fetched once per run, however many programs cite it."""
@@ -226,16 +231,42 @@ def check_url(url):
 
 
 def check_nct(nct):
-    ok, detail, body = fetch("https://clinicaltrials.gov/api/v2/studies/" + nct,
-                             accept="application/json")
-    if not ok:
-        return False, detail
-    try:
-        data = json.loads(body.decode("utf-8"))
-    except ValueError:
-        return False, "reply was not JSON"
-    got = (data.get("protocolSection", {}).get("identificationModule", {}).get("nctId"))
-    return (got == nct), ("found" if got == nct else "registry returned %r" % got)
+    """Confirm a study exists at ClinicalTrials.gov.
+
+    Two things this deliberately does not treat as a bad citation:
+
+      * a reply that is not JSON. The API occasionally answers 200 with an HTML
+        error page; that is the server having a moment, not the study being
+        gone, so it is retried before anything is concluded (the same lesson as
+        the EMA 429s).
+      * an answer carrying a different NCT id. The API resolves a merged or
+        superseded record to the record that survives it, so the citation does
+        reach a study; the id it now lives under is reported instead.
+    """
+    url = "https://clinicaltrials.gov/api/v2/studies/" + nct
+    wait = THROTTLE_BACKOFF
+    for attempt in range(THROTTLE_RETRIES + 1):
+        ok, detail, body = fetch(url, accept="application/json")
+        if not ok:
+            return False, detail
+        try:
+            data = json.loads(body.decode("utf-8"))
+        except ValueError:
+            if attempt >= THROTTLE_RETRIES:
+                return False, "reply was not JSON after %d tries" % (THROTTLE_RETRIES + 1)
+            pause = min(wait, THROTTLE_MAX_WAIT)
+            say("     %s answered with something that is not JSON, waiting %ds "
+                "(try %d of %d)" % (nct, round(pause), attempt + 1, THROTTLE_RETRIES))
+            time.sleep(pause)
+            wait = min(wait * 2, THROTTLE_MAX_WAIT)
+            _forget(url)
+            continue
+        got = (data.get("protocolSection", {}).get("identificationModule", {}).get("nctId"))
+        if got == nct:
+            return True, "found"
+        if got:
+            return True, "found, now listed as %s" % got
+        return False, "reply carried no NCT id"
 
 
 def check_pmid(pmid):

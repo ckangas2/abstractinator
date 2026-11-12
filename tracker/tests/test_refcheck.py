@@ -219,3 +219,71 @@ class FetchManners(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class NctReplies(unittest.TestCase):
+    """What check_nct() makes of odd replies from the ClinicalTrials.gov API.
+    Both cases are real, from the AAV batch of 2026-11-11: AXP000289's lookup
+    answered with something that was not JSON, and AXP000298's answered with a
+    different NCT id, and the run called both of them bad citations when the
+    study pages were live in the same pass."""
+
+    def setUp(self):
+        refcheck._seen.clear()
+        self.asked = []
+        self.slept = []
+        self._sleep = refcheck.time.sleep
+        refcheck.time.sleep = self.slept.append
+        self.addCleanup(setattr, refcheck.time, "sleep", self._sleep)
+        self._fetch = refcheck.fetch
+        self.addCleanup(setattr, refcheck, "fetch", self._fetch)
+        self.addCleanup(refcheck._seen.clear)
+
+    def serve(self, bodies):
+        bodies = list(bodies)
+
+        def fake(url, accept="*/*"):
+            self.asked.append(url)
+            body = bodies.pop(0) if bodies else bodies_last[0]
+            bodies_last[0] = body
+            return True, "HTTP 200", body
+
+        bodies_last = [b""]
+        refcheck.fetch = fake
+
+    @staticmethod
+    def study(nct):
+        return ('{"protocolSection": {"identificationModule": {"nctId": "%s"}}}'
+                % nct).encode()
+
+    def test_a_reply_that_is_not_json_is_retried_before_judging_it(self):
+        self.serve([b"<html>sorry</html>", self.study("NCT04693598")])
+        ok, detail = refcheck.check_nct("NCT04693598")
+        self.assertTrue(ok, detail)
+        self.assertEqual(detail, "found")
+        self.assertEqual(len(self.asked), 2)
+
+    def test_a_reply_that_is_never_json_fails_and_says_how_many_tries(self):
+        self.serve([b"<html>sorry</html>"] * (refcheck.THROTTLE_RETRIES + 1))
+        ok, detail = refcheck.check_nct("NCT04693598")
+        self.assertFalse(ok)
+        self.assertIn("not JSON", detail)
+        self.assertIn("tries", detail)
+
+    def test_a_superseded_id_is_reached_not_dead(self):
+        self.serve([self.study("NCT05739643")])
+        ok, detail = refcheck.check_nct("NCT04693598")
+        self.assertTrue(ok, detail)
+        self.assertIn("NCT05739643", detail)
+
+    def test_a_reply_with_no_id_at_all_is_a_failure(self):
+        self.serve([b'{"protocolSection": {}}'])
+        ok, detail = refcheck.check_nct("NCT04693598")
+        self.assertFalse(ok)
+        self.assertIn("no NCT id", detail)
+
+    def test_no_single_wait_is_longer_than_the_cap(self):
+        self.serve([b"x"] * (refcheck.THROTTLE_RETRIES + 1))
+        refcheck.check_nct("NCT04693598")
+        self.assertTrue(self.slept)
+        self.assertLessEqual(max(self.slept), refcheck.THROTTLE_MAX_WAIT)
