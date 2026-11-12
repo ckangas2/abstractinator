@@ -230,6 +230,20 @@ def check_url(url):
     return ok, detail
 
 
+def study_page(nct, why):
+    """The study page, as a last resort when the API will not answer.
+
+    `why` says what the API did, so a failure here reports both halves and a
+    success says which route found the study.
+    """
+    ok, detail, body = fetch("https://clinicaltrials.gov/study/" + nct)
+    if not ok:
+        return False, "%s; the study page answered %s" % (why, detail)
+    if nct in body.decode("utf-8", "replace"):
+        return True, "found on the study page (%s)" % why
+    return False, "%s, and the study page carried no %s" % (why, nct)
+
+
 def check_nct(nct):
     """Confirm a study exists at ClinicalTrials.gov.
 
@@ -242,18 +256,25 @@ def check_nct(nct):
       * an answer carrying a different NCT id. The API resolves a merged or
         superseded record to the record that survives it, so the citation does
         reach a study; the id it now lives under is reported instead.
+
+    When the API will not answer usefully at all -- an error, or a reply that is
+    still not JSON after every retry -- the study page is tried before the
+    citation is called dead. The site serves pages for records its own API
+    refuses (NCT02140554, cited by AXP000312, is one), and a study a reader can
+    open is not a dead citation.
     """
     url = "https://clinicaltrials.gov/api/v2/studies/" + nct
     wait = THROTTLE_BACKOFF
     for attempt in range(THROTTLE_RETRIES + 1):
         ok, detail, body = fetch(url, accept="application/json")
         if not ok:
-            return False, detail
+            return study_page(nct, "the API answered %s" % detail)
         try:
             data = json.loads(body.decode("utf-8"))
         except ValueError:
             if attempt >= THROTTLE_RETRIES:
-                return False, "reply was not JSON after %d tries" % (THROTTLE_RETRIES + 1)
+                return study_page(nct, "reply was not JSON after %d tries"
+                                  % (THROTTLE_RETRIES + 1))
             pause = min(wait, THROTTLE_MAX_WAIT)
             say("     %s answered with something that is not JSON, waiting %ds "
                 "(try %d of %d)" % (nct, round(pause), attempt + 1, THROTTLE_RETRIES))

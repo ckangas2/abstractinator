@@ -9,6 +9,23 @@ Development before v2.0.0 was untagged; see the git history for detail.
 ## [Unreleased]
 
 ### Added
+- Japanese approval rows for the five CAR-T products PMDA has authorised:
+  Kymriah (2019-03-26), Yescarta (2021-01-22), Breyanzi (2021-03-22), Abecma
+  (2022-01-20) and Carvykti (2022-09-26). Dates come from PMDA's list of
+  approved regenerative medical products and each row cites that product's own
+  English review report, which is where the indication comes from. Tecartus and
+  Aucatzyl are not on the Japanese list.
+
+### Fixed
+- The reference checker now tries a study's own page at ClinicalTrials.gov
+  before calling its citation dead. The API sometimes refuses a record the site
+  itself serves, which is what happened to NCT02140554 in the lentiviral batch
+  of 2026-11-12: the API check failed while the study page was live. An API
+  error, or a reply that is still not JSON after every retry, now falls through
+  to the study page, and the citation counts as reached only if that page
+  carries the NCT id.
+
+### Added
 - Vector and approval rows for the ten CAR-T programmes that were already in the
   registry with none. Each virus row records the vector the product is actually
   made with, taken from the FDA package insert where there is one (Kymriah,

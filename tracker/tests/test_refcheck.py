@@ -282,6 +282,38 @@ class NctReplies(unittest.TestCase):
         self.assertFalse(ok)
         self.assertIn("no NCT id", detail)
 
+    def test_the_study_page_rescues_a_citation_the_api_will_not_serve(self):
+        """NCT02140554, cited by AXP000312, failed the API check in the
+        lentiviral batch of 2026-11-12 while its study page was live."""
+        self.serve([b"<html>sorry</html>"] * (refcheck.THROTTLE_RETRIES + 1)
+                   + [b"<html><title>NCT02140554</title></html>"])
+        ok, detail = refcheck.check_nct("NCT02140554")
+        self.assertTrue(ok, detail)
+        self.assertIn("study page", detail)
+        self.assertTrue(self.asked[-1].endswith("/study/NCT02140554"), self.asked[-1])
+
+    def test_an_api_error_also_falls_back_to_the_study_page(self):
+        bodies = [b"<html><title>NCT02140554</title></html>"]
+
+        def fake(url, accept="*/*"):
+            self.asked.append(url)
+            if "/api/" in url:
+                return False, "HTTP 403", b""
+            return True, "HTTP 200", bodies[0]
+
+        refcheck.fetch = fake
+        ok, detail = refcheck.check_nct("NCT02140554")
+        self.assertTrue(ok, detail)
+        self.assertIn("403", detail)
+        self.assertEqual(len(self.asked), 2)
+
+    def test_a_study_page_without_the_id_is_still_a_failure(self):
+        self.serve([b"<html>sorry</html>"] * (refcheck.THROTTLE_RETRIES + 2))
+        ok, detail = refcheck.check_nct("NCT02140554")
+        self.assertFalse(ok)
+        self.assertIn("not JSON", detail)
+        self.assertIn("NCT02140554", detail)
+
     def test_no_single_wait_is_longer_than_the_cap(self):
         self.serve([b"x"] * (refcheck.THROTTLE_RETRIES + 1))
         refcheck.check_nct("NCT04693598")
