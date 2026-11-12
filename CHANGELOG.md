@@ -8,6 +8,18 @@ Development before v2.0.0 was untagged; see the git history for detail.
 
 ## [Unreleased]
 
+### Added
+- Vector and approval rows for the ten CAR-T programmes that were already in the
+  registry with none. Each virus row records the vector the product is actually
+  made with, taken from the FDA package insert where there is one (Kymriah,
+  Yescarta, Tecartus, Breyanzi, Abecma, Carvykti, Aucatzyl) and from the
+  published trial report where there is not (Carteyva, Fucaso, anito-cel):
+  Yescarta and Tecartus carry a retroviral vector, the other eight a lentiviral
+  one.
+  With them, 17 approval rows: FDA, EMA and NMPA, including the two Chinese
+  products and both of Carteyva's indications. Anitocabtagene autoleucel is not
+  approved anywhere yet and gets a vector row only.
+
 ### Changed
 - A trial now links to a program by an ambiguous name (one another product
   also uses, such as "AdV-tk") when the trial's lead sponsor or a collaborator
