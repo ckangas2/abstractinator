@@ -8,6 +8,15 @@ Development before v2.0.0 was untagged; see the git history for detail.
 
 ## [Unreleased]
 
+### Changed
+- A trial now links to a program by an ambiguous name (one another product
+  also uses, such as "AdV-tk") when the trial's lead sponsor or a collaborator
+  is the program's own sponsor or originator, and the name is among its
+  interventions. A development code inside an intervention name counts on the
+  same second signal, as it already did when the title named it too. Candel's
+  own AdV-tk trials now count for aglatimagene besadenovec; a hospital's
+  unrelated ADV-TK product stays a candidate for review.
+
 ### Fixed
 - The reference checker no longer calls a live study a dead citation when
   ClinicalTrials.gov answers oddly. A reply that is not JSON is retried before

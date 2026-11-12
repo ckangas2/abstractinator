@@ -81,6 +81,46 @@ class Matching(unittest.TestCase):
         self.assertEqual(l["AXP3"]["method"], "intervention_name")  # best evidence wins
         self.assertEqual(br.link_trial(rec("Radiotherapy", other=["Radiotherapy"]), idx), {})
 
+    def test_ambiguous_name_with_the_programs_sponsor(self):
+        """An ambiguous code counts when the trial's sponsor is the program's own."""
+        alias = {"axp_id": "AXP144", "alias": "AdV-tk", "alias_key": br.reg.alias_key("AdV-tk"),
+                 "alias_type": "code", "ambiguous": 1}
+        progs = [{"axp_id": "AXP144", "sponsor": "Candel Therapeutics", "originator": "Advantagene"}]
+        idx = br.AliasIndex([alias], progs)
+        rec = lambda sponsor, collab=(), title="A study": {
+            "interventions": [{"name": "AdV-tk", "other_names": []}], "brief_title": title,
+            "lead_sponsor": sponsor, "collaborators": list(collab)}
+        l = br.link_trial(rec("Candel Therapeutics, Inc."), idx)
+        self.assertEqual((l["AXP144"]["method"], l["AXP144"]["status"]), ("intervention_name", "auto"))
+        self.assertIn("sponsor", l["AXP144"]["matched"])
+        self.assertEqual(br.link_trial(rec("Advantagene, Inc."), idx)["AXP144"]["status"], "auto")   # originator
+        self.assertEqual(br.link_trial(rec("Some University", ["Candel Therapeutics"]), idx)["AXP144"]["status"],
+                         "auto")                                                                     # collaborator
+        self.assertEqual(br.link_trial(rec("Huazhong University of Science and Technology"), idx)["AXP144"]["status"],
+                         "candidate")                                         # same name, someone else's product
+        self.assertEqual(br.link_trial(rec(None), idx)["AXP144"]["status"], "candidate")
+        # without program sponsors (the evidence fetcher's index) nothing changes
+        self.assertEqual(br.link_trial(rec("Candel Therapeutics, Inc."), br.AliasIndex([alias]))["AXP144"]["status"],
+                         "candidate")
+        # the title alone is never enough, sponsor or not
+        title_only = {"interventions": [{"name": "Placebo", "other_names": []}], "brief_title": "AdV-tk study",
+                      "lead_sponsor": "Candel Therapeutics"}
+        self.assertNotEqual(br.link_trial(title_only, idx).get("AXP144", {}).get("status"), "auto")
+
+    def test_code_inside_an_intervention_with_the_programs_sponsor(self):
+        alias = {"axp_id": "AXP144", "alias": "CAN-2409", "alias_key": br.reg.alias_key("CAN-2409"),
+                 "alias_type": "code", "ambiguous": 0}
+        idx = br.AliasIndex([alias], [{"axp_id": "AXP144", "sponsor": "Candel Therapeutics", "originator": ""}])
+        rec = lambda sponsor: {"interventions": [{"name": "CAN-2409 + valacyclovir", "other_names": []}],
+                               "brief_title": "Gene mediated cytotoxic immunotherapy in NSCLC", "lead_sponsor": sponsor}
+        self.assertEqual(br.link_trial(rec("Candel Therapeutics, Inc."), idx)["AXP144"]["status"], "auto")
+        self.assertEqual(br.link_trial(rec("Another Company"), idx)["AXP144"]["status"], "candidate")
+
+    def test_org_keys(self):
+        self.assertEqual(br.org_keys("Spark Therapeutics (Roche)"), {"SPARKTHERAPEUTICS", "ROCHE"})
+        self.assertEqual(br.org_keys("Candel Therapeutics, Inc."), {"CANDELTHERAPEUTICS"})
+        self.assertEqual(br.org_keys("Inc."), set())
+
 
 class Diff(unittest.TestCase):
     def rec(self, **kw):

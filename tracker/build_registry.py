@@ -167,11 +167,43 @@ def window_keys(text):
     return out
 
 
+# Words that say what kind of organisation it is, not which one.
+ORG_SUFFIXES = {"INC", "INCORPORATED", "LTD", "LIMITED", "LLC", "LLP", "CO", "CORP", "CORPORATION", "COMPANY",
+                "GMBH", "AG", "SA", "SAS", "SPA", "BV", "NV", "PLC", "AB", "AS", "KK", "PTY", "THE"}
+MIN_ORG_KEY = 5
+
+
+def org_keys(text):
+    """Comparable keys for the organisations named in a sponsor field:
+    "Spark Therapeutics (Roche)" -> {"SPARKTHERAPEUTICS", "ROCHE"}."""
+    out = set()
+    for part in re.split(r"[;/(),]|\band\b|&", text or "", flags=re.I):
+        toks = [t for t in re.findall(r"[A-Za-z0-9]+", part.upper()) if t not in ORG_SUFFIXES]
+        key = "".join(toks)
+        if len(key) >= MIN_ORG_KEY:
+            out.add(key)
+    return out
+
+
 class AliasIndex:
-    def __init__(self, alias_rows):
+    def __init__(self, alias_rows, programs=()):
         self.by_key = {}
         for a in alias_rows:
             self.by_key.setdefault(a["alias_key"], []).append(a)
+        # Each program's sponsor and originator, the second signal that lets an
+        # ambiguous name count (registry plan: "needs a second signal (sponsor
+        # or target) before any auto-link").
+        self.orgs = {p["axp_id"]: org_keys(p.get("sponsor")) | org_keys(p.get("originator")) for p in programs}
+
+    def sponsor_agrees(self, axp_id, rec):
+        """Does the trial's lead sponsor or a collaborator name the program's sponsor or originator?"""
+        mine = self.orgs.get(axp_id)
+        if not mine:
+            return False
+        theirs = set()
+        for o in [rec.get("lead_sponsor")] + list(rec.get("collaborators") or []):
+            theirs |= org_keys(o)
+        return any(m == t or (m in t) or (t in m and len(t) >= MIN_ORG_KEY + 3) for m in mine for t in theirs)
 
     def exact(self, name):
         return self.by_key.get(reg.alias_key(name), [])
@@ -190,11 +222,15 @@ def link_trial(rec, index):
     auto (counted) when:
       - an intervention's name or other name is one of the program's names;
       - an INN or brand name appears inside an intervention name;
-      - a code appears inside an intervention name AND the title names it too
-        (two separate fields agree; "AUTO1/22" alone doesn't make AUTO1);
+      - a code appears inside an intervention name AND the title names it too,
+        or the trial's sponsor is the program's (two separate signals agree;
+        "AUTO1/22" alone doesn't make AUTO1);
       - an INN or brand name appears in the title (confidence 0.6).
-    Ambiguous names, short names, and codes seen only in a title stay
-    candidates for review.
+    Short names and codes seen only in a title stay candidates for review.
+    An ambiguous name (one another product also uses) stays a candidate unless
+    the trial is sponsored by the program's own sponsor or originator, and is
+    named among the interventions: "AdV-tk" from Candel counts for
+    aglatimagene besadenovec, "ADV-TK" from a hospital in Wuhan does not.
     """
     best = {}
     title_keys = window_keys(rec.get("brief_title") or "")
@@ -205,12 +241,17 @@ def link_trial(rec, index):
         if method == "intervention_name":
             status = "auto"
         elif method == "intervention_text":
-            status = "auto" if named or key in title_keys else "candidate"
+            status = "auto" if named or key in title_keys or index.sponsor_agrees(alias["axp_id"], rec) \
+                else "candidate"
         else:
             status = "auto" if named else "candidate"
+        matched = alias["alias"]
         if alias["ambiguous"]:
-            status = "candidate"
-        cand = {"axp_id": alias["axp_id"], "method": method, "matched": alias["alias"],
+            if method != "title" and index.sponsor_agrees(alias["axp_id"], rec):
+                matched += " (ambiguous name; trial sponsor is the program's)"
+            else:
+                status = "candidate"
+        cand = {"axp_id": alias["axp_id"], "method": method, "matched": matched,
                 "confidence": CONFIDENCE[method], "status": status}
         cur = best.get(alias["axp_id"])
         rank = lambda l: (l["status"] == "auto", l["confidence"])
@@ -471,7 +512,7 @@ def build(registry_dir, snapshots, out, today=None, log=print, evidence=None):
                 latest = days[-1]
                 previous = days[-2] if len(days) > 1 else ""
                 first_seen = dict(snap.execute("SELECT nct_id, min(snapshot_date) FROM observation GROUP BY nct_id"))
-                index = AliasIndex(alias_rows)
+                index = AliasIndex(alias_rows, programs)
                 names = {p["axp_id"]: p["preferred_name"] for p in programs}
                 links_by_trial = {}
                 nct_refs = {}
