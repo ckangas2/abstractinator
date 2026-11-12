@@ -9,6 +9,23 @@ Development before v2.0.0 was untagged; see the git history for detail.
 ## [Unreleased]
 
 ### Added
+- Japanese approvals for the AAV and HSV programmes that hold one: Luxturna
+  (2023-06-26), Zolgensma intravenously (2020-03-19) and intrathecally
+  (2026-04-03) and Elevidys (2025-05-13, conditional and time-limited for three
+  years). Dates from PMDA's list of approved regenerative medical products, with
+  each row citing that product's own English review report where one is
+  published.
+- Relma-cel's third Chinese indication, relapsed or refractory mantle cell
+  lymphoma, approved in August 2024 -- the first cell therapy approved in China
+  for that disease. The registry already held its large B-cell lymphoma and
+  follicular lymphoma rows.
+
+### Fixed
+- The Japanese approval date for Vyjuvek was recorded to the month from a
+  patient-organisation post. PMDA's own list gives 2025-07-24, and the review
+  report gives the indication, so the row now cites the agency.
+
+### Added
 - Japanese approval rows for the five CAR-T products PMDA has authorised:
   Kymriah (2019-03-26), Yescarta (2021-01-22), Breyanzi (2021-03-22), Abecma
   (2022-01-20) and Carvykti (2022-09-26). Dates come from PMDA's list of
