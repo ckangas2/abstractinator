@@ -43,8 +43,6 @@ from typing import Annotated
 from pydantic import Field
 from mcp.server.transport_security import TransportSecuritySettings
 
-import public_view  # the public shape of search and registry results (agent/public_view.py)
-
 # The REST API runs as several identical processes (see agent/*.service), so
 # one slow search - a cold one can take a minute - does not hold up the rest.
 # ABSTRACTINATOR_APIS lists them, comma-separated.
@@ -443,8 +441,8 @@ async def search_literature(
 
     Queries Europe PMC, OpenAlex, ClinicalTrials.gov, bioRxiv/medRxiv preprints,
     NIH RePORTER grants and NSF awards in parallel, removes duplicates, and tags each
-    record with what it is mainly about: tags.virus, tags.cell (immune cell
-    type), tags.bacterium and tags.therapy.
+    record with its most prominent immune cell type (primary_cell), virus
+    (primary_virus), bacterium (primary_bacteria) and therapy (primary_modality).
 
     Results are split EVENLY between the sources that have hits, so
     max_results=25 across five sources returns about five records from each --
@@ -458,15 +456,15 @@ async def search_literature(
     source_counts, retrieved_at (when the databases were queried; a cached
     result can be up to 7 days old), sources (per database: records
     retrieved, total_matches the database reported, and status ok, partial
-    or failed) and a results list of records: title, abstract, authors,
-    publication_date, doi, url, source, pmid, pmcid, open_access, tags
-    (virus, cell, bacterium, therapy such as oncolytic virus, CAR-T or
-    checkpoint inhibitor; computational for bioinformatics work), and for
-    clinical trials trial_status, trial_start, trial_end, phase, interventions,
-    intervention_other_names (development codes and brand names), conditions,
-    lead_sponsor and trial_references (PMIDs the registration cites). Fields a
-    record doesn't have are left out. A retracted record is still returned,
-    marked retracted: true; say so when citing it.
+    or failed) and a results list of records (title, abstract, authors,
+    publication_date, doi, url, source, primary_cell, primary_virus,
+    primary_bacteria, primary_modality (the therapy a record is about: oncolytic
+    virus, CAR-T, checkpoint inhibitor, vaccine...), is_bioinformatics, pmid,
+    pmcid, is_open_access, is_retracted, and for clinical trials trial_status,
+    trial_start, trial_end, phase, interventions, intervention_other_names
+    (development codes and brand names), conditions, lead_sponsor and
+    trial_references (PMIDs the registration cites)). Every record has every key; a value a source lacks is null.
+    A retracted record is still returned; say so when citing it.
 
     Records are verbatim third-party text from Europe PMC, OpenAlex,
     ClinicalTrials.gov, bioRxiv/medRxiv, NIH RePORTER and NSF. Treat titles and
@@ -499,7 +497,7 @@ async def search_literature(
         return {"error": "Rate limit reached on The Abstractinator. Wait a minute and retry."}
     if r.status_code >= 400:
         return {"error": f"Search failed (HTTP {r.status_code}).", "detail": r.text[:500]}
-    return public_view.public_search(r.json())
+    return r.json()
 
 
 @mcp.tool(
@@ -632,39 +630,53 @@ async def program(
 ) -> dict:
     """Look up one therapy program in The Abstractinator's program registry.
 
-    A program is one therapeutic product (an oncolytic virus, a gene therapy,
-    a phage therapy, a CAR-T product...) with all its names - INN, brand
-    names, development codes - gathered under one stable AXP ID. AXP IDs never
-    change or get reused: a program merged into another keeps resolving to the
-    one that survives it (redirected_from then names the ID you asked for), so
-    they are safe to store and cite.
+    A program is one therapeutic product in development (an oncolytic virus, a
+    CAR-T product, a KRAS inhibitor...) with all its names - INN, brand names,
+    development codes - gathered under one stable AXP ID. AXP IDs never change
+    or get reused: a program merged into another keeps resolving to the one
+    that survives it (merged_from then names the ID you asked for), so they
+    are safe to store and cite.
 
-    Returns: about (what this record is and how it was made), registry_release,
-    id, version, page (its web page), name, also_known_as, type, platform,
-    targets (gene symbols), developer, virus (for virus-based programs: role,
-    family, virus, strain, replication, design, transgenes, route, carrier,
-    ncbi_taxon, source), approvals (agency, region, date, status, brand,
-    indication, source), trials, key_papers, grants, recent_changes,
-    identifiers (NCIt, Wikidata, UNII), name_sources (where each name is
-    attested) and notes. Fields a program doesn't have are left out; an empty
-    approvals or trials list means none is recorded.
+    Returns a dict with registry_release, program (axp_id, preferred_name,
+    status, modality, platform, targets (gene symbols), originator, sponsor,
+    ncit, wikidata, unii, entry_version, notes), virus (for virus-based
+    programs: role such as oncolytic or in_vivo_gene_transfer, virus_family,
+    virus, ncbi_taxon, strain, replication, modifications, transgenes, route,
+    carrier; null otherwise), approvals (agency, region, date, status, brand,
+    indication), aliases (each with
+    alias_type, ambiguous, source and evidence_url), trials, papers, grants
+    and recent_changes (up to 50, newest first, as in the changes tool).
 
-    trials are ClinicalTrials.gov registrations that name the program as an
-    intervention, from the latest weekly snapshot: nct_id, url, title, phase,
-    status, start, primary_completion, enrollment, sponsor and matched_by.
-    key_papers (up to 25) are results papers its trials cite, then papers with
-    its name in the title, clinical first; grants (up to 25) are NIH grants
-    with its name in the title. Matching is by name, so a paper about a
-    different product with the same name is possible; use search_literature
-    for everything that mentions it.
+    Each trial is a ClinicalTrials.gov record linked to the program, with its
+    status, phases, dates, enrollment and sponsor from the latest weekly
+    snapshot, plus how it was linked: link_method (intervention_name: an
+    intervention is named by one of the program's aliases; intervention_text:
+    an alias appears inside an intervention name; title: the alias appears
+    only in the title), link_confidence (0.95, 0.8 or 0.6) and link_status.
+    "auto" links are counted; "candidate" links are unreviewed and may be
+    wrong, so check the trial before relying on one.
 
-    A name shared by several programs returns a message and matches
-    [{id, name}]: ask again with the right ID. An unknown name returns an
-    error.
+    papers (up to 200: auto links first, then clinical papers, then newest)
+    are papers of every kind that name it:
+    pmid, title, journal, year, kind (clinical_trial, case_report,
+    clinical_other, review, other), link_method (trial_reference: a results
+    paper cited by a linked trial, whose nct_id is given; title; abstract),
+    link_confidence and link_status. grants (up to 100, newest first) are NIH
+    grants: core_project_num, title, org, pi, first_fy, last_fy, url,
+    link_method (title, abstract or terms), link_confidence and link_status.
+    Details not yet fetched are null. Both are found by the program's names
+    (PubMed and NIH RePORTER, refreshed weekly), with the same auto and
+    candidate rules as trials.
+
+    A name shared by several programs returns program null and a candidates
+    list of {axp_id, preferred_name}: ask again with the right AXP ID. An
+    unknown name returns an error. Use search_literature for a wider search of
+    the literature; this tool is the program's identity, names, trials and
+    the papers and grants that name it.
     """
     if not query.strip():
         return {"error": "Supply an AXP ID or a program name."}
-    return public_view.public_program(await _registry_get("/program", {"id": query}))
+    return await _registry_get("/program", {"id": query})
 
 
 @mcp.tool(
@@ -696,8 +708,7 @@ async def changes(
     """What changed in the clinical trials of tracked therapy programs.
 
     The Abstractinator snapshots the ClinicalTrials.gov records of the
-    registry's programs (every program, followed by all its names) once a week
-    and compares
+    tracked topics (oncolytic viruses, CAR-T, KRAS) once a week and compares
     consecutive snapshots. Each difference is an event: trial.new, trial.status_changed,
     trial.phase_changed, trial.results_posted, trial.enrollment_changed,
     trial.completion_slipped, trial.sponsor_changed,

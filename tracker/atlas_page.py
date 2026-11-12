@@ -213,8 +213,7 @@ def atlas_data(d, field="oncolytic"):
 
     for p in sorted(programs, key=lambda p: p["axp_id"]):
         axp, v = p["axp_id"], d["virus"][p["axp_id"]]
-        trials = [t for t in d["trials"].get(axp, []) if t.get("link_status") == "auto"
-                  and t.get("method", "intervention_name") in ("intervention_name", "intervention_text")]
+        trials = [t for t in d["trials"].get(axp, []) if t.get("link_status") == "auto"]
         stage, stage_label = stage_of(d["approvals"].get(axp, []), trials)
         names = [a["alias"] for a in d["aliases"].get(axp, []) if a.get("alias_type") in ("code", "brand")]
         cancers = indications_of(trials, f["groups"], d["approvals"].get(axp, []))

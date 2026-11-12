@@ -47,17 +47,16 @@ Returns: total_found, available, returned, offset, has_more, source_counts,
 and a results list. total_found is the whole deduplicated pool; available is
 what is pageable after any sources= filter, so page against available or
 has_more, never total_found. Each record
-carries title, abstract, authors, publication_date, doi, url, source, tags
-(what it is mainly about: virus, cell, bacterium, therapy such as oncolytic
-virus, CAR-T, checkpoint inhibitor or vaccine; computational for
-bioinformatics work), pmid (when the record is in PubMed), and - for
-open-access articles in Europe PMC - pmcid and open_access: true. A record
-with a pmcid can be read in full with get_fulltext. A retracted record is
-still returned, marked retracted: true; say so if you cite it.
+carries title, abstract, authors, publication_date, doi, url, source,
+primary_cell, primary_virus, primary_bacteria, primary_modality (the therapy:
+oncolytic virus, CAR-T, checkpoint inhibitor, vaccine...), is_bioinformatics, is_retracted,
+pmid (when the record is in PubMed), and - for open-access articles in Europe
+PMC - pmcid and is_open_access. A record with a pmcid can be read in full with
+get_fulltext. A retracted record is still returned, flagged; say so if you cite it.
 Clinical trials also carry trial_status, trial_start, trial_end, phase,
 interventions, intervention_other_names (development codes and brand names),
 conditions, lead_sponsor and trial_references (PMIDs the registration cites); their
-publication_date is the start date. Fields a record doesn't have are left out.
+publication_date is the start date. Every record has every key (null when empty).
 
 Records with no abstract are kept rather than dropped: a grant award or a trial
 registration with no abstract is still a real result, and removing them would
@@ -100,27 +99,27 @@ available; a 429 response means waiting a minute and retrying.
 
     program(query)
 
-Looks up one therapy program (one product: an oncolytic virus, a gene
-therapy, a phage therapy, a CAR-T product...) in the program registry.
+Looks up one therapy program (one product in development: an oncolytic
+virus, a CAR-T product, a KRAS inhibitor...) in the program registry.
 
 - query: an AXP ID ("AXP000001") or any name or code - INN, brand name,
   development code. Case, spaces and hyphens do not matter.
 
 AXP IDs are stable and never reused; a merged ID resolves to the program that
-survives it and says so in redirected_from. Returns about (what the record is
-and how it was made), registry_release, id, version, page, name,
-also_known_as, type, platform, targets, developer, virus (for virus-based
-programs: role, family, virus, strain, replication, design, transgenes,
-route, ncbi_taxon, source), approvals (each with its source), trials,
-key_papers, grants, recent_changes, identifiers (NCIt, Wikidata, UNII),
-name_sources and notes. Fields a program doesn't have are left out.
-
-Only strong matches are listed, each with a plain matched_by: trials that
-name the program as an intervention; key_papers (up to 25), the results
-papers its trials cite and then papers with its name in the title; grants
-(up to 25) with its name in the title. Matching is by name, so use
-search_literature for everything that mentions a program.
-A name shared by several programs returns a message and matches [{id, name}].
+survives it and says so in merged_from. Returns registry_release, program
+(preferred_name, status, modality, platform, targets, originator, sponsor,
+ncit, wikidata, unii), virus (for virus-based programs: role, family, virus,
+strain, replication, modifications, transgenes, route; else null), approvals,
+aliases, trials, papers, grants and recent_changes. Each trial carries
+link_method (intervention_name, intervention_text or title), link_confidence
+and link_status: "auto" links are counted, "candidate" links are unreviewed.
+papers are clinical papers that name the program or report its trials (pmid,
+title, journal, year, kind, link_method trial_reference/title/abstract,
+nct_id), auto first then newest, up to 200; grants are NIH grants that name
+it (core_project_num, title, org, pi, first_fy, last_fy, url, link_method
+title/abstract/terms), newest first, up to 100. Both carry link_confidence
+and link_status like trials.
+A name shared by several programs returns program null and candidates.
 
 ### Tool: changes
 
