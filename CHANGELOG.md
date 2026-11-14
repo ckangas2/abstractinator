@@ -8,6 +8,26 @@ Development before v2.0.0 was untagged; see the git history for detail.
 
 ## [Unreleased]
 
+### Added
+- `host` and `host_taxon` in `virus.tsv` (SPEC 0.3, database schema 4): the
+  organism a product is aimed at, which in practice means the target bacterium
+  of a phage. All 33 phage programmes now name theirs -- eight Pseudomonas
+  aeruginosa, eight Staphylococcus aureus, four Escherichia coli, four
+  multi-species cocktails, two Mycobacterium abscessus, and one each for
+  Shigella, Enterococcus and Achromobacter. `host_taxon` is empty for now and
+  filled in a second pass. Until this, the bacterium existed only as free text
+  inside `virus` and in `notes`, so nothing could group or filter by it. The
+  validator requires a host on every phage row and pairs host_taxon ids with
+  host names; `/program` returns both.
+
+### Fixed
+- The four phage programmes whose bacterium was recorded nowhere now name it,
+  each from its own registration or protocol paper: WPP-201 (eight phages
+  lytic for P. aeruginosa, S. aureus and E. coli), PGX-0100 (14 phages against
+  S. aureus, P. aeruginosa and K. pneumoniae), Pyophage (staphylococci,
+  streptococci and enterococci, E. coli, Proteus mirabilis, P. aeruginosa) and
+  NTR-101 (cytolysin-positive Enterococcus faecalis).
+
 ### Changed
 - The virus atlas is laid out by family: each virus family gets its own
   territory, named at its edge, with cancers, transgenes and the rest between

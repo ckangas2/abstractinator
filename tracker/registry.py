@@ -42,8 +42,9 @@ ALIAS_COLUMNS = [
 ]
 
 VIRUS_COLUMNS = [
-    "axp_id", "role", "virus_family", "virus", "ncbi_taxon", "strain", "replication",
-    "modifications", "transgenes", "route", "carrier", "evidence_url",
+    "axp_id", "role", "virus_family", "virus", "ncbi_taxon", "host", "host_taxon",
+    "strain", "replication", "modifications", "transgenes", "route", "carrier",
+    "evidence_url",
 ]
 APPROVAL_COLUMNS = [
     "axp_id", "agency", "region", "date", "status", "brand", "indication", "evidence_url",
@@ -285,6 +286,17 @@ def validate(registry_dir=DEFAULT_DIR, modalities=None):
             err("virus.tsv", row, "virus is empty")
         if row["ncbi_taxon"] and not row["ncbi_taxon"].isdigit():
             err("virus.tsv", row, "ncbi_taxon must be digits")
+        hosts = [h.strip() for h in row["host"].split(";") if h.strip()]
+        host_taxa = [t.strip() for t in row["host_taxon"].split(";") if t.strip()]
+        if row["role"] == "phage" and not hosts:
+            err("virus.tsv", row, "a phage row needs a host: the bacterium it is aimed at")
+        bad_taxa = [t for t in host_taxa if not t.isdigit()]
+        if bad_taxa:
+            err("virus.tsv", row, "host_taxon must be digits: %s" % ", ".join(bad_taxa))
+        if host_taxa and len(host_taxa) != len(hosts):
+            err("virus.tsv", row, "host_taxon has %d id(s) for %d host(s); give one per host, "
+                                  "in the same order, or leave host_taxon empty"
+                % (len(host_taxa), len(hosts)))
         if row["replication"] and row["replication"] not in REPLICATION:
             err("virus.tsv", row, "replication must be one of %s" % sorted(REPLICATION))
         routes = [r.strip() for r in row["route"].split(";") if r.strip()] if row["route"] else []

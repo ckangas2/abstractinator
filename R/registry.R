@@ -13,7 +13,12 @@
 # R/ is loaded automatically by the Shiny app, so this file only defines
 # things. RSQLite is needed only when the database is actually read.
 
-REGISTRY_SCHEMA_VERSION <- "3"   # 2: virus and approval tables; 3: trial conditions, papers, grants
+# Schemas this server can read, newest first. 2: virus and approval tables;
+# 3: trial conditions, papers, grants; 4: virus.host and virus.host_taxon.
+# The previous schema is kept in the list so the site keeps serving between a
+# deploy and the next database build; the extra columns are read defensively
+# (registry_program), so a schema-3 database simply reports no host.
+REGISTRY_SCHEMA_VERSIONS <- c("4", "3")
 REGISTRY_SIGNIFICANCE   <- c("major", "minor", "info")
 REGISTRY_RECENT_CHANGES <- 50L
 REGISTRY_MAX_PAPERS     <- 200L
@@ -66,7 +71,7 @@ registry_with_db <- function(path, fun) {
   on.exit(DBI::dbDisconnect(con), add = TRUE)
   m <- DBI::dbGetQuery(con, "SELECT key, value FROM meta")
   meta <- as.list(stats::setNames(m$value, m$key))
-  if (!identical(registry_meta_value(meta, "schema_version"), REGISTRY_SCHEMA_VERSION)) {
+  if (!registry_meta_value(meta, "schema_version") %in% REGISTRY_SCHEMA_VERSIONS) {
     return(registry_result(503, list(
       error = "The program registry has a schema this server does not read yet.")))
   }
@@ -186,9 +191,14 @@ registry_program <- function(path, query) {
 
     # The virus or vector, for virus-based programs; NA (null) otherwise.
     v <- DBI::dbGetQuery(con, "SELECT * FROM virus WHERE axp_id = ?", params = list(id))
+    # host and host_taxon arrived with schema 4; a database built before that has
+    # no such columns, and v$host is then NULL, so read them defensively.
+    virus_col <- function(name) if (is.null(v[[name]])) "" else v[[name]][1]
     virus <- if (nrow(v) == 0L) NA else list(
       role = v$role[1], virus_family = v$virus_family[1], virus = v$virus[1],
-      ncbi_taxon = v$ncbi_taxon[1], strain = v$strain[1], replication = v$replication[1],
+      ncbi_taxon = v$ncbi_taxon[1],
+      host = registry_split(virus_col("host")), host_taxon = registry_split(virus_col("host_taxon")),
+      strain = v$strain[1], replication = v$replication[1],
       modifications = v$modifications[1], transgenes = registry_split(v$transgenes[1]),
       route = registry_split(v$route[1]), carrier = v$carrier[1], evidence_url = v$evidence_url[1])
     approvals <- DBI::dbGetQuery(con, paste(

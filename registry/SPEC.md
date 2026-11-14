@@ -1,10 +1,10 @@
 # Program registry: specification
 
-Version 0.2 (2026-11-11; 0.2 adds virus.tsv and approvals.tsv). The registry
-gives each investigational therapy a stable, citable ID and lists every name
-it has gone by, so that grants, preprints, papers and trials that use
-different names can be linked to the same thing. The tracker's tools
-(`tracker/`) validate it and build on it.
+Version 0.3 (2026-11-13; 0.2 added virus.tsv and approvals.tsv, 0.3 adds
+`host` and `host_taxon` to virus.tsv). The registry gives each investigational
+therapy a stable, citable ID and lists every name it has gone by, so that
+grants, preprints, papers and trials that use different names can be linked to
+the same thing. The tracker's tools (`tracker/`) validate it and build on it.
 
 ## 1. What a program is
 
@@ -107,6 +107,10 @@ phages. One row per program; programs that aren't virus-based have no row.
 These fields hold for any indication: a program's indications come from its
 trials, not from here.
 
+For a phage the bacterium is the point of the product, so it goes in `host`
+rather than in `targets`, which holds HGNC gene symbols. A phage cocktail
+aimed at several bacteria lists them all.
+
 | column | meaning |
 |---|---|
 | `axp_id` | the program (must be active) |
@@ -114,6 +118,8 @@ trials, not from here.
 | `virus_family` | ICTV family, e.g. `Adenoviridae`, `Herpesviridae`, `Poxviridae`, `Parvoviridae`; for phages the family, or the class `Caudoviricetes` where no family applies |
 | `virus` | the parent virus as commonly named: `human adenovirus 5`, `herpes simplex virus 1`, `vaccinia virus`, `adeno-associated virus 9`, `lentivirus (HIV-1-derived)` |
 | `ncbi_taxon` | NCBI Taxonomy ID of the parent virus (digits) |
+| `host` | the organism the virus is aimed at, where that is what the product is for: the target bacterium of a phage, `; `-separated for a cocktail, as a species where the source names one (`Pseudomonas aeruginosa`) or a genus where it does not (`Shigella`). Empty for oncolytic, gene-therapy and vaccine rows, whose host is the patient |
+| `host_taxon` | NCBI Taxonomy ID of the host (digits), one per name in `host`, `; `-separated and in the same order; empty where `host` is empty |
 | `strain` | strain, serotype or chimera: `Wyeth`, `JS1`, `Ad5/3 chimera`, `AAV9`, `Dearing` |
 | `replication` | `replicating`, `conditionally_replicating` (engineered to replicate selectively, e.g. E1A-deleted adenovirus) or `non_replicating` |
 | `modifications` | the engineering, briefly: `ICP34.5 and ICP47 deleted`, `TK deleted`, `E1B-55K deleted; E3 deleted` |

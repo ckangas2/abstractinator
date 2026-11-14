@@ -14,7 +14,7 @@ Readers must open it read-only (`file:...?mode=ro` URI in SQLite).
 ### meta
 | key | value |
 |---|---|
-| `schema_version` | `3` (2 added `virus` and `approval`; 3 added `trial.conditions`, papers and grants) |
+| `schema_version` | `4` (2 added `virus` and `approval`; 3 added `trial.conditions`, papers and grants; 4 added `virus.host` and `virus.host_taxon`) |
 | `built_at` | UTC ISO 8601 |
 | `registry_release` | `YYYY-MM-DD+<first 12 hex of sha256 of programs.tsv + aliases.tsv>` |
 | `latest_snapshot` | the newest snapshot date used, or empty |
@@ -154,6 +154,7 @@ Event types:
              "platform": "...", "targets": ["TNF","IL2"], "originator": "...", "sponsor": "...",
              "ncit": "...", "wikidata": "...", "unii": "...", "entry_version": 1, "notes": "..."},
  "virus": {"role": "oncolytic", "virus_family": "Adenoviridae", "virus": "human adenovirus 5", "ncbi_taxon": "28285",
+           "host": "", "host_taxon": "",
            "strain": "Ad5/3 chimera", "replication": "conditionally_replicating", "modifications": "...",
            "transgenes": ["TNF", "IL2"], "route": ["intratumoral", "intravenous"], "carrier": "", "evidence_url": "..."},
  "approvals": [{"agency": "FDA", "region": "US", "date": "2015-10-27", "status": "approved", "brand": "Imlygic",
@@ -166,6 +167,9 @@ Event types:
  "merged_from": null}
 ```
 - `virus` is null for programs that aren't virus-based; `approvals` is `[]` when none.
+- `virus.host` and `virus.host_taxon` name the organism the product is aimed at, which in
+  practice means the target bacterium of a phage; they are empty for every other kind of
+  row, whose host is the patient. A cocktail lists several, `; `-separated.
 - `papers`: `[{pmid, title, journal, year, kind, link_method, link_confidence, link_status, nct_id}]`,
   auto links first, then clinical papers, then by year (newest first), max 200; `grants`: `[{core_project_num, title, org, pi,
   first_fy, last_fy, url, link_method, link_confidence, link_status}]`, newest first, max 100.

@@ -61,7 +61,8 @@ DEFAULT_PAGE = os.path.join(REPO, "www", "changes.html")
 DEFAULT_SITE = os.path.join(REPO, "www", "registry")
 DEFAULT_EVIDENCE = reg.data_dir("evidence", "evidence.sqlite")
 
-SCHEMA_VERSION = "3"   # 2: virus and approval tables; 3: trial conditions, papers and grants
+SCHEMA_VERSION = "4"   # 2: virus and approval tables; 3: trial conditions, papers and
+                       # grants; 4: virus.host and virus.host_taxon
 
 CONFIDENCE = {"intervention_name": 0.95, "intervention_text": 0.8, "title": 0.6}
 MIN_AUTO_TEXT_KEY = 5        # shorter names found inside text are only candidates
@@ -94,7 +95,8 @@ CREATE TABLE alias (
 );
 CREATE INDEX alias_by_key ON alias(alias_key);
 CREATE TABLE virus (
-  axp_id TEXT PRIMARY KEY, role TEXT, virus_family TEXT, virus TEXT, ncbi_taxon TEXT, strain TEXT,
+  axp_id TEXT PRIMARY KEY, role TEXT, virus_family TEXT, virus TEXT, ncbi_taxon TEXT,
+  host TEXT, host_taxon TEXT, strain TEXT,
   replication TEXT, modifications TEXT, transgenes TEXT, route TEXT, carrier TEXT, evidence_url TEXT
 );
 CREATE TABLE approval (

@@ -38,7 +38,8 @@ test_that("/program and /changes resolve IDs, names and merges", {
     value = c("3", "2026-11-11+abc", "2026-11-09")))
   DBI::dbWriteTable(con, "virus", data.frame(
     axp_id = "AXP000001", role = "oncolytic", virus_family = "Orthoherpesviridae",
-    virus = "herpes simplex virus 1", ncbi_taxon = "10298", strain = "JS1",
+    virus = "herpes simplex virus 1", ncbi_taxon = "10298", host = "", host_taxon = "",
+    strain = "JS1",
     replication = "conditionally_replicating", modifications = "ICP34.5 and ICP47 deleted",
     transgenes = "CSF2", route = "intratumoral", carrier = "", evidence_url = "https://example.org"))
   DBI::dbWriteTable(con, "approval", data.frame(
@@ -108,6 +109,9 @@ test_that("/program and /changes resolve IDs, names and merges", {
   expect_true(is.na(by_name$body$merged_from))
   expect_equal(by_name$body$trials$link_method, "intervention_name")
   expect_equal(by_name$body$virus$virus, "herpes simplex virus 1")
+  # host is for phages; an oncolytic virus has the patient as its host, so it is empty
+  expect_length(by_name$body$virus$host, 0)
+  expect_length(by_name$body$virus$host_taxon, 0)
   expect_equal(as.character(by_name$body$virus$transgenes), "CSF2")
   expect_s3_class(by_name$body$virus$route, "AsIs")
   expect_equal(by_name$body$approvals$agency, c("FDA", "EMA"))

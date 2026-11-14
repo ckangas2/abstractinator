@@ -204,7 +204,23 @@ class VirusAndApprovals(RegistryCase):
             self.assertProblem(probs, frag)
         self.assertProblem(self.check([self.virus(), self.virus()]), "second row")
         self.assertProblem(self.check([self.virus(axp_id="AXP000002")]), "use the active entry")
-        self.assertEqual(self.check([self.virus(virus_family="Caudoviricetes", role="phage")]), [])
+        self.assertEqual(self.check([self.virus(virus_family="Caudoviricetes", role="phage",
+                                                host="Pseudomonas aeruginosa")]), [])
+
+    def test_host_rules(self):
+        """host names the bacterium a phage is aimed at; host_taxon pairs with it."""
+        phage = dict(virus_family="Caudoviricetes", role="phage")
+        self.assertProblem(self.check([self.virus(**phage)]), "a phage row needs a host")
+        self.assertEqual(self.check([self.virus(host="Escherichia coli; Shigella",
+                                                host_taxon="562; 620", **phage)]), [])
+        self.assertProblem(self.check([self.virus(host="Escherichia coli",
+                                                  host_taxon="E. coli", **phage)]),
+                           "host_taxon must be digits")
+        self.assertProblem(self.check([self.virus(host="Escherichia coli; Shigella",
+                                                  host_taxon="562", **phage)]),
+                           "one per host")
+        # Everything that is not a phage has the patient as its host, so host stays empty.
+        self.assertEqual(self.check([self.virus()]), [])
 
     def test_approval_rules(self):
         probs = self.check(approvals=[self.approval(agency="FDA2", region="USA", date="Oct 2015",
