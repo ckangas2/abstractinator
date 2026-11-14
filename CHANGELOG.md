@@ -9,6 +9,11 @@ Development before v2.0.0 was untagged; see the git history for detail.
 ## [Unreleased]
 
 ### Changed
+- Every atlas layer starts switched on, on every tab and on phones too
+  (unique payloads, routes, sponsors and AAV transgenes included); untick to
+  simplify.
+
+### Changed
 - The oncolytic atlas has a "Unique payloads" tickbox (off at first): it adds
   the transgenes only one virus carries, drawn small beside their virus inside
   its family's territory. The AAV atlas has the same for unique transgenes.

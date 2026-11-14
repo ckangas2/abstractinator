@@ -57,10 +57,10 @@ STAGES = [  # (key, label, colour), in order
 HUB_KINDS = [  # (key, label, colour, shown at first)
     ("family", "Virus family", "#8a7fd6", True),
     ("transgene", "Transgene", "#d4537e", True),
-    ("transgene1", "Unique payloads", "#d4537e", False),   # a transgene only one virus carries
+    ("transgene1", "Unique payloads", "#d4537e", True),   # a transgene only one virus carries
     ("indication", "Cancer", "#2fa58c", True),
-    ("route", "Route", "#9a9890", False),
-    ("sponsor", "Sponsor (2+ viruses)", "#b07a4a", False),
+    ("route", "Route", "#9a9890", True),
+    ("sponsor", "Sponsor (2+ viruses)", "#b07a4a", True),
 ]
 
 PHASE_RANK = {"EARLY_PHASE1": 0.5, "PHASE1": 1, "PHASE2": 2, "PHASE3": 3, "PHASE4": 4}
@@ -113,8 +113,8 @@ FIELDS = [
      "hubs": [("family", "Phage family or class", "#8a7fd6", True),
               ("host", "Target bacterium", "#d4537e", True),
               ("indication", "Infection", "#2fa58c", True),
-              ("route", "Route", "#9a9890", False),
-              ("sponsor", "Sponsor (2+ products)", "#b07a4a", False)],
+              ("route", "Route", "#9a9890", True),
+              ("sponsor", "Sponsor (2+ products)", "#b07a4a", True)],
      "cluster": "host",
      "lead": "joined to the bacteria they target, their phage family or class, the infections their trials "
              "enrol, routes and shared sponsors",
@@ -126,11 +126,11 @@ FIELDS = [
      "unit": ["product", "products"], "item": "Product", "find": "Find a product, capsid, disease\u2026",
      "groups_head": "Disease area",
      "hubs": [("family", "Capsid", "#8a7fd6", True),
-              ("transgene", "Transgene", "#d4537e", False),   # mostly one product each: clutter
-              ("transgene1", "Unique transgenes", "#d4537e", False),
+              ("transgene", "Transgene", "#d4537e", True),
+              ("transgene1", "Unique transgenes", "#d4537e", True),
               ("indication", "Disease area", "#2fa58c", True),
               ("route", "Route", "#9a9890", True),
-              ("sponsor", "Sponsor (2+ products)", "#b07a4a", False)],
+              ("sponsor", "Sponsor (2+ products)", "#b07a4a", True)],
      "lead": "joined to their capsid, transgene, the disease areas of their trials and approvals, routes "
              "and shared sponsors",
      "groups_note": "Disease areas come from those trials' conditions and the approvals' indications, grouped. "
@@ -322,9 +322,6 @@ var stageColour={}, hubColour={}, shown={};
 cfg.stages.forEach(function(s){stageColour[s[0]]=s[2];});
 cfg.hubs.forEach(function(h){hubColour[h[0]]=h[2]; shown[h[0]]=h[3];});
 var narrow=root.getBoundingClientRect().width<600;
-// On a phone, transgenes start hidden: the map is small and they are the busiest layer.
-if(narrow && 'transgene' in shown){ shown.transgene=false;
-  var tb=document.querySelector('.atlas-bar input[data-kind="transgene"]'); if(tb) tb.checked=false; }
 function el(t,a){var e=document.createElementNS(NS,t); for(var k in a) e.setAttribute(k,a[k]); return e;}
 
 // Screen size (viewBox = pixels) and the layout's world, which has the screen's shape.
@@ -396,6 +393,7 @@ var home={};
   nodes.forEach(function(n){ if(home[n.id]){n.x=home[n.id][0]; n.y=home[n.id][1];} });
   nodes.forEach(function(n){ if(n.kind!=='virus') return; var f=primary(n);
     if(f){n.x=f.x+(Math.random()-0.5)*40; n.y=f.y+(Math.random()-0.5)*40;} });
+  nodes.forEach(function(n){ if(n.kind==='transgene1'&&n.nb[0]){ n.x=n.nb[0].x+(Math.random()-0.5)*30; n.y=n.nb[0].y+(Math.random()-0.5)*30; } });
 })();
 
 var alpha=1;
