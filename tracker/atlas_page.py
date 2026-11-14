@@ -107,13 +107,16 @@ FIELDS = [
      "groups_note": "Cancers come from those trials' conditions, grouped."},
     {"key": "phage", "page": "atlas-phage.html", "tab": "Phage therapy", "title": "Phage therapy atlas",
      "role": "phage", "groups": INFECTIONS, "noun": "phage therapies",
-     "unit": ["product", "products"], "item": "Product", "find": "Find a product, family, infection\u2026",
+     "unit": ["product", "products"], "item": "Product", "find": "Find a product, bacterium, infection\u2026",
      "groups_head": "Trials in",
      "hubs": [("family", "Phage family or class", "#8a7fd6", True),
+              ("host", "Target bacterium", "#d4537e", True),
               ("indication", "Infection", "#2fa58c", True),
-              ("route", "Route", "#9a9890", True),
-              ("sponsor", "Sponsor (2+ products)", "#b07a4a", True)],
-     "lead": "joined to their phage family or class, the infections their trials enrol, routes and shared sponsors",
+              ("route", "Route", "#9a9890", False),
+              ("sponsor", "Sponsor (2+ products)", "#b07a4a", False)],
+     "cluster": "host",
+     "lead": "joined to the bacteria they target, their phage family or class, the infections their trials "
+             "enrol, routes and shared sponsors",
      "groups_note": "Infections come from those trials' conditions, grouped; they appear once the weekly "
                     "trial snapshot has linked a product's trials."},
     {"key": "aav", "page": "atlas-aav.html", "tab": "AAV gene therapy", "title": "AAV gene therapy atlas",
@@ -219,12 +222,15 @@ def atlas_data(d, field="oncolytic"):
         cancers = indications_of(trials, f["groups"], d["approvals"].get(axp, []))
         node = {"id": axp, "kind": "virus", "label": p["preferred_name"], "stage": stage,
                 "stage_label": stage_label, "aka": names[:3], "family": v.get(f.get("family_from", "virus_family")) or "",
+                "hosts": _split(v.get("host")) if "host" in kinds else [],
                 "transgenes": _split(v.get("transgenes")) if "transgene" in kinds else [], "routes": [_route_label(r) for r in _split(v.get("route"))],
                 "cancers": cancers, "sponsor": p.get("sponsor") or "", "trials": len(trials),
                 "url": "%s.html" % axp}
         nodes.append(node)
         if node["family"] and "family" in kinds:
             links.append([axp, hub("family", node["family"])])
+        for h in node["hosts"]:
+            links.append([axp, hub("host", h)])
         for tg in node["transgenes"]:
             links.append([axp, hub("transgene", tg)])
         for r in node["routes"] if "route" in kinds else []:
@@ -262,7 +268,7 @@ padding:3px 10px;cursor:pointer}
 paint-order:stroke;stroke:var(--bg);stroke-width:var(--sw);stroke-linejoin:round}
 #atlas text.hubl{font-weight:600}
 #atlas text.big{font-weight:700;letter-spacing:.01em}
-#atlas text.terrl{font-size:calc(var(--fs) * 1.12);letter-spacing:.04em;fill:color-mix(in srgb,#8a7fd6 55%,var(--fg))}
+#atlas text.terrl{font-size:calc(var(--fs) * 1.12);letter-spacing:.04em}
 #atlas .dim{opacity:.1}
 .atlas-bar{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center;margin:12px 0 0;font-size:.9rem}
 .atlas-bar label{display:inline-flex;align-items:center;gap:5px;cursor:pointer}
@@ -322,8 +328,16 @@ function radius(n){return n.kind==='virus' ? (n.stage==='approved'?8:5.5) : 6+Ma
 function visible(n){return n.kind==='virus' || shown[n.kind];}
 // How each kind of hub pulls: families hold tight (they make the clusters),
 // cancers and the rest pull gently across clusters.
-var PULL={family:[50,0.07],transgene:[120,0.008],indication:[160,0.005],route:[140,0.006],sponsor:[110,0.010]};
-function charge(n){return n.kind==='virus'?1:(n.kind==='family'?1+n.n/6:1+n.n/14);}
+// What this tab clusters by: virus family (oncolytic), capsid (AAV, drawn as
+// "family") or target bacterium (phage, nearly all one class). That kind of hub
+// holds its products tight and gets a territory; the rest pull gently across.
+var CL=cfg.cluster||'family';
+var PULL={family:[120,0.006],host:[90,0.02],transgene:[120,0.008],indication:[160,0.005],route:[140,0.006],sponsor:[110,0.010]};
+PULL[CL]=[50,0.07];
+// A product listed under several (a phage cocktail aimed at three bacteria) sits
+// in the territory of the first one listed; its other links still show.
+function primary(v){ for(var i=0;i<v.nb.length;i++) if(v.nb[i].kind===CL) return v.nb[i]; return null; }
+function charge(n){return n.kind==='virus'?1:(n.kind===CL?1+n.n/6:1+n.n/14);}
 
 var view={x:0,y:0,k:1}, g=el('g'), gt=el('g'), gl=el('g'), gn=el('g'), gx=el('g');
 var defs=el('defs'), flt=el('filter',{id:'atlas-glow',x:'-100%',y:'-100%',width:'300%',height:'300%'});
@@ -333,9 +347,9 @@ flt.appendChild(mg); defs.appendChild(flt); root.appendChild(defs);
 g.appendChild(gt); g.appendChild(gl); g.appendChild(gn); g.appendChild(gx); root.appendChild(g);
 links.forEach(function(l){l.el=el('line',{stroke:hubColour[l.t.kind]||'#888'}); gl.appendChild(l.el);});
 // A soft territory behind each family of three or more.
-var fams=nodes.filter(function(n){return n.kind==='family';}).map(function(f){
-  return {hub:f, members:f.nb.filter(function(m){return m.kind==='virus';}),
-          el:gt.appendChild(el('path',{'class':'terr',fill:hubColour.family,stroke:hubColour.family}))};})
+var fams=nodes.filter(function(n){return n.kind===CL;}).map(function(f){
+  return {hub:f, members:f.nb.filter(function(m){return m.kind==='virus'&&primary(m)===f;}),
+          el:gt.appendChild(el('path',{'class':'terr',fill:hubColour[CL],stroke:hubColour[CL]}))};})
   .filter(function(f){return f.members.length>=3;});
 var terrOf={}; fams.forEach(function(f){terrOf[f.hub.id]=f;});
 var HALO=17;   // half the territory's stroke: how far it reaches past its dots
@@ -345,7 +359,7 @@ nodes.forEach(function(n){
   if(n.kind==='virus'){c.setAttribute('fill',stageColour[n.stage]);}
   else {c.setAttribute('stroke',hubColour[n.kind]); c.setAttribute('fill',hubColour[n.kind]);}
   grp.appendChild(c);
-  n.text=el('text',{'class':n.kind==='virus'?'':(n.kind==='family'||n.n>=8?'hubl big':'hubl')});
+  n.text=el('text',{'class':n.kind==='virus'?'':(n.kind===CL||n.n>=8?'hubl big':'hubl')});
   n.text.textContent=n.label; gx.appendChild(n.text); n.el=grp; gn.appendChild(grp);
   grp.addEventListener('pointerdown',function(e){e.stopPropagation(); startDrag(n,e);});
   grp.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault(); select(n);}});
@@ -357,7 +371,7 @@ nodes.forEach(function(n){
 // families settle as separate clusters instead of one ball; one-member
 // families sit on an outer ring. Cancers and the rest then sit between them.
 var home={};
-(function(){ var fs=nodes.filter(function(n){return n.kind==='family';}).sort(function(a,b){return b.n-a.n;});
+(function(){ var fs=nodes.filter(function(n){return n.kind===CL;}).sort(function(a,b){return b.n-a.n;});
   var big=fs.filter(function(f){return f.n>=3;}), small=fs.filter(function(f){return f.n<3;});
   var tot=big.reduce(function(t,f){return t+Math.sqrt(f.n);},0)||1, a=-Math.PI/2;
   // alternate large and small around the ring so the big ones don't bunch up
@@ -367,7 +381,7 @@ var home={};
   small.forEach(function(f,i){ var b=-Math.PI/2+(i+0.5)/small.length*2*Math.PI+0.3;
     home[f.id]=[Math.cos(b)*LW*0.44, Math.sin(b)*LH*0.44]; });
   nodes.forEach(function(n){ if(home[n.id]){n.x=home[n.id][0]; n.y=home[n.id][1];} });
-  nodes.forEach(function(n){ if(n.kind!=='virus') return; var f=n.nb.filter(function(m){return home[m.id];})[0];
+  nodes.forEach(function(n){ if(n.kind!=='virus') return; var f=primary(n);
     if(f){n.x=f.x+(Math.random()-0.5)*40; n.y=f.y+(Math.random()-0.5)*40;} });
 })();
 
@@ -381,6 +395,7 @@ function tick(){
       if(d2>360000) continue; f=-1500*alpha*charge(a)*charge(b)/d2;
       a.vx+=f*dx/d; a.vy+=f*dy/d; b.vx-=f*dx/d; b.vy-=f*dy/d; } }
   links.forEach(function(l){ if(!visible(l.s)||!visible(l.t)) return; var p=PULL[l.t.kind]||[100,0.02];
+    if(l.t.kind===CL&&primary(l.s)!==l.t) p=[110,0.012];
     dx=l.t.x-l.s.x; dy=l.t.y-l.s.y; d=Math.sqrt(dx*dx+dy*dy)||0.01; f=(d-p[0])*p[1]*alpha/d;
     l.s.vx+=f*dx; l.s.vy+=f*dy; l.t.vx-=f*dx; l.t.vy-=f*dy; });
   // Pull towards the centre (harder for dots with few visible links, which
@@ -410,7 +425,7 @@ function wanted(n){ if(!visible(n)) return -1;
   if(n===hover) return 900;
   if(sel) return -1;
   if(n.kind==='virus') return n.stage==='approved'?500:-1;
-  return (n.kind==='family'?300:200)+n.n; }
+  return (n.kind===CL?300:200)+n.n; }
 function placeLabels(){
   var cand=nodes.map(function(n){return [wanted(n),n];}).filter(function(c){return c[0]>=0;})
     .sort(function(a,b){return b[0]-a[0];});
@@ -424,11 +439,14 @@ function placeLabels(){
     return false; }
   cand.forEach(function(c){ var n=c[1], r=radius(n)*view.k, sx=view.x+n.x*view.k, sy=view.y+n.y*view.k;
     var w=n.label.length*FS*CH, h=FS+2, y0=sy-h/2, f=terrOf[n.id];
-    if(f&&f.top&&!(sel&&near[n.id])){            // a family with a territory: name it above the territory
-      var cx=view.x+f.top[0]*view.k, ty=view.y+f.top[1]*view.k-4, bx=[cx-w/2-pad,ty-h-pad,cx+w/2+pad,ty+pad];
-      if(bx[0]>2&&bx[2]<SW-2&&bx[1]>2){ var clash=false;
+    if(f&&f.top&&!(sel&&near[n.id])){            // a cluster with a territory: name it above, else below, it
+      var tw=w*1.2, th=h*1.12;                    // these names are bold and a little larger
+      var cx=Math.min(Math.max(view.x+f.top[0]*view.k, tw/2+6), SW-tw/2-6);   // slide inward rather than off the edge
+      var tries=[['t',view.y+f.top[1]*view.k-4-th],['u',view.y+f.bot[1]*view.k+4]];
+      for(var tt=0;tt<2;tt++){ var yy=tries[tt][1], bx=[cx-tw/2-pad,yy-pad,cx+tw/2+pad,yy+th+pad];
+        if(bx[0]<=2||bx[2]>=SW-2||bx[1]<=2||bx[3]>=SH-2) continue; var clash=false;
         for(var i=0;i<boxes.length;i++){var o=boxes[i]; if(bx[0]<o[2]&&bx[2]>o[0]&&bx[1]<o[3]&&bx[3]>o[1]){clash=true;break;}}
-        if(!clash){ boxes.push(bx); show[n.id]='t'; return; } } }
+        if(!clash){ boxes.push(bx); show[n.id]=tries[tt][0]; f.lx=(cx-view.x)/view.k; return; } } }
     // Try right, left, above, then below the dot; keep inside the frame.
     var spots=[['r',sx+r+4,y0],['l',sx-r-4-w,y0],['a',sx-w/2,sy-r-3-h],['b',sx-w/2,sy+r+3]], placed=null;
     for(var t=0;t<spots.length&&!placed;t++){ var x0=spots[t][1], yy=spots[t][2];
@@ -437,9 +455,11 @@ function placeLabels(){
     if(!placed) return;
     boxes.push(placed[0]); show[n.id]=placed[1]; });
   nodes.forEach(function(n){ var s=show[n.id]; n.text.style.display=s?'':'none'; if(!s) return;
-    if(s==='t'){ var f=terrOf[n.id]; n.text.setAttribute('x', f.top[0]); n.text.setAttribute('y', f.top[1]-6/view.k);
-      n.text.setAttribute('text-anchor','middle'); n.text.classList.add('terrl'); return; }
-    n.text.classList.remove('terrl');
+    if(s==='t'||s==='u'){ var f=terrOf[n.id]; n.text.setAttribute('x', f.lx);
+      n.text.setAttribute('y', s==='t' ? f.top[1]-6/view.k : f.bot[1]+(4+FS*0.85)/view.k);
+      n.text.setAttribute('text-anchor','middle'); n.text.classList.add('terrl');
+      n.text.style.fill='color-mix(in srgb,'+hubColour[CL]+' 55%,var(--fg))'; return; }
+    n.text.classList.remove('terrl'); n.text.style.fill='';
     var r=radius(n)+4/view.k, k=view.k;
     if(s==='a'||s==='b'){ n.text.setAttribute('x', n.x); n.text.setAttribute('text-anchor','middle');
       n.text.setAttribute('y', s==='a' ? n.y-radius(n)-3/k-FS*0.25/k : n.y+radius(n)+3/k+FS*0.85/k); return; }
@@ -457,7 +477,8 @@ function draw(){
     var h=hull([[f.hub.x,f.hub.y]].concat(f.members.map(function(m){return [m.x,m.y];})));
     f.el.setAttribute('d','M'+h.map(function(p){return p[0].toFixed(1)+','+p[1].toFixed(1);}).join('L')+'Z');
     f.el.setAttribute('stroke-width', 2*HALO);
-    var top=Infinity, sx=0; h.forEach(function(p){top=Math.min(top,p[1]); sx+=p[0];}); f.top=[sx/h.length, top-HALO]; });
+    var top=Infinity, bot=-Infinity, sx=0; h.forEach(function(p){top=Math.min(top,p[1]); bot=Math.max(bot,p[1]); sx+=p[0];});
+    f.top=[sx/h.length, top-HALO]; f.bot=[sx/h.length, bot+HALO]; });
   placeLabels();
 }
 // Fit every visible dot into the frame.
@@ -531,6 +552,7 @@ function select(n){
     if(n.aka.length) h+='<p class="muted">'+esc(n.aka.join(', '))+'</p>';
     h+='<p><b>'+esc(n.stage_label)+'</b>'+(n.trials?' · '+n.trials+' linked trial'+(n.trials===1?'':'s'):'')+'</p>';
     if(n.family) h+='<p>'+esc(cfg.family_label)+': '+esc(n.family)+'</p>';
+    if(n.hosts&&n.hosts.length) h+='<p>Targets: '+esc(n.hosts.join(', '))+'</p>';
     if(n.transgenes.length) h+='<p>Transgenes: '+esc(n.transgenes.join(', '))+'</p>';
     if(n.routes.length) h+='<p>Route: '+esc(n.routes.join(', '))+'</p>';
     if(n.cancers.length) h+='<p>Trials in: '+esc(n.cancers.join(', '))+'</p>';
@@ -552,7 +574,7 @@ var q=document.getElementById('atlas-q');
 q.addEventListener('keydown',function(e){ if(e.key!=='Enter') return; e.preventDefault();
   var t=q.value.trim().toLowerCase(); if(!t) {select(null); return;}
   var hit=nodes.filter(function(n){return visible(n)&&(n.label.toLowerCase().indexOf(t)>=0||
-    (n.aka||[]).some(function(a){return a.toLowerCase().indexOf(t)>=0;}));})[0];
+    (n.aka||[]).concat(n.hosts||[]).some(function(a){return a.toLowerCase().indexOf(t)>=0;}));})[0];
   if(!hit) return; view.k=Math.max(view.k,1.6); view.x=SW/2-hit.x*view.k; view.y=SH/2-hit.y*view.k; select(hit);});
 document.getElementById('atlas-reset').addEventListener('click',function(){select(null); fit(); draw();});
 })();
@@ -574,9 +596,11 @@ def atlas_page(d, esc, frame, filter_js, table, field="oncolytic"):
     counts = {}
     for n in viruses:
         counts[n["stage"]] = counts.get(n["stage"], 0) + 1
-    cfg = {"stages": STAGES, "hubs": f["hubs"], "unit": f["unit"], "family_label": f.get("family_label", "Family")}
+    cfg = {"stages": STAGES, "hubs": f["hubs"], "unit": f["unit"], "family_label": f.get("family_label", "Family"),
+           "cluster": f.get("cluster", "family")}
     as_json = lambda x: json.dumps(x, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
     has_tg = any(h[0] == "transgene" for h in f["hubs"])
+    has_host = any(h[0] == "host" for h in f["hubs"])
     body = ["<style>%s</style>" % ATLAS_CSS,
             "<h1>%s</h1>" % esc(f["title"]),
             tabs_html(field, esc),
@@ -609,14 +633,16 @@ def atlas_page(d, esc, frame, filter_js, table, field="oncolytic"):
     order = {k: i for i, (k, _, _) in enumerate(STAGES)}
     for n in sorted(viruses, key=lambda n: (-order[n["stage"]], n["label"].lower())):
         search = " ".join([n["label"], n["family"], n["stage_label"], n["sponsor"]] + n["aka"] + n["transgenes"]
-                          + n["routes"] + n["cancers"]).lower()
-        cells = [esc(n["family"]), esc(n["stage_label"])] + ([esc(", ".join(n["transgenes"]))] if has_tg else []) \
+                          + n["hosts"] + n["routes"] + n["cancers"]).lower()
+        cells = [esc(n["family"]), esc(n["stage_label"])] + ([esc(", ".join(n["hosts"]))] if has_host else []) \
+            + ([esc(", ".join(n["transgenes"]))] if has_tg else []) \
             + [esc(", ".join(n["routes"])), esc(", ".join(n["cancers"]))]
         rows.append('<tr data-s="%s"><td><a href="%s">%s</a>%s</td>%s</tr>' % (
             esc(search), esc(n["url"]), esc(n["label"]),
             ' <span class="muted">(%s)</span>' % esc(", ".join(n["aka"])) if n["aka"] else "",
             "".join("<td%s>%s</td>" % (" class=nw" if k == 1 else "", c) for k, c in enumerate(cells))))
-    body.append(table([f["item"], f.get("family_label", "Family"), "Stage"] + (["Transgenes"] if has_tg else []) + ["Route", f["groups_head"]],
+    body.append(table([f["item"], f.get("family_label", "Family"), "Stage"] + (["Target bacterium"] if has_host else [])
+                      + (["Transgenes"] if has_tg else []) + ["Route", f["groups_head"]],
                       rows))
     body.append("<script>%s</script>" % filter_js)
     return frame(f["title"], body, d["meta"], "", [(None, f["title"])])

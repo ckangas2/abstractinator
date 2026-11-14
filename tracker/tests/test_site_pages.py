@@ -266,14 +266,18 @@ class AtlasFieldTest(unittest.TestCase):
         d = {"programs": {"A1": prog("A1", "OV-1"), "P1": prog("P1", "Phage-1"), "P2": prog("P2", "Phage-2")},
              "virus": {"A1": {"role": "oncolytic", "virus_family": "Adenoviridae", "transgenes": "GM-CSF"},
                        "P1": {"role": "phage", "virus_family": "Caudoviricetes", "transgenes": "X",
-                              "route": "topical"},
-                       "P2": {"role": "phage", "virus_family": "Caudoviricetes"}},
+                              "route": "topical", "host": "Staphylococcus aureus; Escherichia coli"},
+                       "P2": {"role": "phage", "virus_family": "Caudoviricetes", "host": "Staphylococcus aureus"}},
              "trials": {"P1": [{"link_status": "auto", "conditions": '["Urinary Tract Infections"]',
                                 "brief_title": "", "phase": "PHASE2"}]},
              "approvals": {}, "aliases": {}}
         data = ap.atlas_data(d, "phage")
         viruses = [n["id"] for n in data["nodes"] if n["kind"] == "virus"]
         self.assertEqual(viruses, ["P1", "P2"])                       # oncolytic left out
+        hosts = {n["label"]: n["n"] for n in data["nodes"] if n["kind"] == "host"}
+        self.assertEqual(hosts, {"Staphylococcus aureus": 2})           # shared target; a lone one isn't drawn
+        self.assertEqual(next(n for n in data["nodes"] if n["id"] == "P1")["hosts"],
+                         ["Staphylococcus aureus", "Escherichia coli"])
         kinds = {n["kind"] for n in data["nodes"]}
         self.assertNotIn("transgene", kinds)                          # no payload hubs for phage
         self.assertIn("sponsor", kinds)                               # Acme has 2 phage products

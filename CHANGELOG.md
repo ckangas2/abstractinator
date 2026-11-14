@@ -8,6 +8,13 @@ Development before v2.0.0 was untagged; see the git history for detail.
 
 ## [Unreleased]
 
+### Changed
+- The phage atlas groups products by the bacterium they target: each target
+  bacterium is a hub with its own territory (a cocktail sits with the first
+  bacterium it lists and links to the others), and the table gains a "Target
+  bacterium" column. Each atlas tab now chooses what it clusters by: virus
+  family for oncolytic viruses, capsid for AAV, target bacterium for phage.
+
 ### Added
 - `host` and `host_taxon` in `virus.tsv` (SPEC 0.3, database schema 4): the
   organism a product is aimed at, which in practice means the target bacterium
