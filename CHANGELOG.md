@@ -8,6 +8,12 @@ Development before v2.0.0 was untagged; see the git history for detail.
 
 ## [Unreleased]
 
+### Added
+- Every target bacterium in virus.tsv now carries its NCBI Taxonomy id in
+  `host_taxon`, resolved from NCBI and checked against the scientific name and
+  rank it comes back with, so phage can be grouped by taxon rather than by the
+  spelling of a name.
+
 ### Changed
 - Every atlas layer starts switched on, on every tab and on phones too
   (routes, sponsors and AAV transgenes included), except the oncolytic tab's
