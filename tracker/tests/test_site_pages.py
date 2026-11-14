@@ -270,9 +270,9 @@ class AtlasFieldTest(unittest.TestCase):
         self.assertEqual(kinds["transgene:gm-csf"], "transgene")            # shared: an ordinary hub
         self.assertEqual(kinds["transgene1:il12"], "transgene1")             # unique: its own kind
         self.assertIn(["O1", "transgene1:il12"], data["links"])
-        self.assertIn(("transgene1", "Unique payloads", "#d4537e", True), ap.FIELDS[0]["hubs"])
-        # every layer of every tab starts switched on (Chase, 2026-11-14)
-        self.assertTrue(all(h[3] for f in ap.FIELDS for h in f["hubs"]))
+        # every layer starts switched on, except unique payloads on the oncolytic tab (Chase, 2026-11-14)
+        off = [(f["key"], h[0]) for f in ap.FIELDS for h in f["hubs"] if not h[3]]
+        self.assertEqual(off, [("oncolytic", "transgene1")])
 
     """The phage atlas uses the same code with its own programs, hubs and groups."""
 

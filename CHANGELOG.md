@@ -10,8 +10,8 @@ Development before v2.0.0 was untagged; see the git history for detail.
 
 ### Changed
 - Every atlas layer starts switched on, on every tab and on phones too
-  (unique payloads, routes, sponsors and AAV transgenes included); untick to
-  simplify.
+  (routes, sponsors and AAV transgenes included), except the oncolytic tab's
+  unique payloads, which start off; untick to simplify.
 
 ### Changed
 - The oncolytic atlas has a "Unique payloads" tickbox (off at first): it adds

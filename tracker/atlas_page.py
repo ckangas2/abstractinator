@@ -57,7 +57,7 @@ STAGES = [  # (key, label, colour), in order
 HUB_KINDS = [  # (key, label, colour, shown at first)
     ("family", "Virus family", "#8a7fd6", True),
     ("transgene", "Transgene", "#d4537e", True),
-    ("transgene1", "Unique payloads", "#d4537e", True),   # a transgene only one virus carries
+    ("transgene1", "Unique payloads", "#d4537e", False),  # a transgene only one virus carries; off at first (Chase)
     ("indication", "Cancer", "#2fa58c", True),
     ("route", "Route", "#9a9890", True),
     ("sponsor", "Sponsor (2+ viruses)", "#b07a4a", True),
