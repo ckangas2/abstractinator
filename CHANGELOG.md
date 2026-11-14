@@ -8,6 +8,15 @@ Development before v2.0.0 was untagged; see the git history for detail.
 
 ## [Unreleased]
 
+### Changed
+- The virus atlas is laid out by family: each virus family gets its own
+  territory, named at its edge, with cancers, transgenes and the rest between
+  them. Hubs joined to a single product are no longer drawn (the product's
+  panel and the table still list them). Labels keep one size on screen at any
+  zoom and are only drawn where they fit, so they never overlap each other or
+  a dot. On a phone the map takes the screen's shape, pinch-zoom works, the
+  info panel is a bottom sheet, and transgenes start switched off.
+
 ### Added
 - Japanese approvals for the AAV and HSV programmes that hold one: Luxturna
   (2023-06-26), Zolgensma intravenously (2020-03-19) and intrathecally

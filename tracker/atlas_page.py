@@ -234,25 +234,36 @@ def atlas_data(d, field="oncolytic"):
         s = (p.get("sponsor") or "").strip()
         if s and sponsor_count.get(s, 0) >= 2 and "sponsor" in kinds:
             links.append([axp, hub("sponsor", s)])
-    return {"nodes": nodes, "links": links}
+    # A hub joined to one product connects nothing: it only crowds the map. The
+    # product's info panel and the table still list it. Families stay, since a
+    # family is part of what each dot is.
+    lone = {h["id"] for h in hubs.values() if h["n"] < 2 and h["kind"] != "family"}
+    return {"nodes": [n for n in nodes if n["id"] not in lone],
+            "links": [l for l in links if l[1] not in lone]}
 
 
 ATLAS_CSS = """
-.atlas-wrap{position:relative;border:1px solid var(--line);border-radius:10px;overflow:hidden;margin:10px 0 6px;
-background:var(--bg)}
-#atlas{display:block;width:100%;height:min(72vh,720px);touch-action:none;cursor:grab}
-@media (max-width:600px){#atlas{height:62vh}}
+.atlas-wrap{position:relative;border:1px solid var(--line);border-radius:12px;overflow:hidden;margin:10px 0 6px;
+background:radial-gradient(ellipse at 50% 45%,color-mix(in srgb,var(--accent) 7%,var(--bg)) 0%,var(--bg) 70%)}
+#atlas{display:block;width:100%;height:min(74vh,760px);touch-action:none;cursor:grab;--fs:11px;--sw:3px}
+@media (max-width:600px){#atlas{height:68vh}}
 .atlas-bar button{font:inherit;color:var(--fg);background:var(--chip);border:1px solid var(--line);border-radius:6px;
 padding:3px 10px;cursor:pointer}
 #atlas.dragging{cursor:grabbing}
-#atlas line{stroke:var(--muted);stroke-opacity:.22;stroke-width:.7}
-#atlas line.on{stroke:var(--accent);stroke-opacity:.8;stroke-width:1.4}
-#atlas .n{cursor:pointer}#atlas .n circle{stroke-width:1.5}
-#atlas .hub circle{fill:var(--bg)}
-#atlas text{font:11px system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--fg);pointer-events:none;
-paint-order:stroke;stroke:var(--bg);stroke-width:3px;stroke-linejoin:round}
+#atlas line{stroke-opacity:.16;stroke-width:.8;vector-effect:non-scaling-stroke}
+#atlas line.on{stroke-opacity:.85;stroke-width:1.6}
+#atlas path.terr{stroke-linejoin:round;stroke-linecap:round;fill-opacity:.07;stroke-opacity:.07;pointer-events:none}
+#atlas .n{cursor:pointer;outline:none}
+#atlas .n:focus-visible circle{stroke:var(--fg);stroke-width:2.5}
+#atlas .virus circle{stroke:var(--bg);stroke-width:1.2;vector-effect:non-scaling-stroke}
+#atlas .virus.appr circle{filter:url(#atlas-glow)}
+#atlas .hub circle{stroke-width:1.8;fill-opacity:.16;vector-effect:non-scaling-stroke}
+#atlas text{font:400 var(--fs) system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--fg);pointer-events:none;
+paint-order:stroke;stroke:var(--bg);stroke-width:var(--sw);stroke-linejoin:round}
 #atlas text.hubl{font-weight:600}
-#atlas .dim{opacity:.12}
+#atlas text.big{font-weight:700;letter-spacing:.01em}
+#atlas text.terrl{font-size:calc(var(--fs) * 1.12);letter-spacing:.04em;fill:color-mix(in srgb,#8a7fd6 55%,var(--fg))}
+#atlas .dim{opacity:.1}
 .atlas-bar{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center;margin:12px 0 0;font-size:.9rem}
 .atlas-bar label{display:inline-flex;align-items:center;gap:5px;cursor:pointer}
 .atlas-bar .sw{display:inline-block;width:11px;height:11px;border-radius:50%;border:2px solid}
@@ -261,106 +272,204 @@ paint-order:stroke;stroke:var(--bg);stroke-width:3px;stroke-linejoin:round}
 .atlas-legend span{display:inline-flex;align-items:center;gap:5px}
 .atlas-legend i{display:inline-block;width:10px;height:10px;border-radius:50%}
 #atlas-info{position:absolute;right:10px;top:10px;width:min(320px,calc(100% - 20px));max-height:calc(100% - 20px);
-overflow:auto;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:.88rem;
-box-shadow:0 2px 12px rgba(0,0,0,.18)}
+overflow:auto;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:.88rem;
+box-shadow:0 4px 18px rgba(0,0,0,.25)}
 #atlas-info h3{margin:0 0 4px;font-size:1rem}#atlas-info p{margin:4px 0}
-#atlas-info .x{float:right;border:0;background:none;color:var(--muted);font-size:1.1rem;cursor:pointer;line-height:1}
+#atlas-info .x{float:right;border:0;background:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1;
+padding:0 0 0 8px}
 .atlas-help{font-size:.85rem;color:var(--muted);margin:4px 0 0}
 .atlas-tabs{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 12px;border-bottom:1px solid var(--line)}
 .atlas-tabs a{padding:6px 12px;border:1px solid transparent;border-bottom:0;border-radius:8px 8px 0 0;
 text-decoration:none;color:var(--muted);margin-bottom:-1px}
 .atlas-tabs a[aria-current]{color:var(--fg);border-color:var(--line);background:var(--bg);font-weight:600}
+@media (max-width:600px){
+ .atlas-bar{gap:6px 12px;font-size:.85rem}
+ .atlas-bar input[type=search]{max-width:none;flex:1 1 100%}
+ #atlas-info{left:8px;right:8px;top:auto;bottom:8px;width:auto;max-height:46%;border-radius:12px}
+}
 """
 
 # The force layout and interaction. Kept dependency-free on purpose (no CDN,
-# nothing loaded from elsewhere). Coordinates are in a 1000 x 700 world.
+# nothing loaded from elsewhere). The SVG's coordinates are the element's own
+# pixels, so text is drawn at a fixed on-screen size however far the map is
+# zoomed, and the layout's frame takes the screen's shape (tall on a phone).
 ATLAS_JS = r"""
 (function(){
 var root=document.getElementById('atlas'); if(!root) return;
 var data=JSON.parse(document.getElementById('atlas-data').textContent);
 var cfg=JSON.parse(document.getElementById('atlas-cfg').textContent);
-var NS='http://www.w3.org/2000/svg', W=1000, H=700;
+var NS='http://www.w3.org/2000/svg';
 var stageColour={}, hubColour={}, shown={};
 cfg.stages.forEach(function(s){stageColour[s[0]]=s[2];});
 cfg.hubs.forEach(function(h){hubColour[h[0]]=h[2]; shown[h[0]]=h[3];});
+var narrow=root.getBoundingClientRect().width<600;
+// On a phone, transgenes start hidden: the map is small and they are the busiest layer.
+if(narrow && 'transgene' in shown){ shown.transgene=false;
+  var tb=document.querySelector('.atlas-bar input[data-kind="transgene"]'); if(tb) tb.checked=false; }
 function el(t,a){var e=document.createElementNS(NS,t); for(var k in a) e.setAttribute(k,a[k]); return e;}
-var nodes=data.nodes, byId={};
-nodes.forEach(function(n,i){byId[n.id]=n; var a=i*2.39996, r=40+Math.sqrt(i)*22;
-  n.x=W/2+r*Math.cos(a); n.y=H/2+r*Math.sin(a); n.vx=0; n.vy=0; n.nb=[];});
-var links=data.links.map(function(l){var s=byId[l[0]], t=byId[l[1]]; s.nb.push(t); t.nb.push(s); return {s:s,t:t};});
-function radius(n){return n.kind==='virus' ? (n.stage==='approved'?8:5.5) : 5+Math.sqrt(n.n)*2.2;}
-function visible(n){return n.kind==='virus' || shown[n.kind];}
 
-var view={x:0,y:0,k:1}, g=el('g'), gl=el('g'), gn=el('g');
-g.appendChild(gl); g.appendChild(gn); root.appendChild(g);
-root.setAttribute('viewBox','0 0 '+W+' '+H);
-links.forEach(function(l){l.el=el('line'); gl.appendChild(l.el);});
+// Screen size (viewBox = pixels) and the layout's world, which has the screen's shape.
+var SW, SH, LW, LH;
+function measure(){ var r=root.getBoundingClientRect(); SW=Math.max(280,r.width||1000); SH=Math.max(260,r.height||700);
+  root.setAttribute('viewBox','0 0 '+SW+' '+SH); LW=1000; LH=Math.max(560,Math.min(1900,1000*SH/SW)); }
+measure();
+
+var nodes=data.nodes, byId={};
+nodes.forEach(function(n,i){byId[n.id]=n; var a=i*2.39996, r=30+Math.sqrt(i)*24;
+  n.x=r*Math.cos(a); n.y=r*Math.sin(a)*LH/LW; n.vx=0; n.vy=0; n.nb=[];});
+var links=data.links.map(function(l){var s=byId[l[0]], t=byId[l[1]]; s.nb.push(t); t.nb.push(s); return {s:s,t:t};});
+function radius(n){return n.kind==='virus' ? (n.stage==='approved'?8:5.5) : 6+Math.sqrt(n.n)*2.6;}
+function visible(n){return n.kind==='virus' || shown[n.kind];}
+// How each kind of hub pulls: families hold tight (they make the clusters),
+// cancers and the rest pull gently across clusters.
+var PULL={family:[50,0.07],transgene:[120,0.008],indication:[160,0.005],route:[140,0.006],sponsor:[110,0.010]};
+function charge(n){return n.kind==='virus'?1:(n.kind==='family'?1+n.n/6:1+n.n/14);}
+
+var view={x:0,y:0,k:1}, g=el('g'), gt=el('g'), gl=el('g'), gn=el('g'), gx=el('g');
+var defs=el('defs'), flt=el('filter',{id:'atlas-glow',x:'-100%',y:'-100%',width:'300%',height:'300%'});
+flt.appendChild(el('feGaussianBlur',{stdDeviation:'3',result:'b'}));
+var mg=el('feMerge'); mg.appendChild(el('feMergeNode',{'in':'b'})); mg.appendChild(el('feMergeNode',{'in':'SourceGraphic'}));
+flt.appendChild(mg); defs.appendChild(flt); root.appendChild(defs);
+g.appendChild(gt); g.appendChild(gl); g.appendChild(gn); g.appendChild(gx); root.appendChild(g);
+links.forEach(function(l){l.el=el('line',{stroke:hubColour[l.t.kind]||'#888'}); gl.appendChild(l.el);});
+// A soft territory behind each family of three or more.
+var fams=nodes.filter(function(n){return n.kind==='family';}).map(function(f){
+  return {hub:f, members:f.nb.filter(function(m){return m.kind==='virus';}),
+          el:gt.appendChild(el('path',{'class':'terr',fill:hubColour.family,stroke:hubColour.family}))};})
+  .filter(function(f){return f.members.length>=3;});
+var terrOf={}; fams.forEach(function(f){terrOf[f.hub.id]=f;});
+var HALO=17;   // half the territory's stroke: how far it reaches past its dots
 nodes.forEach(function(n){
-  var grp=el('g',{'class':'n '+(n.kind==='virus'?'virus':'hub'),tabindex:'0',role:'button','aria-label':n.label});
+  var grp=el('g',{'class':'n '+(n.kind==='virus'?'virus':'hub')+(n.stage==='approved'?' appr':''),tabindex:'0',role:'button','aria-label':n.label});
   var c=el('circle',{r:radius(n)});
-  if(n.kind==='virus'){c.setAttribute('fill',stageColour[n.stage]); c.setAttribute('stroke',stageColour[n.stage]);}
-  else {c.setAttribute('stroke',hubColour[n.kind]);}
+  if(n.kind==='virus'){c.setAttribute('fill',stageColour[n.stage]);}
+  else {c.setAttribute('stroke',hubColour[n.kind]); c.setAttribute('fill',hubColour[n.kind]);}
   grp.appendChild(c);
-  var showLabel = n.kind!=='virus' || n.stage==='approved';
-  n.text=el('text',{'class':n.kind==='virus'?'':'hubl',dx:radius(n)+3,dy:4});
-  n.text.textContent=n.label; if(!showLabel) n.text.style.display='none';
-  grp.appendChild(n.text); n.el=grp; gn.appendChild(grp);
+  n.text=el('text',{'class':n.kind==='virus'?'':(n.kind==='family'||n.n>=8?'hubl big':'hubl')});
+  n.text.textContent=n.label; gx.appendChild(n.text); n.el=grp; gn.appendChild(grp);
   grp.addEventListener('pointerdown',function(e){e.stopPropagation(); startDrag(n,e);});
   grp.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault(); select(n);}});
-  grp.addEventListener('mouseenter',function(){if(n.kind==='virus'&&!sel) n.text.style.display='';});
-  grp.addEventListener('mouseleave',function(){if(n.kind==='virus'&&!sel&&n.stage!=='approved') n.text.style.display='none';});
+  grp.addEventListener('mouseenter',function(){hover=n; draw();});
+  grp.addEventListener('mouseleave',function(){if(hover===n){hover=null; draw();}});
 });
+
+// Each family gets a home on a ring, its share of the ring by size, so the
+// families settle as separate clusters instead of one ball; one-member
+// families sit on an outer ring. Cancers and the rest then sit between them.
+var home={};
+(function(){ var fs=nodes.filter(function(n){return n.kind==='family';}).sort(function(a,b){return b.n-a.n;});
+  var big=fs.filter(function(f){return f.n>=3;}), small=fs.filter(function(f){return f.n<3;});
+  var tot=big.reduce(function(t,f){return t+Math.sqrt(f.n);},0)||1, a=-Math.PI/2;
+  // alternate large and small around the ring so the big ones don't bunch up
+  var order=[], lo=0, hi=big.length-1; while(lo<=hi){order.push(big[lo++]); if(lo<=hi) order.push(big[hi--]);}
+  order.forEach(function(f){ var share=Math.sqrt(f.n)/tot*2*Math.PI; a+=share/2;
+    home[f.id]=[Math.cos(a)*LW*0.30, Math.sin(a)*LH*0.30]; a+=share/2; });
+  small.forEach(function(f,i){ var b=-Math.PI/2+(i+0.5)/small.length*2*Math.PI+0.3;
+    home[f.id]=[Math.cos(b)*LW*0.44, Math.sin(b)*LH*0.44]; });
+  nodes.forEach(function(n){ if(home[n.id]){n.x=home[n.id][0]; n.y=home[n.id][1];} });
+  nodes.forEach(function(n){ if(n.kind!=='virus') return; var f=n.nb.filter(function(m){return home[m.id];})[0];
+    if(f){n.x=f.x+(Math.random()-0.5)*40; n.y=f.y+(Math.random()-0.5)*40;} });
+})();
 
 var alpha=1;
 function tick(){
   var vis=nodes.filter(visible), i, j, a, b, dx, dy, d2, d, f;
   for(i=0;i<vis.length;i++){ a=vis[i];
-    for(j=i+1;j<vis.length;j++){ b=vis[j]; dx=b.x-a.x; dy=b.y-a.y; d2=dx*dx+dy*dy||0.01;
-      d=Math.sqrt(d2);
-      // Collision: dots (and a little room for a label) never overlap,
-      // whatever the temperature, so the settled layout stays readable.
-      var room=radius(a)+radius(b)+10;
+    for(j=i+1;j<vis.length;j++){ b=vis[j]; dx=b.x-a.x; dy=b.y-a.y; d2=dx*dx+dy*dy||0.01; d=Math.sqrt(d2);
+      var room=radius(a)+radius(b)+(a.kind==='virus'&&b.kind==='virus'?6:14);
       if(d<room){ f=(room-d)*0.5/d; a.x-=dx*f/2; a.y-=dy*f/2; b.x+=dx*f/2; b.y+=dy*f/2; }
-      if(d2>250000) continue; f=-2400*alpha/d2;
+      if(d2>360000) continue; f=-1500*alpha*charge(a)*charge(b)/d2;
       a.vx+=f*dx/d; a.vy+=f*dy/d; b.vx-=f*dx/d; b.vy-=f*dy/d; } }
-  links.forEach(function(l){ if(!visible(l.s)||!visible(l.t)) return;
-    dx=l.t.x-l.s.x; dy=l.t.y-l.s.y; d=Math.sqrt(dx*dx+dy*dy)||0.01;
-    var want=l.t.kind==='indication'?110:85; f=(d-want)*0.03*alpha/d;
+  links.forEach(function(l){ if(!visible(l.s)||!visible(l.t)) return; var p=PULL[l.t.kind]||[100,0.02];
+    dx=l.t.x-l.s.x; dy=l.t.y-l.s.y; d=Math.sqrt(dx*dx+dy*dy)||0.01; f=(d-p[0])*p[1]*alpha/d;
     l.s.vx+=f*dx; l.s.vy+=f*dy; l.t.vx-=f*dx; l.t.vy-=f*dy; });
-  // Pull towards the centre, harder for dots with few visible links: a dot
-  // whose hubs are all switched off has nothing holding it, and repulsion
-  // alone would fling it across the frame. A soft wall catches the rest.
+  // Pull towards the centre (harder for dots with few visible links, which
+  // nothing else holds), inside an ellipse with the screen's shape.
+  var ax=LW/2*0.92, ay=LH/2*0.92;
   vis.forEach(function(n){ var deg=0; for(var q=0;q<n.nb.length;q++) if(visible(n.nb[q])) deg++;
-    var pull=deg===0?0.05:deg===1?0.02:0.003, cx=n.x-W/2, cy=n.y-H/2, dist=Math.sqrt(cx*cx+cy*cy), wall=Math.min(W,H)*0.75;
-    n.vx-=cx*pull*alpha; n.vy-=cy*pull*alpha;
-    if(dist>wall){ n.vx-=cx/dist*(dist-wall)*0.2; n.vy-=cy/dist*(dist-wall)*0.2; }
+    var pull=deg===0?0.05:deg===1?0.012:0.004, ex=n.x/ax, ey=n.y/ay, e=Math.sqrt(ex*ex+ey*ey);
+    n.vx-=n.x*pull*alpha*(LH>LW?LH/LW:1); n.vy-=n.y*pull*alpha*(LW>LH?LW/LH:1);
+    if(e>1){ n.vx-=n.x*(1-1/e)*0.2; n.vy-=n.y*(1-1/e)*0.2; }
+    var h=home[n.id]; if(h){ n.vx+=(h[0]-n.x)*0.05*alpha; n.vy+=(h[1]-n.y)*0.05*alpha; }
     if(n.fixed){n.vx=n.vy=0; return;} n.vx*=0.6; n.vy*=0.6; n.x+=n.vx; n.y+=n.vy; });
   alpha=Math.max(alpha*0.985, 0);
 }
+
+// Convex hull (monotone chain) for the family territories.
+function hull(pts){ if(pts.length<3) return pts; pts=pts.slice().sort(function(a,b){return a[0]-b[0]||a[1]-b[1];});
+  function cr(o,a,b){return (a[0]-o[0])*(b[1]-o[1])-(a[1]-o[1])*(b[0]-o[0]);}
+  var lo=[],up=[],i; for(i=0;i<pts.length;i++){while(lo.length>=2&&cr(lo[lo.length-2],lo[lo.length-1],pts[i])<=0)lo.pop(); lo.push(pts[i]);}
+  for(i=pts.length-1;i>=0;i--){while(up.length>=2&&cr(up[up.length-2],up[up.length-1],pts[i])<=0)up.pop(); up.push(pts[i]);}
+  up.pop(); lo.pop(); return lo.concat(up); }
+
+// Labels: a fixed size on screen, and only where they fit. Priority: what the
+// reader is looking at, then approved products, then the biggest hubs.
+var hover=null, sel=null, near={}, FS=narrow?12:11, CH=0.6;
+function wanted(n){ if(!visible(n)) return -1;
+  if(sel&&near[n.id]) return 1000+(n===sel?100:0)+(n.kind==='virus'?0:n.n);
+  if(n===hover) return 900;
+  if(sel) return -1;
+  if(n.kind==='virus') return n.stage==='approved'?500:-1;
+  return (n.kind==='family'?300:200)+n.n; }
+function placeLabels(){
+  var cand=nodes.map(function(n){return [wanted(n),n];}).filter(function(c){return c[0]>=0;})
+    .sort(function(a,b){return b[0]-a[0];});
+  var boxes=[], pad=3, show={}, dots=[];
+  nodes.forEach(function(n){ if(!visible(n)) return; var r=radius(n)*view.k+1, sx=view.x+n.x*view.k, sy=view.y+n.y*view.k;
+    dots.push([sx-r,sy-r,sx+r,sy+r,n]); });
+  function hit(box,own){ var i,o; for(i=0;i<boxes.length;i++){o=boxes[i];
+      if(box[0]<o[2]&&box[2]>o[0]&&box[1]<o[3]&&box[3]>o[1]) return true;}
+    for(i=0;i<dots.length;i++){o=dots[i]; if(o[4]===own) continue;
+      if(box[0]+pad<o[2]&&box[2]-pad>o[0]&&box[1]+pad<o[3]&&box[3]-pad>o[1]) return true;}
+    return false; }
+  cand.forEach(function(c){ var n=c[1], r=radius(n)*view.k, sx=view.x+n.x*view.k, sy=view.y+n.y*view.k;
+    var w=n.label.length*FS*CH, h=FS+2, y0=sy-h/2, f=terrOf[n.id];
+    if(f&&f.top&&!(sel&&near[n.id])){            // a family with a territory: name it above the territory
+      var cx=view.x+f.top[0]*view.k, ty=view.y+f.top[1]*view.k-4, bx=[cx-w/2-pad,ty-h-pad,cx+w/2+pad,ty+pad];
+      if(bx[0]>2&&bx[2]<SW-2&&bx[1]>2){ var clash=false;
+        for(var i=0;i<boxes.length;i++){var o=boxes[i]; if(bx[0]<o[2]&&bx[2]>o[0]&&bx[1]<o[3]&&bx[3]>o[1]){clash=true;break;}}
+        if(!clash){ boxes.push(bx); show[n.id]='t'; return; } } }
+    // Try right, left, above, then below the dot; keep inside the frame.
+    var spots=[['r',sx+r+4,y0],['l',sx-r-4-w,y0],['a',sx-w/2,sy-r-3-h],['b',sx-w/2,sy+r+3]], placed=null;
+    for(var t=0;t<spots.length&&!placed;t++){ var x0=spots[t][1], yy=spots[t][2];
+      if(x0<6||x0+w*1.05>SW-6||yy<2||yy+h>SH-2) continue;
+      var box=[x0-pad,yy-pad,x0+w+pad,yy+h+pad]; if(n===sel||n===hover||!hit(box,n)) placed=[box,spots[t][0]]; }
+    if(!placed) return;
+    boxes.push(placed[0]); show[n.id]=placed[1]; });
+  nodes.forEach(function(n){ var s=show[n.id]; n.text.style.display=s?'':'none'; if(!s) return;
+    if(s==='t'){ var f=terrOf[n.id]; n.text.setAttribute('x', f.top[0]); n.text.setAttribute('y', f.top[1]-6/view.k);
+      n.text.setAttribute('text-anchor','middle'); n.text.classList.add('terrl'); return; }
+    n.text.classList.remove('terrl');
+    var r=radius(n)+4/view.k, k=view.k;
+    if(s==='a'||s==='b'){ n.text.setAttribute('x', n.x); n.text.setAttribute('text-anchor','middle');
+      n.text.setAttribute('y', s==='a' ? n.y-radius(n)-3/k-FS*0.25/k : n.y+radius(n)+3/k+FS*0.85/k); return; }
+    n.text.setAttribute('x', n.x+(s==='r'?r:-r)); n.text.setAttribute('y', n.y+FS*0.35/k);
+    n.text.setAttribute('text-anchor', s==='r'?'start':'end'); });
+}
 function draw(){
   g.setAttribute('transform','translate('+view.x+','+view.y+') scale('+view.k+')');
+  root.style.setProperty('--fs', (FS/view.k)+'px'); root.style.setProperty('--sw', (3/view.k)+'px');
   links.forEach(function(l){ var on=visible(l.s)&&visible(l.t); l.el.style.display=on?'':'none';
     if(on){l.el.setAttribute('x1',l.s.x); l.el.setAttribute('y1',l.s.y); l.el.setAttribute('x2',l.t.x); l.el.setAttribute('y2',l.t.y);} });
   nodes.forEach(function(n){ n.el.style.display=visible(n)?'':'none';
     if(visible(n)) n.el.setAttribute('transform','translate('+n.x+','+n.y+')'); });
+  fams.forEach(function(f){ var on=visible(f.hub); f.el.style.display=on?'':'none'; if(!on) return;
+    var h=hull([[f.hub.x,f.hub.y]].concat(f.members.map(function(m){return [m.x,m.y];})));
+    f.el.setAttribute('d','M'+h.map(function(p){return p[0].toFixed(1)+','+p[1].toFixed(1);}).join('L')+'Z');
+    f.el.setAttribute('stroke-width', 2*HALO);
+    var top=Infinity, sx=0; h.forEach(function(p){top=Math.min(top,p[1]); sx+=p[0];}); f.top=[sx/h.length, top-HALO]; });
+  placeLabels();
 }
-// Fit the visible graph into the frame, leaving room on the right for labels.
-// Frames every dot. (The centring pull and the soft wall above keep
-// stragglers close, so one loose dot can't shrink the whole map.)
+// Fit every visible dot into the frame.
 function fit(){
   var vis=nodes.filter(visible); if(!vis.length) return;
-  function q(arr,p){arr.sort(function(a,b){return a-b;}); return arr[Math.min(arr.length-1,Math.max(0,Math.round(p*(arr.length-1))))];}
-  var xs=vis.map(function(n){return n.x;}), ys=vis.map(function(n){return n.y;});
-  // Right edge: the end of the longest label shown (about 6.2 units a letter).
-  var ends=vis.map(function(n){var lab=n.kind!=='virus'||n.stage==='approved'; return n.x+radius(n)+(lab?8+n.label.length*6.2:0);});
-  var x0=q(xs,0)-12, x1=Math.max.apply(null,ends)+6, y0=q(ys,0)-12, y1=q(ys,1)+12;
-  var pad=24, k=Math.min((W-2*pad)/Math.max(x1-x0,1),(H-2*pad)/Math.max(y1-y0,1),2.2);
-  view.k=k; view.x=(W-(x1-x0)*k)/2-x0*k; view.y=(H-(y1-y0)*k)/2-y0*k;
+  var x0=Infinity,x1=-Infinity,y0=Infinity,y1=-Infinity;
+  vis.forEach(function(n){var r=radius(n)+8; x0=Math.min(x0,n.x-r); x1=Math.max(x1,n.x+r); y0=Math.min(y0,n.y-r); y1=Math.max(y1,n.y+r);});
+  var pad=narrow?10:24, k=Math.min((SW-2*pad)/Math.max(x1-x0,1),(SH-2*pad)/Math.max(y1-y0,1),3);
+  view.k=k; view.x=(SW-(x1-x0)*k)/2-x0*k; view.y=(SH-(y1-y0)*k)/2-y0*k;
 }
-// Settle most of the layout before the first paint, so the page opens on a
-// spread-out, fitted graph rather than watching it unfold from a knot.
 var still=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-for(var w=0; w<400; w++) tick();     // alpha falls below the stopping point (0.985^400 < 0.004)
+for(var w=0; w<420; w++) tick();
 fit(); draw();
 var running=false, refit=true;
 function run(){ if(running||still) {draw(); return;} running=true;
@@ -369,38 +478,52 @@ function run(){ if(running||still) {draw(); return;} running=true;
 function reheat(x){alpha=Math.max(alpha,x); if(still){for(var w=0;w<300;w++) tick(); if(refit) fit(); draw();} else run();}
 run();
 
-function toWorld(e){var r=root.getBoundingClientRect(), sx=W/r.width, sy=H/r.height;
-  return {x:((e.clientX-r.left)*sx-view.x)/view.k, y:((e.clientY-r.top)*sy-view.y)/view.k};}
-var drag=null, pan=null, moved=false;
-function startDrag(n,e){drag=n; moved=false; n.fixed=true; root.setPointerCapture(e.pointerId); root.classList.add('dragging');}
-root.addEventListener('pointerdown',function(e){pan={x:e.clientX,y:e.clientY,vx:view.x,vy:view.y}; moved=false;
-  root.setPointerCapture(e.pointerId); root.classList.add('dragging');});
-root.addEventListener('pointermove',function(e){
-  if(drag){var p=toWorld(e); drag.x=p.x; drag.y=p.y; moved=true; reheat(0.15); draw();}
-  else if(pan){var r=root.getBoundingClientRect(), dx=(e.clientX-pan.x)*W/r.width, dy=(e.clientY-pan.y)*H/r.height;
-    if(Math.abs(dx)+Math.abs(dy)>3) moved=true; view.x=pan.vx+dx; view.y=pan.vy+dy; draw();}});
-function end(){ if(drag){var d=drag; d.fixed=false; drag=null; if(!moved) select(d);}
+function toScreen(e){var r=root.getBoundingClientRect(); return {x:(e.clientX-r.left)*SW/r.width, y:(e.clientY-r.top)*SH/r.height};}
+function toWorld(e){var p=toScreen(e); return {x:(p.x-view.x)/view.k, y:(p.y-view.y)/view.k};}
+function zoomAt(mx,my,f){var k=Math.min(8,Math.max(0.2,view.k*f));
+  view.x=mx-(mx-view.x)*k/view.k; view.y=my-(my-view.y)*k/view.k; view.k=k; draw();}
+// Pointers: one finger or the mouse drags a dot or pans; two fingers pinch-zoom.
+var pts={}, drag=null, dragFrom=null, pan=null, pinch=null, moved=false;
+function count(){return Object.keys(pts).length;}
+function startDrag(n,e){pts[e.pointerId]=toScreen(e); if(count()>1){startPinch(); return;}
+  drag=n; moved=false; n.fixed=true; dragFrom={x:e.clientX,y:e.clientY}; root.setPointerCapture(e.pointerId); root.classList.add('dragging');}
+function startPinch(){ if(drag){drag.fixed=false; drag=null;} pan=null; var p=Object.keys(pts).map(function(k){return pts[k];});
+  pinch={d:Math.hypot(p[0].x-p[1].x,p[0].y-p[1].y)||1}; moved=true; }
+root.addEventListener('pointerdown',function(e){pts[e.pointerId]=toScreen(e); root.setPointerCapture(e.pointerId);
+  if(count()>1){startPinch(); return;}
+  pan={x:e.clientX,y:e.clientY,vx:view.x,vy:view.y}; moved=false; root.classList.add('dragging');});
+root.addEventListener('pointermove',function(e){ if(!(e.pointerId in pts)) return; pts[e.pointerId]=toScreen(e);
+  if(pinch&&count()>1){ var p=Object.keys(pts).map(function(k){return pts[k];}), d=Math.hypot(p[0].x-p[1].x,p[0].y-p[1].y)||1;
+    zoomAt((p[0].x+p[1].x)/2,(p[0].y+p[1].y)/2,d/pinch.d); pinch.d=d; return; }
+  if(drag){ // a finger always wobbles a little: it's a tap until it has moved a few pixels
+    if(!moved&&Math.abs(e.clientX-dragFrom.x)+Math.abs(e.clientY-dragFrom.y)<6) return;
+    var w=toWorld(e); drag.x=w.x; drag.y=w.y; moved=true; reheat(0.12); draw();}
+  else if(pan){var r=root.getBoundingClientRect(), dx=(e.clientX-pan.x)*SW/r.width, dy=(e.clientY-pan.y)*SH/r.height;
+    if(Math.abs(dx)+Math.abs(dy)>4) moved=true; view.x=pan.vx+dx; view.y=pan.vy+dy; draw();}});
+function end(e){ delete pts[e.pointerId];
+  if(pinch){ if(count()<2) pinch=null; if(!count()) {root.classList.remove('dragging');} return; }
+  if(drag){var d=drag; d.fixed=false; drag=null; if(!moved) select(d);}
   else if(pan&&!moved) select(null);
   pan=null; moved=false; root.classList.remove('dragging'); }
 root.addEventListener('pointerup',end); root.addEventListener('pointercancel',end);
-function zoomAt(mx,my,f){var k=Math.min(6,Math.max(0.3,view.k*f));
-  view.x=mx-(mx-view.x)*k/view.k; view.y=my-(my-view.y)*k/view.k; view.k=k; draw();}
 // Ctrl/Cmd + wheel (and a trackpad pinch, which arrives as one) zooms; a plain
 // wheel scrolls the page, so the graph never traps the reader.
 root.addEventListener('wheel',function(e){ if(!(e.ctrlKey||e.metaKey)) return; e.preventDefault();
-  var r=root.getBoundingClientRect(); zoomAt((e.clientX-r.left)*W/r.width,(e.clientY-r.top)*H/r.height,Math.exp(-e.deltaY*0.01));},
-  {passive:false});
-document.getElementById('atlas-in').addEventListener('click',function(){zoomAt(W/2,H/2,1.4);});
-document.getElementById('atlas-out').addEventListener('click',function(){zoomAt(W/2,H/2,1/1.4);});
+  var p=toScreen(e); zoomAt(p.x,p.y,Math.exp(-e.deltaY*0.01));},{passive:false});
+document.getElementById('atlas-in').addEventListener('click',function(){zoomAt(SW/2,SH/2,1.4);});
+document.getElementById('atlas-out').addEventListener('click',function(){zoomAt(SW/2,SH/2,1/1.4);});
+var rt; window.addEventListener('resize',function(){clearTimeout(rt); rt=setTimeout(function(){measure(); fit(); draw();},150);});
 
-var info=document.getElementById('atlas-info'), sel=null;
+var info=document.getElementById('atlas-info');
 function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
 function select(n){
-  sel=n;
-  var near={}; if(n){near[n.id]=1; n.nb.forEach(function(m){near[m.id]=1;});}
-  nodes.forEach(function(m){ m.el.classList.toggle('dim', !!n && !near[m.id]);
-    if(m.kind==='virus') m.text.style.display=(n&&near[m.id])||m.stage==='approved'?'':'none'; });
+  sel=n; near={}; if(n){near[n.id]=1; n.nb.forEach(function(m){near[m.id]=1;});}
+  nodes.forEach(function(m){ m.el.classList.toggle('dim', !!n && !near[m.id]); m.text.classList.toggle('dim', !!n && !near[m.id]); });
+  fams.forEach(function(f){ f.el.classList.toggle('dim', !!n && !near[f.hub.id]); });
   links.forEach(function(l){ var on=!!n&&(l.s===n||l.t===n); l.el.classList.toggle('on',on); l.el.classList.toggle('dim',!!n&&!on); });
+  // On a phone the panel covers the lower part of the map: bring the choice above it.
+  if(n&&narrow){ var sy=view.y+n.y*view.k; if(sy>SH*0.45) view.y+=SH*0.28-sy; }
+  draw();
   if(!n){info.hidden=true; return;}
   var h='<button class="x" aria-label="Close">×</button>';
   if(n.kind==='virus'){
@@ -430,7 +553,7 @@ q.addEventListener('keydown',function(e){ if(e.key!=='Enter') return; e.preventD
   var t=q.value.trim().toLowerCase(); if(!t) {select(null); return;}
   var hit=nodes.filter(function(n){return visible(n)&&(n.label.toLowerCase().indexOf(t)>=0||
     (n.aka||[]).some(function(a){return a.toLowerCase().indexOf(t)>=0;}));})[0];
-  if(!hit) return; select(hit); view.k=Math.max(view.k,1.6); view.x=W/2-hit.x*view.k; view.y=H/2-hit.y*view.k; draw();});
+  if(!hit) return; view.k=Math.max(view.k,1.6); view.x=SW/2-hit.x*view.k; view.y=SH/2-hit.y*view.k; select(hit);});
 document.getElementById('atlas-reset').addEventListener('click',function(){select(null); fit(); draw();});
 })();
 """
