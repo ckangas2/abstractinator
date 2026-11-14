@@ -9,6 +9,11 @@ Development before v2.0.0 was untagged; see the git history for detail.
 ## [Unreleased]
 
 ### Changed
+- The oncolytic atlas has a "Unique payloads" tickbox (off at first): it adds
+  the transgenes only one virus carries, drawn small beside their virus inside
+  its family's territory. The AAV atlas has the same for unique transgenes.
+
+### Changed
 - The phage atlas groups products by the bacterium they target: each target
   bacterium is a hub with its own territory (a cocktail sits with the first
   bacterium it lists and links to the others), and the table gains a "Target

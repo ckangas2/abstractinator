@@ -57,6 +57,7 @@ STAGES = [  # (key, label, colour), in order
 HUB_KINDS = [  # (key, label, colour, shown at first)
     ("family", "Virus family", "#8a7fd6", True),
     ("transgene", "Transgene", "#d4537e", True),
+    ("transgene1", "Unique payloads", "#d4537e", False),   # a transgene only one virus carries
     ("indication", "Cancer", "#2fa58c", True),
     ("route", "Route", "#9a9890", False),
     ("sponsor", "Sponsor (2+ viruses)", "#b07a4a", False),
@@ -126,6 +127,7 @@ FIELDS = [
      "groups_head": "Disease area",
      "hubs": [("family", "Capsid", "#8a7fd6", True),
               ("transgene", "Transgene", "#d4537e", False),   # mostly one product each: clutter
+              ("transgene1", "Unique transgenes", "#d4537e", False),
               ("indication", "Disease area", "#2fa58c", True),
               ("route", "Route", "#9a9890", True),
               ("sponsor", "Sponsor (2+ products)", "#b07a4a", False)],
@@ -240,12 +242,23 @@ def atlas_data(d, field="oncolytic"):
         s = (p.get("sponsor") or "").strip()
         if s and sponsor_count.get(s, 0) >= 2 and "sponsor" in kinds:
             links.append([axp, hub("sponsor", s)])
-    # A hub joined to one product connects nothing: it only crowds the map. The
-    # product's info panel and the table still list it. Families stay, since a
-    # family is part of what each dot is.
-    lone = {h["id"] for h in hubs.values() if h["n"] < 2 and h["kind"] != "family"}
+    # A hub joined to one product connects nothing: it only crowds the map, so
+    # it isn't drawn (the product's panel and the table still list it). Families
+    # stay, since a family is part of what each dot is. A transgene carried by
+    # one product becomes its own kind, "transgene1", which the tab can offer
+    # behind a tickbox ("Unique payloads"), drawn small beside its product.
+    unique = "transgene1" in {h[0] for h in f["hubs"]}
+    lone, renamed = set(), {}
+    for h in hubs.values():
+        if h["n"] >= 2 or h["kind"] == "family":
+            continue
+        if h["kind"] == "transgene" and unique:
+            renamed[h["id"]] = "transgene1:" + h["id"].split(":", 1)[1]
+            h["kind"], h["id"] = "transgene1", renamed[h["id"]]
+        else:
+            lone.add(h["id"])
     return {"nodes": [n for n in nodes if n["id"] not in lone],
-            "links": [l for l in links if l[1] not in lone]}
+            "links": [[l[0], renamed.get(l[1], l[1])] for l in links if l[1] not in lone]}
 
 
 ATLAS_CSS = """
@@ -324,7 +337,7 @@ var nodes=data.nodes, byId={};
 nodes.forEach(function(n,i){byId[n.id]=n; var a=i*2.39996, r=30+Math.sqrt(i)*24;
   n.x=r*Math.cos(a); n.y=r*Math.sin(a)*LH/LW; n.vx=0; n.vy=0; n.nb=[];});
 var links=data.links.map(function(l){var s=byId[l[0]], t=byId[l[1]]; s.nb.push(t); t.nb.push(s); return {s:s,t:t};});
-function radius(n){return n.kind==='virus' ? (n.stage==='approved'?8:5.5) : 6+Math.sqrt(n.n)*2.6;}
+function radius(n){return n.kind==='virus' ? (n.stage==='approved'?8:5.5) : n.kind==='transgene1' ? 3.5 : 6+Math.sqrt(n.n)*2.6;}
 function visible(n){return n.kind==='virus' || shown[n.kind];}
 // How each kind of hub pulls: families hold tight (they make the clusters),
 // cancers and the rest pull gently across clusters.
@@ -332,12 +345,12 @@ function visible(n){return n.kind==='virus' || shown[n.kind];}
 // "family") or target bacterium (phage, nearly all one class). That kind of hub
 // holds its products tight and gets a territory; the rest pull gently across.
 var CL=cfg.cluster||'family';
-var PULL={family:[120,0.006],host:[90,0.02],transgene:[120,0.008],indication:[160,0.005],route:[140,0.006],sponsor:[110,0.010]};
+var PULL={family:[120,0.006],host:[90,0.02],transgene1:[22,0.12],transgene:[120,0.008],indication:[160,0.005],route:[140,0.006],sponsor:[110,0.010]};
 PULL[CL]=[50,0.07];
 // A product listed under several (a phage cocktail aimed at three bacteria) sits
 // in the territory of the first one listed; its other links still show.
 function primary(v){ for(var i=0;i<v.nb.length;i++) if(v.nb[i].kind===CL) return v.nb[i]; return null; }
-function charge(n){return n.kind==='virus'?1:(n.kind===CL?1+n.n/6:1+n.n/14);}
+function charge(n){return n.kind==='virus'?1:n.kind==='transgene1'?0.3:(n.kind===CL?1+n.n/6:1+n.n/14);}
 
 var view={x:0,y:0,k:1}, g=el('g'), gt=el('g'), gl=el('g'), gn=el('g'), gx=el('g');
 var defs=el('defs'), flt=el('filter',{id:'atlas-glow',x:'-100%',y:'-100%',width:'300%',height:'300%'});
@@ -390,13 +403,14 @@ function tick(){
   var vis=nodes.filter(visible), i, j, a, b, dx, dy, d2, d, f;
   for(i=0;i<vis.length;i++){ a=vis[i];
     for(j=i+1;j<vis.length;j++){ b=vis[j]; dx=b.x-a.x; dy=b.y-a.y; d2=dx*dx+dy*dy||0.01; d=Math.sqrt(d2);
-      var room=radius(a)+radius(b)+(a.kind==='virus'&&b.kind==='virus'?6:14);
+      var room=radius(a)+radius(b)+(a.kind==='virus'&&b.kind==='virus'?6:(a.kind==='transgene1'||b.kind==='transgene1')?4:14);
       if(d<room){ f=(room-d)*0.5/d; a.x-=dx*f/2; a.y-=dy*f/2; b.x+=dx*f/2; b.y+=dy*f/2; }
       if(d2>360000) continue; f=-1500*alpha*charge(a)*charge(b)/d2;
       a.vx+=f*dx/d; a.vy+=f*dy/d; b.vx-=f*dx/d; b.vy-=f*dy/d; } }
   links.forEach(function(l){ if(!visible(l.s)||!visible(l.t)) return; var p=PULL[l.t.kind]||[100,0.02];
     if(l.t.kind===CL&&primary(l.s)!==l.t) p=[110,0.012];
     dx=l.t.x-l.s.x; dy=l.t.y-l.s.y; d=Math.sqrt(dx*dx+dy*dy)||0.01; f=(d-p[0])*p[1]*alpha/d;
+    if(l.t.kind==='transgene1'){ l.t.vx-=2*f*dx; l.t.vy-=2*f*dy; return; }   // a unique payload follows its virus, never the reverse
     l.s.vx+=f*dx; l.s.vy+=f*dy; l.t.vx-=f*dx; l.t.vy-=f*dy; });
   // Pull towards the centre (harder for dots with few visible links, which
   // nothing else holds), inside an ellipse with the screen's shape.
@@ -425,7 +439,7 @@ function wanted(n){ if(!visible(n)) return -1;
   if(n===hover) return 900;
   if(sel) return -1;
   if(n.kind==='virus') return n.stage==='approved'?500:-1;
-  return (n.kind===CL?300:200)+n.n; }
+  return n.kind==='transgene1' ? 100 : (n.kind===CL?300:200)+n.n; }
 function placeLabels(){
   var cand=nodes.map(function(n){return [wanted(n),n];}).filter(function(c){return c[0]>=0;})
     .sort(function(a,b){return b[0]-a[0];});
@@ -568,7 +582,11 @@ function select(n){
   info.querySelector('.x').addEventListener('click',function(){select(null);});
 }
 document.querySelectorAll('.atlas-bar input[data-kind]').forEach(function(cb){
-  cb.addEventListener('change',function(){shown[cb.getAttribute('data-kind')]=cb.checked;
+  cb.addEventListener('change',function(){var kind=cb.getAttribute('data-kind'); shown[kind]=cb.checked;
+    // Hubs that were hidden haven't moved since the first layout: start each
+    // one next to a product it belongs to, so it settles there, not mid-map.
+    if(cb.checked) nodes.forEach(function(n){ if(n.kind!==kind) return; var v=n.nb[0]; if(!v) return;
+      var a=Math.random()*2*Math.PI, r=kind==='transgene1'?22:60; n.x=v.x+r*Math.cos(a); n.y=v.y+r*Math.sin(a); n.vx=n.vy=0; });
     if(sel&&!visible(sel)) select(null); refit=true; reheat(0.6);});});
 var q=document.getElementById('atlas-q');
 q.addEventListener('keydown',function(e){ if(e.key!=='Enter') return; e.preventDefault();

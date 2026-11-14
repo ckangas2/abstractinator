@@ -258,6 +258,20 @@ class Site(unittest.TestCase):
 
 
 class AtlasFieldTest(unittest.TestCase):
+    def test_unique_payloads(self):
+        """A transgene only one virus carries becomes a "transgene1" hub, behind its own tickbox."""
+        import atlas_page as ap
+        prog = lambda i: {"axp_id": i, "preferred_name": i, "status": "active", "sponsor": ""}
+        v = lambda tg: {"role": "oncolytic", "virus_family": "Adenoviridae", "transgenes": tg}
+        d = {"programs": {"O1": prog("O1"), "O2": prog("O2")}, "virus": {"O1": v("GM-CSF; IL12"), "O2": v("GM-CSF")},
+             "trials": {}, "approvals": {}, "aliases": {}}
+        data = ap.atlas_data(d, "oncolytic")
+        kinds = {n["id"]: n["kind"] for n in data["nodes"]}
+        self.assertEqual(kinds["transgene:gm-csf"], "transgene")            # shared: an ordinary hub
+        self.assertEqual(kinds["transgene1:il12"], "transgene1")             # unique: its own kind
+        self.assertIn(["O1", "transgene1:il12"], data["links"])
+        self.assertIn(("transgene1", "Unique payloads", "#d4537e", False), ap.FIELDS[0]["hubs"])  # off at first
+
     """The phage atlas uses the same code with its own programs, hubs and groups."""
 
     def test_phage_field(self):
