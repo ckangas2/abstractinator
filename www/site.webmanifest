@@ -1,7 +1,7 @@
 {
   "name": "The Abstractinator",
   "short_name": "Abstractinator",
-  "description": "Immunology & virology literature, searched across databases at once.",
+  "description": "Immunology & virology literature, searched across databases at once, and an open registry of therapeutic viruses.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#222222",

@@ -1,5 +1,6 @@
 # The Abstractinator — https://abstractinator.me
-# Immunology & virology literature search. Free, open source (MIT).
+# Immunology & virology literature search, and an open registry of
+# therapeutic-virus programs (/registry/). Code: MIT. Registry data: CC BY 4.0.
 # Machine-readable summary for AI agents: /llms.txt
 # MCP server (no auth): https://mcp.abstractinator.me/mcp
 
@@ -17,3 +18,4 @@ Disallow: /session/
 Content-Signal: search=yes, ai-input=yes, ai-train=no
 
 Sitemap: https://abstractinator.me/sitemap.xml
+Sitemap: https://abstractinator.me/registry/sitemap.xml

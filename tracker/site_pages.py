@@ -25,6 +25,7 @@ import argparse
 import html
 import json
 import os
+import re
 import shutil
 import sqlite3
 import sys
@@ -682,6 +683,26 @@ def _write(path, text):
         fh.write(text)
 
 
+SITE_URL = "https://abstractinator.me/registry/"
+
+
+def sitemap_xml(d):
+    """registry/sitemap.xml: every page this build writes, dated by the
+    registry release (each page is rebuilt with it). robots.txt points here."""
+    release = d["meta"].get("registry_release", "")
+    lastmod = release[:10] if re.match(r"\d{4}-\d{2}-\d{2}", release) else ""
+    pages = [("index.html", "weekly", "0.9")]
+    pages += [(f["page"], "weekly", "0.8") for f in atlas_page.FIELDS]
+    pages += [("disease/%s.html" % slug, "weekly", "0.7") for slug, _, _ in DISEASE_VIEWS]
+    pages += [("%s.html" % axp, "weekly", "0.6") for axp in sorted(d["programs"])
+              if d["programs"][axp]["status"] == "active"]
+    rows = "".join("  <url><loc>%s%s</loc>%s<changefreq>%s</changefreq><priority>%s</priority></url>\n"
+                   % (SITE_URL, path, "<lastmod>%s</lastmod>" % lastmod if lastmod else "", freq, prio)
+                   for path, freq, prio in pages)
+    return ('<?xml version="1.0" encoding="UTF-8"?>\n'
+            '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n%s</urlset>\n' % rows)
+
+
 def write_site(db_path, out_dir=DEFAULT_SITE, log=print):
     """Write the registry's pages into out_dir, replacing what was there in one swap."""
     d = load(db_path)
@@ -702,6 +723,7 @@ def write_site(db_path, out_dir=DEFAULT_SITE, log=print):
             _write(os.path.join(tmp, "disease", "%s.html" % slug), disease_page(d, slug, label, terms))
         for f in atlas_page.FIELDS:
             _write(os.path.join(tmp, f["page"]), atlas_page.atlas_page(d, esc, frame, FILTER_JS, table, f["key"]))
+        _write(os.path.join(tmp, "sitemap.xml"), sitemap_xml(d))
     except BaseException:
         shutil.rmtree(tmp, ignore_errors=True)
         raise
@@ -709,7 +731,7 @@ def write_site(db_path, out_dir=DEFAULT_SITE, log=print):
         os.rename(out_dir, old)
     os.rename(tmp, out_dir)
     shutil.rmtree(old, ignore_errors=True)
-    log("wrote %s: index, %d program pages, %d disease views, atlases" % (out_dir, n, len(DISEASE_VIEWS)))
+    log("wrote %s: index, %d program pages, %d disease views, atlases, sitemap" % (out_dir, n, len(DISEASE_VIEWS)))
     return out_dir
 
 

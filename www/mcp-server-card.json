@@ -3,7 +3,7 @@
     "name": "abstractinator",
     "title": "The Abstractinator",
     "version": "2.0.0",
-    "description": "Immunology and virology literature search across Europe PMC, OpenAlex, ClinicalTrials.gov, bioRxiv/medRxiv, NIH RePORTER grants and NSF awards, deduplicated and tagged by immune cell type, virus and bacterium.",
+    "description": "Immunology and virology literature search across Europe PMC, OpenAlex, ClinicalTrials.gov, bioRxiv/medRxiv, NIH RePORTER grants and NSF awards, deduplicated and tagged by immune cell type, virus and bacterium; plus an open registry of therapeutic-virus programs (oncolytic viruses, phage therapies, gene therapies) with stable AXP IDs, linked trials, papers and grants, and weekly trial change events.",
     "websiteUrl": "https://abstractinator.me"
   },
   "transport": {
@@ -28,6 +28,22 @@
       "annotations": {
         "readOnlyHint": true,
         "openWorldHint": true
+      }
+    },
+    {
+      "name": "program",
+      "description": "Look up one therapy program in the registry by AXP ID or any name or code: its names, virus details, approvals, and the trials, papers and grants linked to it.",
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "changes",
+      "description": "What changed in the clinical trials of tracked programs, from weekly ClinicalTrials.gov snapshots: new trials, status and phase changes, results posted, slipped completion dates.",
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false
       }
     }
   ],

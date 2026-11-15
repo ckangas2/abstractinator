@@ -220,10 +220,14 @@
       tags$br(),
       tags$a(href = "registry/index.html", target = "_blank", rel = "noopener",
              icon("book"), " Registry"),
-      # The registry's map of oncolytic viruses (tracker/atlas_page.py).
+      # The registry's atlas: oncolytic, phage and AAV tabs (tracker/atlas_page.py).
       tags$br(),
       tags$a(href = "registry/atlas.html", target = "_blank", rel = "noopener",
-             icon("diagram-project"), " Virus atlas (beta)")
+             icon("diagram-project"), " Atlasinator (beta)"),
+      # This week's trial changes (written by tracker/build_registry.py).
+      tags$br(),
+      tags$a(href = "changes.html", target = "_blank", rel = "noopener",
+             icon("clock-rotate-left"), " What changed this week")
       ) # End settings-modal
     )) # End modalDialog and showModal
   })

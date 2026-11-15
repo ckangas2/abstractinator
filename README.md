@@ -5,8 +5,11 @@
 <h1 align="center">The Abstractinator</h1>
 
 <p align="center">
-  <b>Immunology & virology literature, searched across databases at once.</b><br>
+  <b>Immunology & virology literature, searched across databases at once,<br>
+  and an open registry of therapeutic viruses.</b><br>
   <a href="https://abstractinator.me">abstractinator.me</a> ·
+  <a href="https://abstractinator.me/registry/index.html">Registry</a> ·
+  <a href="https://abstractinator.me/registry/atlas.html">Atlas</a> ·
   <a href="#-use-it-with-ai">Connect your AI</a> ·
   <a href="#-self-hosting">Self-host it</a>
 </p>
@@ -20,6 +23,12 @@ and **virus** using a weighted title/abstract scoring matrix.
 
 A new search takes about **5–10 seconds**; repeat searches within 7 days are instant.
 
+Alongside the search sits an open **program registry** of therapeutic viruses: oncolytic
+viruses, phage therapies and gene therapies, each with a stable ID (AXP000001), its names and
+codes, its virus biology (family, strain, transgenes, route), approvals, and the trials,
+papers and grants that name it. ClinicalTrials.gov is snapshotted weekly and every change is
+recorded. Browse it at [abstractinator.me/registry](https://abstractinator.me/registry/index.html).
+
 ## ✨ Features
 
 | | |
@@ -31,7 +40,10 @@ A new search takes about **5–10 seconds**; repeat searches within 7 days are i
 | **Plotinator pools** | Switch the plot's pathogen axis between viruses and bacteria (or any pool you add) without re-running the search. |
 | **Plotinator** | Interactive charts of viral–immune trends over time. |
 | **Readinator** | Build a reading list and export it to Zotero or EndNote. |
-| **Agentinator** | An MCP server so AI assistants (Claude and others) can search The Abstractinator directly. |
+| **Agentinator** | An MCP server so AI assistants (Claude and others) can search The Abstractinator and look up registry programs directly. |
+| **Registry** | One page per therapeutic-virus program, with its names, virus biology, approvals, and linked trials, papers and grants; rebuilt weekly. |
+| **Atlasinator** | An interactive map of the field: oncolytic viruses by family, phage therapies by target bacterium, AAV gene therapies by capsid. |
+| **Changes** | What changed in the tracked trials each week: new trials, status and phase changes, results posted. |
 
 ## 📚 Data sources
 
@@ -305,8 +317,10 @@ sudo -u shiny /usr/bin/Rscript -e 'source("R/log_utils_local.R"); print(summariz
 | `tests/` | Offline unit tests and opt-in live search tests (testthat); run on GitHub Actions |
 | `agent/` | REST API (`api.R`, `run_api.R`), MCP server (`mcp_server.py`), systemd units |
 | `deploy/` | Cron schedule |
+| `registry/` | The program registry: curated TSV files (programs, aliases, virus, approvals), its SPEC and licence (CC BY 4.0) |
+| `tracker/` | Python: weekly trial snapshots, evidence fetching, the registry build, and the static registry pages and atlas |
 | `write_parquet_bioRxiV.R`, `update_biorxiv_db.R` | Build and refresh the local preprint store |
-| `www/` | Styles, scripts, icons and mascot art |
+| `www/` | Styles, scripts, icons and mascot art; `www/registry/` and `changes.html` are built weekly, not stored in git |
 | `archive/` | Retired earlier generations, kept for reference |
 
 ## 🛣️ Roadmap

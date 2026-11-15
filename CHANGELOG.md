@@ -8,6 +8,15 @@ Development before v2.0.0 was untagged; see the git history for detail.
 
 ## [Unreleased]
 
+### Changed
+- Navigation and discovery files describe the registry: a generated
+  `registry/sitemap.xml` lists every registry page (rebuilt weekly) and
+  robots.txt points to it; the main sitemap adds the registry index and the
+  changes page; the MCP server card lists all four tools; llms.txt, the README,
+  robots.txt and the web manifest mention the registry, the atlas and the
+  changes page. The settings menu's "Virus atlas (beta)" is now "Atlasinator
+  (beta)", with a link to this week's changes beside it.
+
 ### Added
 - Every target bacterium in virus.tsv now carries its NCBI Taxonomy id in
   `host_taxon`, resolved from NCBI and checked against the scientific name and

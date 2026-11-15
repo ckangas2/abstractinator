@@ -230,6 +230,14 @@ class Site(unittest.TestCase):
         with open(os.path.join(HERE, "..", "..", "registry", "CANARY.txt"), encoding="utf-8") as fh:
             self.assertEqual(fh.readline().strip(), sp.CANARY)
         self.assertTrue(os.path.isfile(os.path.join(out, "registry", "atlas-aav.html")))
+        # the registry's own sitemap lists every page it built, and only those
+        with open(os.path.join(out, "registry", "sitemap.xml"), encoding="utf-8") as fh:
+            sm = fh.read()
+        locs = re.findall(r"<loc>https://abstractinator\.me/registry/([^<]+)</loc>", sm)
+        self.assertIn("index.html", locs)
+        self.assertIn("atlas-phage.html", locs)
+        for loc in locs:
+            self.assertTrue(os.path.isfile(os.path.join(out, "registry", loc)), loc)
         # Each atlas page carries the tab bar, marking itself as current.
         with open(os.path.join(out, "registry", "atlas-phage.html"), encoding="utf-8") as fh:
             phage = fh.read()
