@@ -731,6 +731,13 @@ async def changes(
 
 
 if __name__ == "__main__":
+    # Never record visitors' IP addresses (the privacy page promises it). The
+    # Cloudflare tunnel connects from 127.0.0.1 and adds X-Forwarded-For with
+    # the visitor's address; uvicorn trusts that header from 127.0.0.1 by
+    # default and then writes the visitor's IP into every access-log line in
+    # the journal. Trusting no proxy keeps the logged address at 127.0.0.1.
+    # Nothing here needs the real address. (Read by uvicorn when it starts.)
+    os.environ["FORWARDED_ALLOW_IPS"] = "192.0.2.1"   # TEST-NET-1: matches no real peer
     # stateless_http is False so the transport issues real session ids. Without
     # them every request looks like a new client and "N searches across M
     # sessions" cannot be measured - Cloudflare cannot help here either, because

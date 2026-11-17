@@ -8,6 +8,19 @@ Development before v2.0.0 was untagged; see the git history for detail.
 
 ## [Unreleased]
 
+### Privacy
+- Visitors' IP addresses are no longer written to the MCP server's access log:
+  uvicorn trusted the tunnel's X-Forwarded-For header and logged the real
+  address. It now trusts no proxy, so the logged address is the tunnel's.
+- The Gotham theme's fonts are served from the site (`deploy/fetch_fonts.py`,
+  into `www/fonts/`) instead of Google Fonts, so no page load contacts Google.
+  The default theme's Google Fonts import, which never took effect, is removed.
+- Search logs and feedback messages are deleted after 24 months
+  (`deploy/prune_logs.sh`, daily from cron), as the privacy page now states.
+- The privacy page names who runs the site and how to reach him privately (the
+  in-app feedback form), and covers the registry pages. Registry pages and
+  llms.txt say they are for research and information only, not medical advice.
+
 ### Changed
 - Navigation and discovery files describe the registry: a generated
   `registry/sitemap.xml` lists every registry page (rebuilt weekly) and

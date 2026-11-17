@@ -220,6 +220,14 @@ server {
 }
 ```
 
+**Fonts**: the Gotham theme's two web fonts are served from the site itself, never from
+Google (which would send each visitor's IP to Google). Fetch them once, into `www/fonts/`
+(not in git):
+
+```bash
+sudo -u shiny python3 deploy/fetch_fonts.py
+```
+
 **API and MCP services** (run as the `shiny` user):
 
 ```bash

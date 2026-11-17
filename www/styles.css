@@ -68,7 +68,10 @@ body.theme-frog {
 
 /* 1. IMPORT: Switched to Inter (Clean UI) + Montserrat (Headers)
       Removed JetBrains Mono entirely. */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Montserrat:wght@500;600;700&display=swap');
+/* No web fonts are loaded for the default look: it uses each visitor's system
+   fonts. (A Google Fonts @import here never took effect, since an @import
+   after other rules is ignored, and loading from Google would send visitors'
+   IPs to Google.) */
 
 body {
     /* 2. BACKGROUND: Flat dark slate (#202123) is cleaner than gradients.

@@ -303,6 +303,8 @@ def frame(title, body, meta, root, crumbs=()):
             'Source: ClinicalTrials.gov; not endorsed by NLM. '
             '<a href="%s../changes.html">What changed this week</a> · <a href="%s../">The Abstractinator</a>'
             % (esc(meta.get("registry_release", "")), "https://creativecommons.org/licenses/by/4.0/", root, root))
+    foot += ('<br>For research and information only, not medical advice. Trial details follow the latest weekly '
+             "snapshot and can lag the registration; check ClinicalTrials.gov and the product's label.")
     foot += '<br><span class="canary">%s</span>' % esc(CANARY)
     return ('<!doctype html><html lang="en"><head><meta charset="utf-8">'
             '<meta name="viewport" content="width=device-width,initial-scale=1">'

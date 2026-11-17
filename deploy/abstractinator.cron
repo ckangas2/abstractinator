@@ -29,4 +29,6 @@ ABSTRACTINATOR_DATA_DIR=/var/lib/abstractinator
 # History can't be fetched later, so a missed week is lost; the uptime probe
 # alerts on a stale snapshot or evidence file. Check by hand:
 #   python3 tracker/snapshot_trials.py --status; python3 tracker/evidence.py --status
+# Delete logs older than the 24 months the privacy page states.
+20 5 * * * shiny /srv/shiny-server/abstractinator/deploy/prune_logs.sh >> /var/log/abstractinator/prune_logs.log 2>&1
 30 23 * * 0 shiny cd /srv/shiny-server/abstractinator && /usr/bin/python3 -u tracker/snapshot_trials.py >> /var/log/abstractinator/trial_snapshots.log 2>&1; deploy/keep_snapshots.sh >> /var/log/abstractinator/trial_snapshots.log 2>&1; /usr/bin/timeout 60m /usr/bin/python3 -u tracker/evidence.py >> /var/log/abstractinator/evidence.log 2>&1; /usr/bin/python3 -u tracker/build_registry.py >> /var/log/abstractinator/registry_build.log 2>&1

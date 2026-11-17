@@ -153,6 +153,9 @@ before, after, programs), newest first.
 - What changed in tracked trials this week: https://abstractinator.me/changes.html
 - Sitemap of the registry's pages: https://abstractinator.me/registry/sitemap.xml
 
+For research and information only, not medical advice: trial details follow
+the latest weekly snapshot and can lag the registration.
+
 The registry is licensed CC BY 4.0: reuse it with credit to "The Abstractinator
 program registry". Rows from Wikidata stay CC0 and US government rows public
 domain. Pages are rebuilt weekly from the latest ClinicalTrials.gov snapshot.

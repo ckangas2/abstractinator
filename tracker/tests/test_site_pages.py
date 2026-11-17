@@ -226,6 +226,7 @@ class Site(unittest.TestCase):
         self.assertIn('href="atlas-aav.html"', index)
         # The evaluation canary: on every page, and the same string as the repository's CANARY.txt.
         self.assertIn(sp.CANARY, index)
+        self.assertIn("not medical advice", index)                     # research-only line in every footer
         self.assertIn(sp.CANARY, atlas)
         with open(os.path.join(HERE, "..", "..", "registry", "CANARY.txt"), encoding="utf-8") as fh:
             self.assertEqual(fh.readline().strip(), sp.CANARY)
